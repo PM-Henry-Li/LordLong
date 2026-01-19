@@ -1,0 +1,97 @@
+{
+  "total_score": 1000,
+  "requirements": [
+    {
+      "name": "需求A-考核落地项",
+      "business_line": "考研",
+      "category": "考核落地项",
+      "quarter_plan": "本季度",
+      "status": "开发中",
+      "is_fault": false,
+      "related_projects": 0,
+      "time_dimension": "季度"
+    },
+    {
+      "name": "需求B-重点项目",
+      "business_line": "考研",
+      "category": "重点项目",
+      "quarter_plan": "本季度",
+      "status": "开发中",
+      "is_fault": false,
+      "related_projects": 2,
+      "time_dimension": "季度"
+    },
+    {
+      "name": "需求C-普通需求",
+      "business_line": "考研",
+      "category": "其他需求",
+      "quarter_plan": "下季度",
+      "status": "尚未启动",
+      "is_fault": false,
+      "related_projects": 0,
+      "time_dimension": "季度"
+    },
+    {
+      "name": "需求H-轻学月度需求",
+      "business_line": "轻学",
+      "category": "其他需求",
+      "quarter_plan": "本季度",
+      "status": "开发中",
+      "is_fault": false,
+      "related_projects": 0,
+      "is_qingxue": true,
+      "time_dimension": "月度"
+    },
+    {
+      "name": "需求I-轻学季度需求",
+      "business_line": "轻学",
+      "category": "重点项目",
+      "quarter_plan": "本季度",
+      "status": "尚未启动",
+      "is_fault": false,
+      "related_projects": 1,
+      "is_qingxue": true,
+      "time_dimension": "季度"
+    },
+    {
+      "name": "需求D-故障修复",
+      "business_line": "四六级",
+      "category": "其他需求",
+      "quarter_plan": "未进入",
+      "status": "尚未启动",
+      "is_fault": true,
+      "related_projects": 0,
+      "time_dimension": "季度"
+    },
+    {
+      "name": "需求E-重点项目",
+      "business_line": "四六级",
+      "category": "重点项目",
+      "quarter_plan": "本季度",
+      "status": "尚未启动",
+      "is_fault": false,
+      "related_projects": 1,
+      "time_dimension": "季度"
+    },
+    {
+      "name": "需求F-普通需求",
+      "business_line": "专升本",
+      "category": "其他需求",
+      "quarter_plan": "本季度",
+      "status": "开发中",
+      "is_fault": false,
+      "related_projects": 0,
+      "time_dimension": "季度"
+    },
+    {
+      "name": "需求G-考核落地",
+      "business_line": "专升本",
+      "category": "考核落地项",
+      "quarter_plan": "下季度",
+      "status": "尚未启动",
+      "is_fault": false,
+      "related_projects": 0,
+      "time_dimension": "季度"
+    }
+  ]
+}
