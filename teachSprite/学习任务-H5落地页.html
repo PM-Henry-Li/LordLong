@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>【学习任务】概率论周测 - 考研数学</title>
+  <!-- 企业微信 / 微信 链接预览（会话中的卡片样式）：标题、描述、缩略图、来源 -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="【学习任务】概率论周测">
+  <meta property="og:description" content="考研数学 · 截止01月27日18:00 · 张老师发布">
+  <meta property="og:image" content="https://via.placeholder.com/400x300/4A90E2/ffffff?text=学习任务">
+  <meta property="og:url" content="">
+  <meta property="og:site_name" content="新东方在线 · 学习任务">
+  <meta name="description" content="考研数学 · 截止01月27日18:00 · 张老师发布">
+  <!-- 实际使用：将 og:image 换为任务封面 CDN 地址；og:title/description 由发布时生成 -->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #2E2E2E;
+      color: #333;
+      height: 100vh;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    /* ========== 企微整体布局 ========== */
+    .wework { display: flex; height: 100vh; width: 100%; }
+    .wework-side {
+      width: 60px; background: #2E2E2E; flex-shrink: 0; border-right: 1px solid #3D3D3D;
+      display: flex; flex-direction: column; align-items: center; padding-top: 12px;
+    }
+    .wework-side .search { width: 36px; height: 36px; background: #3D3D3D; border-radius: 6px; margin-bottom: 12px; color: #8C8C8C; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .wework-side .nav-item { width: 44px; color: #8C8C8C; font-size: 10px; margin-bottom: 2px; padding: 8px 0; text-align: center; border-radius: 6px; }
+    .wework-side .nav-item.act { color: #07C160; background: rgba(7,193,96,0.12); }
+    .wework-list {
+      width: 260px; background: #EDEDED; flex-shrink: 0; border-right: 1px solid #E0E0E0;
+      display: flex; flex-direction: column;
+    }
+    .wework-list .list-top { padding: 12px 14px; font-size: 15px; font-weight: 500; color: #1A1A1A; border-bottom: 1px solid #E0E0E0; background: #fff; }
+    .wework-list .list-item { padding: 12px 14px; border-bottom: 1px solid #F0F0F0; cursor: pointer; background: #fff; }
+    .wework-list .list-item.act { background: #E8F4FF; }
+    .wework-list .list-item .name { font-size: 14px; color: #1A1A1A; margin-bottom: 4px; }
+    .wework-list .list-item .preview { font-size: 12px; color: #8C8C8C; }
+    .wework-list .list-item .preview .t { float: right; color: #BFBFBF; }
+    .wework-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #F5F5F5; }
+    .wework-main .main-head {
+      height: 56px; background: #fff; border-bottom: 1px solid #E8E8E8;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 16px; font-weight: 500; color: #1A1A1A;
+    }
+    .wework-main .main-head .more { width: 28px; height: 28px; background: #F0F0F0; border-radius: 6px; font-size: 12px; color: #8C8C8C; display: flex; align-items: center; justify-content: center; }
+    .wework-main .main-body { flex: 1; overflow-y: auto; padding: 16px 20px 100px; background: #F5F5F5; }
+    .wework-main .main-body .sys { text-align: center; font-size: 12px; color: #BFBFBF; margin: 16px 0; }
+    .wework-main .main-body .bubble { margin-bottom: 16px; max-width: 420px; }
+    .wework-main .main-body .bubble .sender { font-size: 12px; color: #8C8C8C; margin-bottom: 6px; }
+    .wework-main .main-body .bubble .sender .n { color: #4A90E2; }
+    .wework-main .main-foot {
+      padding: 12px 16px; background: #fff; border-top: 1px solid #E8E8E8;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wework-main .main-foot .ico { width: 32px; height: 32px; background: #F5F5F5; border-radius: 6px; flex-shrink: 0; }
+    .wework-main .main-foot .input { flex: 1; height: 36px; background: #F5F5F5; border-radius: 6px; min-width: 0; }
+    .wework-main .main-foot .send { padding: 0 16px; height: 36px; line-height: 36px; font-size: 14px; color: #07C160; flex-shrink: 0; }
+    .wework-info { width: 280px; background: #fff; flex-shrink: 0; border-left: 1px solid #E8E8E8; padding: 16px; font-size: 13px; color: #8C8C8C; }
+    .wework-info .info-t { font-size: 14px; font-weight: 500; color: #1A1A1A; margin-bottom: 12px; }
+    .wework-info .info-tabs { display: flex; gap: 12px; margin-bottom: 12px; font-size: 12px; }
+    .wework-info .info-tabs span.act { color: #4A90E2; }
+    /* ?bg=img 时：以企微页面.jpg 为背景，只叠卡片 */
+    .wework-bg {
+      display: none; position: fixed; inset: 0; background: url('base_info/企微页面.jpg') no-repeat center; background-size: cover; z-index: 0;
+    }
+    body.bg-img .wework-bg { display: block; }
+    body.bg-img .wework { position: relative; z-index: 1; }
+    body.bg-img .wework-side,
+    body.bg-img .wework-list,
+    body.bg-img .wework-info { width: 0; min-width: 0; overflow: hidden; padding: 0; border: none; visibility: hidden; }
+    body.bg-img .wework-main .main-head,
+    body.bg-img .wework-main .main-foot { height: 0; overflow: hidden; padding: 0; visibility: hidden; }
+    body.bg-img .wework-main { background: transparent; }
+    body.bg-img .wework-main .main-body { background: transparent; padding: 0; overflow: visible; }
+    body.bg-img .wework-main .main-body .sys { display: none; }
+    body.bg-img .wework-main .main-body .bubble { position: fixed; right: 22%; top: 36%; max-width: 400px; }
+    body.bg-img .wework-main .main-body .bubble .sender { color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    body.bg-img .wework-main .main-body .bubble .sender .n { color: #E8F4FF; }
+    /* 卡片：嵌在企微会话气泡中 */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+      max-width: 400px;
+    }
+    /* 顶标：学习任务 */
+    .card-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #fff;
+      background: #4A90E2;
+      border-radius: 0 0 8px 0;
+    }
+    /* 主内容区：左侧文字 + 右侧缩略图（与企微卡片左右结构一致） */
+    .card-body {
+      display: flex;
+      padding: 16px;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .card-main { flex: 1; min-width: 0; }
+    /* 标题 */
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.4;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* 来源/发布人 */
+    .card-source {
+      font-size: 13px;
+      color: #8c8c8c;
+      margin-bottom: 10px;
+    }
+    .card-source .name { color: #5c5c5c; }
+    /* 信息行：科目、截止时间、类型等 */
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      color: #8c8c8c;
+    }
+    .card-meta span { display: inline-flex; align-items: center; gap: 4px; }
+    /* 缩略图：右侧方块，与企微卡片一致 */
+    .card-thumb {
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #4A90E2 0%, #67B8E3 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: rgba(255,255,255,0.9);
+    }
+    .card-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    /* 说明摘要（可选，折叠或短文案） */
+    .card-desc {
+      padding: 0 16px 12px;
+      font-size: 13px;
+      color: #8c8c8c;
+      line-height: 1.5;
+      border-top: 1px solid #f0f0f0;
+      margin: 0 16px;
+      padding-top: 12px;
+    }
+    .card-desc.clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    /* 主操作按钮 */
+    .card-actions {
+      padding: 14px 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+      background: #4A90E2;
+      border: none;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .btn-primary:active { opacity: 0.9; }
+    /* 底部来源信息（与企微卡片底部小字一致） */
+    .card-footer {
+      padding: 10px 16px;
+      font-size: 12px;
+      color: #bfbfbf;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="wework-bg" aria-hidden="true"></div>
+  <div class="wework">
+    <!-- 左侧导航 -->
+    <aside class="wework-side">
+      <div class="search">Q</div>
+      <div class="nav-item act">消息</div>
+      <div class="nav-item">邮件</div>
+      <div class="nav-item">文档</div>
+      <div class="nav-item">日程</div>
+      <div class="nav-item">会议</div>
+      <div class="nav-item">工作台</div>
+      <div class="nav-item">通讯录</div>
+      <div class="nav-item">学习园地</div>
+      <div class="nav-item">文件</div>
+    </aside>
+    <!-- 中间会话列表 -->
+    <div class="wework-list">
+      <div class="list-top">学员家长群 @微信</div>
+      <div class="list-item act">
+        <div class="name">学员家长群</div>
+        <div class="preview">[学习任务] 概率论周测<span class="t">1分钟前</span></div>
+      </div>
+      <div class="list-item">
+        <div class="name">TAPD</div>
+        <div class="preview">需求更新提醒<span class="t">14:54</span></div>
+      </div>
+      <div class="list-item">
+        <div class="name">VIP客户沟通群</div>
+        <div class="preview">Diane: 可以啦老师...<span class="t">昨天</span></div>
+      </div>
+      <div class="list-item">
+        <div class="name">企业微信团队</div>
+        <div class="preview">授权登录通知<span class="t">1/5</span></div>
+      </div>
+    </div>
+    <!-- 右侧主会话区 -->
+    <main class="wework-main">
+      <div class="main-head">学员家长群 @微信 <span class="more">2+</span></div>
+      <div class="main-body">
+        <div class="sys">2025年1月21日 16:17</div>
+        <div class="sys">你已添加了张老师，现在可以开始聊天了。</div>
+        <div class="sys">16:18</div>
+        <div class="bubble">
+          <div class="sender"><span class="n">张老师@新东方在线</span> 0816</div>
+          <div class="card">
+            <div class="card-tag">学习任务</div>
+            <div class="card-body">
+              <div class="card-main">
+                <h1 class="card-title">概率论周测</h1>
+                <div class="card-source"><span class="name">张老师</span> 发布 · 考研数学</div>
+                <div class="card-meta">
+                  <span>📅 截止 01月27日 18:00</span>
+                  <span id="metaType">📋 试卷</span>
+                  <span>✓ 需提交</span>
+                </div>
+              </div>
+              <div class="card-thumb">📝</div>
+            </div>
+            <div class="card-desc clamp">请按时完成本周概率论周测，提交后可查看答案解析。逾期将影响平时成绩。</div>
+            <div class="card-actions">
+              <button type="button" class="btn-primary" id="btnDo">去完成</button>
+            </div>
+            <div class="card-footer">来自 新东方在线 · 学习任务</div>
+          </div>
+        </div>
+      </div>
+      <div class="main-foot">
+        <span class="ico"></span>
+        <span class="input"></span>
+        <span class="ico"></span>
+        <span class="ico"></span>
+        <span class="ico"></span>
+        <span class="send">发送</span>
+      </div>
+    </main>
+    <!-- 右侧信息面板 -->
+    <div class="wework-info">
+      <div class="info-t">智能服务总结</div>
+      <div class="info-tabs"><span class="act">智能服务总结</span><span>学员详情</span><span>快捷回复</span></div>
+      <p style="line-height:1.6; color:#8C8C8C;">根据成员与微信客户的服务记录，每周自动生成服务总结，企业也可自定义总结要求。</p>
+      <p style="margin-top:12px; font-size:12px; color:#BFBFBF;">你的客户不在总结范围内</p>
+      <button style="margin-top:16px; padding:8px 20px; font-size:14px; color:#fff; background:#4A90E2; border:none; border-radius:6px; cursor:pointer;">申请使用</button>
+    </div>
+  </div>
+
+  <script>
+    // 从 URL 获取参数：taskId=xxx, type=free|paper, bg=img
+    var params = {};
+    (location.search || '?').slice(1).split('&').forEach(function(s) {
+      var p = s.split('=');
+      if (p[0]) params[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || ''));
+    });
+    var taskId = params.taskId || '';
+    var type = (params.type || 'paper').toLowerCase();
+    // ?bg=img 时以 base_info/企微页面.jpg 为背景叠卡片，更贴近真实企微
+    if (params.bg === 'img') document.body.classList.add('bg-img');
+
+    // 自由任务 vs 试卷：?type=free 时展示「自由任务」
+    if (type === 'free') {
+      var el = document.getElementById('metaType');
+      if (el) el.textContent = '📋 自由任务';
+    }
+
+    document.getElementById('btnDo').addEventListener('click', function() {
+      if (type === 'free') {
+        // 自由任务：跳转自由任务详情页（待实现）
+        alert('去完成（自由任务详情页待实现，taskId=' + (taskId || '未传') + '）');
+        return;
+      }
+      // 试卷：进入做任务-试卷详情页
+      var titleEl = document.querySelector('.card-title');
+      var dueEl = document.querySelector('.card-meta span');
+      var title = (titleEl && titleEl.textContent) ? titleEl.textContent.trim() : '概率论周测';
+      var due = (dueEl && dueEl.textContent) ? dueEl.textContent.replace(/^[^\d]*/, '').trim() : '01月27日 18:00';
+      var qs = new URLSearchParams({ taskId: taskId || '', title: title, due: due });
+      location.href = '做任务-试卷详情.html?' + qs.toString();
+    });
+  </script>
+</body>
+</html>

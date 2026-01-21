@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>做任务 - 试卷</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      min-height: 100vh;
+      padding-bottom: 100px;
+      font-size: 15px;
+    }
+    /* 顶部状态栏占位 */
+    .status-bar {
+      height: 44px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #333;
+      background: #fff;
+    }
+    .status-bar .l { display: flex; align-items: center; gap: 8px; }
+    .status-bar .r { display: flex; align-items: center; gap: 6px; }
+    /* 页面头：返回 + 做任务 */
+    .header {
+      height: 48px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+    }
+    .header .back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #333;
+      cursor: pointer;
+    }
+    .header .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    /* 任务概览（浅灰） */
+    .summary {
+      background: #f0f0f0;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .summary .info { flex: 1; min-width: 0; }
+    .summary .info .name { font-size: 16px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; }
+    .summary .info .sub { font-size: 13px; color: #8c8c8c; }
+    .summary .due {
+      flex-shrink: 0;
+      font-size: 13px;
+      color: #8c8c8c;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .summary .due .arrow { font-size: 10px; color: #999; }
+    /* 试卷卡片 */
+    .card-wrap { padding: 16px; }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .card .tag {
+      padding: 8px 16px 0;
+      font-size: 13px;
+      color: #8c8c8c;
+    }
+    /* 绿色横幅：EXAMINATION + 吉祥物占位 */
+    .card .banner {
+      height: 72px;
+      background: linear-gradient(135deg, #34C759 0%, #30B350 100%);
+      margin: 12px 16px 0;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+    .card .banner .mascot {
+      width: 56px;
+      height: 56px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    .card .banner .word {
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.95);
+      letter-spacing: 2px;
+    }
+    /* 试卷标题 */
+    .card .quiz-title {
+      padding: 16px 16px 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.4;
+    }
+    /* 练习题数 */
+    .card .count-row {
+      padding: 12px 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card .count-row .bar {
+      width: 4px;
+      height: 20px;
+      background: #34C759;
+      border-radius: 2px;
+    }
+    .card .count-row .label { font-size: 13px; color: #8c8c8c; }
+    .card .count-row .num { font-size: 28px; font-weight: 700; color: #34C759; }
+    /* 底部按钮 */
+    .foot-btn {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      background: #fff;
+      border-top: 1px solid #eee;
+    }
+    .foot-btn .btn {
+      display: block;
+      width: 100%;
+      height: 48px;
+      line-height: 48px;
+      font-size: 17px;
+      font-weight: 500;
+      color: #fff;
+      background: #34C759;
+      border: none;
+      border-radius: 24px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .foot-btn .btn:active { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span class="l"><span id="clock">16:35</span> <span>🔔</span></span>
+    <span class="r">📶 📡 80%</span>
+  </div>
+  <header class="header">
+    <span class="back" id="btnBack">&#60;</span>
+    <h1 class="title">做任务</h1>
+  </header>
+  <section class="summary">
+    <div class="info">
+      <div class="name" id="taskName">01月07日 词测 26在职研英语(二) 词测List8</div>
+      <div class="sub" id="taskSub">词测测试</div>
+    </div>
+    <div class="due">
+      <span id="dueText">2026.01.14 11:41截止</span>
+      <span class="arrow">&#9660;</span>
+    </div>
+  </section>
+  <div class="card-wrap">
+    <div class="card">
+      <div class="tag">试卷</div>
+      <div class="banner">
+        <div class="mascot">📚</div>
+        <div class="word">EXAMINATION</div>
+      </div>
+      <div class="quiz-title" id="quizTitle">26在职研英语(二) 词测 List8</div>
+      <div class="count-row">
+        <div class="bar"></div>
+        <div>
+          <div class="label">练习题数</div>
+          <div class="num" id="quizCount">50</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot-btn">
+    <button type="button" class="btn" id="btnStart">开始作答</button>
+  </div>
+
+  <script>
+    var params = {};
+    (location.search || '?').slice(1).split('&').forEach(function(s) {
+      var p = s.split('=');
+      if (p[0]) params[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || ''));
+    });
+    var taskId = params.taskId || '';
+
+    // 从 URL 回填：taskId, title, sub, due, quizTitle, count
+    if (params.title) {
+      document.getElementById('taskName').textContent = params.title;
+      if (!params.quizTitle) document.getElementById('quizTitle').textContent = params.title;
+    }
+    if (params.sub) document.getElementById('taskSub').textContent = params.sub;
+    if (params.due) document.getElementById('dueText').textContent = params.due + '截止';
+    if (params.quizTitle) document.getElementById('quizTitle').textContent = params.quizTitle;
+    if (params.count) document.getElementById('quizCount').textContent = params.count;
+
+    document.getElementById('btnBack').addEventListener('click', function() {
+      history.back();
+    });
+    document.getElementById('btnStart').addEventListener('click', function() {
+      // 实际跳转做题页
+      if (taskId) { /* location.href = '.../do?id=' + taskId; */ }
+      alert('开始作答（实际跳转做题页，taskId=' + (taskId || '未传') + '）');
+    });
+    // 时钟
+    function tick() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }); }
+    tick(); setInterval(tick, 1000);
+  </script>
+</body>
+</html>
