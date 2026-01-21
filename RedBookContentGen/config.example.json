@@ -1,0 +1,9 @@
+{
+  "input_file": "input_content.txt",
+  "output_excel": "output/redbook_content.xlsx",
+  "output_image_dir": "output/images",
+  "openai_api_key": "",
+  "openai_model": "qwen",
+  "openai_base_url": null,
+  "image_model": "wan2.2-t2i-flash"
+}
