@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>群发与学习任务 - 统一入口</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      background: #f5f5f5;
+    }
+    .sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: #fff;
+      border-right: 1px solid #e8e8e8;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 0;
+    }
+    .sidebar .logo {
+      padding: 0 16px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 12px;
+    }
+    .sidebar .nav-item {
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #5c5c5c;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-left: 3px solid transparent;
+      margin-left: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar .nav-item:hover { background: #fafafa; color: #333; }
+    .sidebar .nav-item.active {
+      background: #e8f4ff;
+      color: #1890ff;
+      border-left-color: #1890ff;
+      font-weight: 500;
+    }
+    .sidebar .nav-item .icon { font-size: 16px; }
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
+    .main .frame-wrap {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+    }
+    .main iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo">群发与学习任务</div>
+    <div class="nav-item active" data-src="群发配置-发送内容扩展.html" data-key="config">
+      <span class="icon">📋</span>
+      <span>群发配置</span>
+    </div>
+    <div class="nav-item" data-src="学习任务-H5落地页.html" data-key="task">
+      <span class="icon">📤</span>
+      <span>学习任务 H5</span>
+    </div>
+    <div class="nav-item" data-src="做任务-试卷详情.html" data-key="do">
+      <span class="icon">📝</span>
+      <span>做任务-试卷</span>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="frame-wrap">
+      <iframe id="frame" src="群发配置-发送内容扩展.html" title="内容区"></iframe>
+    </div>
+  </main>
+
+  <script>
+    var frame = document.getElementById('frame');
+    var items = document.querySelectorAll('.sidebar .nav-item');
+    function activeByKey(key) {
+      items.forEach(function(it) { it.classList.toggle('active', it.getAttribute('data-key') === key); });
+    }
+    function activeByUrl(url) {
+      var key = 'config';
+      if (url && url.indexOf('做任务-试卷详情') !== -1) key = 'do';
+      else if (url && url.indexOf('学习任务-H5') !== -1) key = 'task';
+      activeByKey(key);
+    }
+    items.forEach(function(it) {
+      it.addEventListener('click', function() {
+        var src = it.getAttribute('data-src');
+        if (src) {
+          frame.src = src;
+          activeByKey(it.getAttribute('data-key'));
+        }
+      });
+    });
+    frame.addEventListener('load', function() {
+      try {
+        var href = frame.contentWindow.location.href || '';
+        activeByUrl(href);
+      } catch (e) { /* 同源时可读；否则忽略 */ }
+    });
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'navigate' && e.data.url) {
+        frame.src = e.data.url;
+        activeByUrl(e.data.url);
+      }
+    });
+  </script>
+</body>
+</html>

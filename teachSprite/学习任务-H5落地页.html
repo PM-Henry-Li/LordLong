@@ -118,21 +118,16 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    /* 来源/发布人 */
-    .card-source {
-      font-size: 13px;
-      color: #8c8c8c;
-      margin-bottom: 10px;
-    }
-    .card-source .name { color: #5c5c5c; }
-    /* 信息行：科目、截止时间、类型等 */
+    /* 信息行：截止时间首行，试卷/需提交次行 */
     .card-meta {
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
+      flex-direction: column;
+      gap: 8px;
       font-size: 13px;
       color: #8c8c8c;
     }
+    .card-meta .card-meta-row { display: flex; align-items: center; }
+    .card-meta .card-meta-tags { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 12px; color: #999; }
     .card-meta span { display: inline-flex; align-items: center; gap: 4px; }
     /* 缩略图：右侧方块，与企微卡片一致 */
     .card-thumb {
@@ -178,13 +173,6 @@
       cursor: pointer;
     }
     .btn-primary:active { opacity: 0.9; }
-    /* 底部来源信息（与企微卡片底部小字一致） */
-    .card-footer {
-      padding: 10px 16px;
-      font-size: 12px;
-      color: #bfbfbf;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -237,11 +225,14 @@
             <div class="card-body">
               <div class="card-main">
                 <h1 class="card-title">概率论周测</h1>
-                <div class="card-source"><span class="name">张老师</span> 发布 · 考研数学</div>
                 <div class="card-meta">
-                  <span>📅 截止 01月27日 18:00</span>
-                  <span id="metaType">📋 试卷</span>
-                  <span>✓ 需提交</span>
+                  <div class="card-meta-row">
+                    <span>📅 截止 01月27日 18:00</span>
+                  </div>
+                  <div class="card-meta-tags">
+                    <span id="metaType">📋 试卷</span>
+                    <span>✓ 需提交</span>
+                  </div>
                 </div>
               </div>
               <div class="card-thumb">📝</div>
@@ -250,7 +241,6 @@
             <div class="card-actions">
               <button type="button" class="btn-primary" id="btnDo">去完成</button>
             </div>
-            <div class="card-footer">来自 新东方在线 · 学习任务</div>
           </div>
         </div>
       </div>
@@ -303,7 +293,13 @@
       var title = (titleEl && titleEl.textContent) ? titleEl.textContent.trim() : '概率论周测';
       var due = (dueEl && dueEl.textContent) ? dueEl.textContent.replace(/^[^\d]*/, '').trim() : '01月27日 18:00';
       var qs = new URLSearchParams({ taskId: taskId || '', title: title, due: due });
-      location.href = '做任务-试卷详情.html?' + qs.toString();
+      var targetUrl = '做任务-试卷详情.html?' + qs.toString();
+      // 若在统一入口 iframe 内，通知父级切换；否则本页跳转
+      if (window !== window.top) {
+        try { window.parent.postMessage({ type: 'navigate', url: targetUrl }, '*'); } catch (_) { location.href = targetUrl; }
+      } else {
+        location.href = targetUrl;
+      }
     });
   </script>
 </body>
