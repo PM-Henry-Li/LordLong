@@ -125,35 +125,37 @@ class RedBookContentGenerator:
 - **标签**：添加 #老北京 #胡同记忆 #胶片 #童年回忆 等相关Tag。
 
 ### Step 2: 画面提取 (AI Image Prompts)
-基于改写后的文案，提取 3-5 个最具画面感的场景。
-输出格式为英文 Prompt（适合 Nano Banana），必须包含以下**固定风格后缀**以保证统一性：
+- **故事图**：基于改写后的文案，提取 **至少 4 个**最具画面感的场景（必须 ≥4 个）。
+- **封面图**：额外生成 1 张适合小红书的**封面图**，要求：
+  - 画面符合主题故事、适合做笔记封面；
+  - 封面上**必须出现中文短标题**，由你根据主题创作一句吸引人的短标题（6–12 字为宜）；
+  - 在封面的英文 Prompt 中**明确写出**：画面中要出现该中文短标题，醒目地显示在画面上部或中央，字体清晰、易读、适合小红书封面。
+
+输出格式为英文 Prompt，必须包含以下**固定风格后缀**以保证统一性：
 *`--ar 3:4 --v 6.0 --style raw`*
-*Style Keywords to add to every prompt: 1990s Beijing street photography, vintage kodak film, warm nostalgia tone, cinematic lighting, hyper-realistic, grainy texture.*
+*Style Keywords: 1990s Beijing street photography, vintage kodak film, warm nostalgia tone, cinematic lighting, hyper-realistic, grainy texture.*
 
 ## Output Format
 请严格按照以下JSON格式输出，不要包含任何其他文字：
 
 {{
-  "titles": [
-    "标题1",
-    "标题2",
-    "标题3",
-    "标题4",
-    "标题5"
-  ],
+  "titles": ["标题1", "标题2", "标题3", "标题4", "标题5"],
   "content": "正文内容（带Emoji，多分段）",
   "tags": "#老北京 #胡同记忆 #胶片 #童年回忆 #...",
   "image_prompts": [
-    {{
-      "scene": "场景简述",
-      "prompt": "完整的英文Prompt，包含风格关键词和参数"
-    }},
-    {{
-      "scene": "场景简述",
-      "prompt": "完整的英文Prompt，包含风格关键词和参数"
-    }}
-  ]
+    {{ "scene": "场景简述", "prompt": "完整的英文Prompt，包含风格关键词和参数" }},
+    {{ "scene": "场景简述", "prompt": "完整的英文Prompt，包含风格关键词和参数" }},
+    {{ "scene": "场景简述", "prompt": "完整的英文Prompt，包含风格关键词和参数" }},
+    {{ "scene": "场景简述", "prompt": "完整的英文Prompt，包含风格关键词和参数" }}
+  ],
+  "cover": {{
+    "scene": "封面画面简述（适合小红书封面的构图与氛围）",
+    "title": "短标题（中文，6–12字，将醒目显示在封面图上）",
+    "prompt": "英文Prompt。必须包含：1) 用英文明确写出要显示的中文文字，例如 the Chinese text \"故宫门钉九为尊\" displayed prominently at the top center, bold and readable; 2) 适合小红书封面的画面构图与氛围；3) 上述风格关键词及 --ar 3:4。title 与 prompt 中的中文短标题须一致"
+  }}
 }}
+
+注意：image_prompts 至少 4 条；cover.prompt 里要写出具体的中文短标题（与 cover.title 一致），便于文生图在画面中画出该文字。
 
 ## 用户输入的原始文案：
 {raw_content}
@@ -198,10 +200,15 @@ class RedBookContentGenerator:
             result = json.loads(result_text)
             
             # 验证必要字段
-            required_fields = ["titles", "content", "tags", "image_prompts"]
-            for field in required_fields:
+            for field in ["titles", "content", "tags", "image_prompts", "cover"]:
                 if field not in result:
                     raise ValueError(f"❌ AI返回结果缺少必要字段: {field}")
+            imgs = result.get("image_prompts", [])
+            if len(imgs) < 4:
+                raise ValueError(f"❌ image_prompts 至少需要 4 条，当前 {len(imgs)} 条")
+            cov = result.get("cover", {})
+            if not cov.get("title") or not cov.get("prompt"):
+                raise ValueError("❌ cover 必须包含 title 与 prompt")
             
             print("✅ AI内容生成成功")
             return result
@@ -228,8 +235,8 @@ class RedBookContentGenerator:
         excel_path = self.config["output_excel"]
         headers = [
             "生成时间", "原始内容", "标题1", "标题2", "标题3", "标题4", "标题5",
-            "正文内容", "标签", "图片提示词1", "图片提示词2", "图片提示词3",
-            "图片提示词4", "图片提示词5", "图片保存路径"
+            "正文内容", "标签", "图片提示词1", "图片提示词2", "图片提示词3", "图片提示词4",
+            "封面标题", "封面提示词", "图片保存路径"
         ]
         
         # 检查文件是否存在
@@ -254,7 +261,7 @@ class RedBookContentGenerator:
                 cell.alignment = Alignment(horizontal="center", vertical="center")
             
             # 设置列宽
-            column_widths = [18, 40, 30, 30, 30, 30, 30, 60, 40, 50, 50, 50, 50, 50, 30]
+            column_widths = [18, 40, 30, 30, 30, 30, 30, 60, 40, 50, 50, 50, 50, 30, 50, 30]
             for col_idx, width in enumerate(column_widths, start=1):
                 ws.column_dimensions[get_column_letter(col_idx)].width = width
         
@@ -274,14 +281,19 @@ class RedBookContentGenerator:
         row_data.append(content_data.get("content", ""))
         row_data.append(content_data.get("tags", ""))
         
-        # 添加图片提示词
+        # 添加图片提示词（至少4张故事图）
         image_prompts = content_data.get("image_prompts", [])
-        for i in range(5):
+        for i in range(4):
             if i < len(image_prompts):
                 prompt_text = f"{image_prompts[i].get('scene', '')}: {image_prompts[i].get('prompt', '')}"
                 row_data.append(prompt_text)
             else:
                 row_data.append("")
+        
+        # 封面标题、封面提示词
+        cover = content_data.get("cover", {})
+        row_data.append(cover.get("title", ""))
+        row_data.append(cover.get("prompt", ""))
         
         # 添加图片保存路径
         row_data.append(self.image_dir)
@@ -300,10 +312,7 @@ class RedBookContentGenerator:
     
     def save_image_prompts(self, content_data: Dict):
         """
-        保存图片提示词到文件
-        
-        Args:
-            content_data: 生成的内容数据
+        保存图片提示词到文件：4 张故事图 + 1 张封面（带短标题）
         """
         prompts_file = os.path.join(self.image_dir, "image_prompts.txt")
         
@@ -311,10 +320,17 @@ class RedBookContentGenerator:
             f.write("# AI绘画提示词\n\n")
             f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
             
-            image_prompts = content_data.get("image_prompts", [])
+            # 故事图：至少 4 张
+            image_prompts = content_data.get("image_prompts", [])[:4]
             for idx, prompt_data in enumerate(image_prompts, start=1):
                 f.write(f"## 图{idx}: {prompt_data.get('scene', '')}\n\n")
                 f.write(f"```\n{prompt_data.get('prompt', '')}\n```\n\n")
+            
+            # 封面：短标题 + 带标题的 prompt
+            cover = content_data.get("cover", {})
+            if cover.get("title") and cover.get("prompt"):
+                f.write(f"## 封面: {cover.get('title', '')}\n\n")
+                f.write(f"```\n{cover.get('prompt', '')}\n```\n\n")
         
         print(f"✅ 图片提示词已保存: {prompts_file}")
     
@@ -343,11 +359,15 @@ class RedBookContentGenerator:
             f.write("\n\n## 🏷️ 标签\n\n")
             f.write(content_data.get("tags", ""))
             
-            f.write("\n\n## 🎨 AI绘画提示词 (Nano Banana)\n\n")
-            image_prompts = content_data.get("image_prompts", [])
+            f.write("\n\n## 🎨 AI绘画提示词\n\n")
+            image_prompts = content_data.get("image_prompts", [])[:4]
             for idx, prompt_data in enumerate(image_prompts, start=1):
                 f.write(f"### 图{idx}: {prompt_data.get('scene', '')}\n\n")
                 f.write(f"```\n{prompt_data.get('prompt', '')}\n```\n\n")
+            cover = content_data.get("cover", {})
+            if cover.get("title") and cover.get("prompt"):
+                f.write(f"### 封面: {cover.get('title', '')}\n\n")
+                f.write(f"```\n{cover.get('prompt', '')}\n```\n\n")
             
             f.write("\n---\n\n")
             f.write("## 📄 原始输入内容\n\n")

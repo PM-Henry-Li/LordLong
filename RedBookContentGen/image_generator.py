@@ -70,31 +70,27 @@ class ImageGenerator:
         with open(prompts_file, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # 解析提示词
+        # 解析提示词：图1-4（故事图）+ 封面
         prompts = []
-        # 匹配格式: ## 图N: 场景描述\n\n```\nprompt\n```
-        pattern = r'## 图(\d+): (.*?)\n\n```(.*?)```'
-        matches = re.findall(pattern, content, re.DOTALL)
+        # 匹配 ## 图N: 场景\n\n``` prompt ```
+        for m in re.finditer(r'## 图(\d+): (.*?)\n\n```(.*?)```', content, re.DOTALL):
+            idx = int(m.group(1))
+            scene = m.group(2).strip()
+            prompt = m.group(3).strip()
+            prompts.append({"index": idx, "scene": scene, "prompt": prompt, "is_cover": False, "title": None})
         
-        if not matches:
-            # 尝试另一种格式: ## 图N: 场景描述\n```\nprompt\n```
-            pattern = r'## 图(\d+): (.*?)\n```(.*?)```'
-            matches = re.findall(pattern, content, re.DOTALL)
-        
-        for match in matches:
-            idx = int(match[0])
-            scene = match[1].strip()
-            prompt = match[2].strip()  # 代码块中的英文 prompt
-            prompts.append({
-                "index": idx,
-                "scene": scene,
-                "prompt": prompt
-            })
+        # 匹配 ## 封面: 短标题\n\n``` prompt ```
+        cover_m = re.search(r'## 封面:\s*(.*?)\n\n```(.*?)```', content, re.DOTALL)
+        if cover_m:
+            title = cover_m.group(1).strip()
+            prompt = cover_m.group(2).strip()
+            prompts.append({"index": 0, "scene": f"封面：{title}", "prompt": prompt, "is_cover": True, "title": title})
         
         if not prompts:
             raise ValueError(f"❌ 无法从文件中解析出提示词: {prompts_file}")
         
-        print(f"✅ 成功解析 {len(prompts)} 个提示词")
+        n_cover = sum(1 for p in prompts if p.get("is_cover"))
+        print(f"✅ 成功解析 {len(prompts)} 个提示词" + ("（含 1 张封面）" if n_cover else ""))
         return prompts
     
     def generate_image_async(self, prompt: str, index: int) -> str:
@@ -132,7 +128,8 @@ class ImageGenerator:
             }
         }
         
-        print(f"  📤 正在生成图{index}: {prompt[:50]}...")
+        lab = "封面" if index == "封面" else f"图{index}"
+        print(f"  📤 正在生成{lab}: {prompt[:50]}...")
         
         # 创建任务
         response = requests.post(
@@ -261,20 +258,30 @@ class ImageGenerator:
         
         for prompt_data in prompts:
             try:
-                print(f"\n{'='*50}")
-                print(f"图{prompt_data['index']}: {prompt_data['scene'][:60]}...")
-                print(f"{'='*50}")
+                is_cover = prompt_data.get("is_cover", False)
+                if is_cover:
+                    print(f"\n{'='*50}")
+                    print(f"封面: {prompt_data.get('title', '')}")
+                    print(f"{'='*50}")
+                    lbl = "封面"
+                else:
+                    print(f"\n{'='*50}")
+                    print(f"图{prompt_data['index']}: {prompt_data['scene'][:60]}...")
+                    print(f"{'='*50}")
+                    lbl = prompt_data['index']
                 
-                # 生成图片
-                image_url = self.generate_image_async(prompt_data['prompt'], prompt_data['index'])
+                image_url = self.generate_image_async(prompt_data['prompt'], lbl)
                 
-                # 下载图片
-                image_filename = f"image_{prompt_data['index']:02d}.png"
+                if is_cover:
+                    image_filename = "cover.png"
+                else:
+                    image_filename = f"image_{prompt_data['index']:02d}.png"
                 save_path = os.path.join(prompts_dir, image_filename)
                 self.download_image(image_url, save_path)
                 
             except Exception as e:
-                print(f"\n❌ 生成图{prompt_data['index']}失败: {e}")
+                who = "封面" if prompt_data.get("is_cover") else f"图{prompt_data['index']}"
+                print(f"\n❌ 生成{who}失败: {e}")
                 continue
         
         print(f"\n{'='*60}")

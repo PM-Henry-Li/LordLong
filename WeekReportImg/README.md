@@ -44,6 +44,17 @@ python3 weeKReportImgGen.py
 
 在 `output` 目录中查看生成的SVG文件，可以在浏览器中直接打开。
 
+### Web 界面（可选）
+
+通过网页输入数据、生成图片并查看最近 5 次生成记录：
+
+```bash
+pip install -r requirements-web.txt
+python3 app.py
+```
+
+浏览器打开 <http://127.0.0.1:5555>。在多行文本框中粘贴/编辑周报数据，点击「生成图片」即可；本次生成与最近 5 次记录会展示在页面中，每次均带生成时间。
+
 ## 数据格式说明
 
 ### 分组格式
@@ -96,13 +107,17 @@ Q3 季度计划:
 ```
 WeekReportImg/
 ├── weeKReportImgGen.py    # 主脚本
+├── app.py                 # Web 服务（Flask）
+├── index.html             # Web 页面
+├── requirements-web.txt   # Web 依赖
 ├── data.txt               # 数据文件（每周更新）
 ├── data_template.txt      # 数据模板
 ├── 使用说明.md            # 详细使用文档
 ├── README.md              # 本文件
 └── output/                # 输出目录
-    ├── 周报_视图A_YYYY-MM-DD.svg
-    └── 周报_视图B_YYYY-MM-DD.svg
+    ├── 周报_视图A_YYYY-MM-DD[_HH-MM-SS].svg
+    ├── 周报_视图B_YYYY-MM-DD[_HH-MM-SS].svg
+    └── history.json       # 最近生成记录（Web 用）
 ```
 
 ## 颜色方案

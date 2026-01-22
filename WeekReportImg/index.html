@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>周报图片生成器</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a1f26;
+      --border: #2d3640;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79b8ff;
+      --success: #3fb950;
+      --error: #f85149;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 1.5rem; margin: 0 0 24px; font-weight: 600; }
+    h2 { font-size: 1.1rem; margin: 24px 0 12px; color: var(--text-muted); font-weight: 500; }
+    label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 0.9rem; }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 12px 16px;
+      font-family: ui-monospace, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      resize: vertical;
+    }
+    textarea::placeholder { color: var(--text-muted); }
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+    .actions { margin-top: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: var(--accent-hover); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .msg {
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+    .msg.error { background: rgba(248, 81, 73, 0.15); color: var(--error); }
+    .msg.success { background: rgba(63, 185, 80, 0.15); color: var(--success); }
+    .current-section, .history-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+    .current-time { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; }
+    .current-images { display: flex; gap: 24px; flex-wrap: wrap; }
+    .current-images figure { margin: 0; }
+    .current-images img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .current-images figcaption { margin-top: 8px; font-size: 0.85rem; color: var(--text-muted); }
+    .history-list { display: flex; flex-direction: column; gap: 16px; }
+    .history-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .history-meta { flex-shrink: 0; font-size: 0.85rem; color: var(--text-muted); min-width: 160px; }
+    .history-thumbs { display: flex; gap: 16px; flex-wrap: wrap; }
+    .history-thumbs a { color: var(--accent); text-decoration: none; }
+    .history-thumbs a:hover { text-decoration: underline; }
+    .history-thumbs img {
+      max-width: 280px;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .history-thumbs figcaption { margin-top: 4px; font-size: 0.8rem; color: var(--text-muted); }
+    .empty { color: var(--text-muted); font-size: 0.9rem; }
+    .placeholder {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      padding: 24px;
+      text-align: center;
+    }
+    .format-tip {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .format-tip code { font-size: 0.9em; opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>周报图片生成器</h1>
+
+    <label for="data">周报数据</label>
+    <textarea id="data" placeholder="【季度计划】&#10;Q3已排长线计划总计30项，已启动24项，推进率80%；&#10;M端10项，已启动9项，推进率90%；&#10;..."></textarea>
+    <p class="format-tip">格式：【分组名】后跟总计行（总计X项，已启动X项，推进率X%），再跟 M端/P端/线下端 分项。详见 <code>使用说明.md</code>。</p>
+    <div class="actions">
+      <button type="button" id="btnGenerate">生成图片</button>
+      <span class="msg" id="msg" style="display:none;"></span>
+    </div>
+
+    <section class="current-section" id="currentSection" style="display:none;">
+      <h2>本次生成</h2>
+      <div class="current-time" id="currentTime"></div>
+      <div class="current-images" id="currentImages"></div>
+    </section>
+
+    <section class="history-section">
+      <h2>最近 5 次生成</h2>
+      <div class="history-list" id="historyList">
+        <div class="placeholder" id="historyPlaceholder">暂无记录，请先生成图片</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const dataEl = document.getElementById('data');
+    const btnGenerate = document.getElementById('btnGenerate');
+    const msgEl = document.getElementById('msg');
+    const currentSection = document.getElementById('currentSection');
+    const currentTime = document.getElementById('currentTime');
+    const currentImages = document.getElementById('currentImages');
+    const historyList = document.getElementById('historyList');
+    const historyPlaceholder = document.getElementById('historyPlaceholder');
+
+    function showMsg(text, type) {
+      msgEl.textContent = text;
+      msgEl.className = 'msg ' + (type === 'error' ? 'error' : 'success');
+      msgEl.style.display = 'block';
+    }
+    function hideMsg() {
+      msgEl.style.display = 'none';
+    }
+
+    async function loadDefault() {
+      try {
+        const r = await fetch('/api/default-data');
+        const j = await r.json();
+        if (j.content) dataEl.value = j.content;
+      } catch (e) {
+        console.warn('load default data failed', e);
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const r = await fetch('/api/history');
+        const list = await r.json();
+        if (!Array.isArray(list) || list.length === 0) {
+          historyPlaceholder.style.display = 'block';
+          historyList.querySelectorAll('.history-item').forEach(el => el.remove());
+          return;
+        }
+        historyPlaceholder.style.display = 'none';
+        historyList.querySelectorAll('.history-item').forEach(el => el.remove());
+        list.forEach(entry => {
+          const item = document.createElement('div');
+          item.className = 'history-item';
+          item.innerHTML = `
+            <div class="history-meta">${entry.generatedAt || '-'}</div>
+            <div class="history-thumbs">
+              <figure>
+                <a href="/output/${entry.viewA}" target="_blank" rel="noopener">
+                  <img src="/output/${entry.viewA}" alt="视图A" loading="lazy" />
+                </a>
+                <figcaption>视图 A</figcaption>
+              </figure>
+              <figure>
+                <a href="/output/${entry.viewB}" target="_blank" rel="noopener">
+                  <img src="/output/${entry.viewB}" alt="视图B" loading="lazy" />
+                </a>
+                <figcaption>视图 B</figcaption>
+              </figure>
+            </div>
+          `;
+          historyList.appendChild(item);
+        });
+      } catch (e) {
+        console.warn('load history failed', e);
+      }
+    }
+
+    async function generate() {
+      const content = dataEl.value.trim();
+      if (!content) {
+        showMsg('请填写周报数据', 'error');
+        return;
+      }
+      hideMsg();
+      btnGenerate.disabled = true;
+      try {
+        const r = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        const j = await r.json();
+        if (!r.ok) {
+          showMsg(j.error || '生成失败', 'error');
+          return;
+        }
+        showMsg('生成成功', 'success');
+        currentTime.textContent = '生成时间：' + (j.generatedAt || '');
+        currentImages.innerHTML = `
+          <figure>
+            <img src="${j.viewA}?t=${Date.now()}" alt="视图A" />
+            <figcaption>视图 A（M端 & P端 & 线下）</figcaption>
+          </figure>
+          <figure>
+            <img src="${j.viewB}?t=${Date.now()}" alt="视图B" />
+            <figcaption>视图 B（剔除 M端）</figcaption>
+          </figure>
+        `;
+        currentSection.style.display = 'block';
+        await loadHistory();
+      } catch (e) {
+        showMsg('请求失败：' + (e.message || '网络错误'), 'error');
+      } finally {
+        btnGenerate.disabled = false;
+      }
+    }
+
+    btnGenerate.addEventListener('click', generate);
+    loadDefault();
+    loadHistory();
+  </script>
+</body>
+</html>

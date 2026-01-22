@@ -36,10 +36,13 @@ class WeekReportImageGenerator:
         
     def parse_data(self) -> None:
         """解析数据文件"""
-        self.projects = []
-        
         with open(self.data_file, 'r', encoding='utf-8') as f:
             content = f.read()
+        self.parse_from_content(content)
+    
+    def parse_from_content(self, content: str) -> None:
+        """从字符串解析数据（用于 Web 等场景）"""
+        self.projects = []
         
         # 使用正则表达式匹配项目分组
         # 格式：【季度计划】或【月度计划】或【迭代计划】
@@ -599,6 +602,32 @@ class WeekReportImageGenerator:
         # 生成视图B
         svg_b = self.generate_svg('B')
         svg_path_b = output_dir / f'周报_视图B_{today}.svg'
+        self.save_svg(svg_b, str(svg_path_b))
+        
+        return str(svg_path_a), str(svg_path_b)
+    
+    def generate_from_content(self, content: str, suffix: str) -> Tuple[str, str]:
+        """
+        从字符串内容生成周报图片（用于 Web 等场景）
+        
+        Args:
+            content: 周报数据文本
+            suffix: 文件名后缀，如 '2026-01-21_14-30-00'
+            
+        Returns:
+            (视图A的文件路径, 视图B的文件路径)
+        """
+        self.parse_from_content(content)
+        
+        output_dir = Path(__file__).parent / 'output'
+        output_dir.mkdir(exist_ok=True)
+        
+        svg_a = self.generate_svg('A')
+        svg_path_a = output_dir / f'周报_视图A_{suffix}.svg'
+        self.save_svg(svg_a, str(svg_path_a))
+        
+        svg_b = self.generate_svg('B')
+        svg_path_b = output_dir / f'周报_视图B_{suffix}.svg'
         self.save_svg(svg_b, str(svg_path_b))
         
         return str(svg_path_a), str(svg_path_b)
