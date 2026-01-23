@@ -129,11 +129,10 @@ class RedBookContentGenerator:
 - **封面图**：额外生成 1 张适合小红书的**封面图**，要求：
   - 画面符合主题故事、适合做笔记封面；
   - 封面上**必须出现中文短标题**，由你根据主题创作一句吸引人的短标题（6–12 字为宜）；
-  - 在封面的英文 Prompt 中**明确写出**：画面中要出现该中文短标题，醒目地显示在画面上部或中央，字体清晰、易读、适合小红书封面。
+  - 在封面的中文 Prompt 中**明确写出**：画面中要出现该中文短标题，醒目地显示在画面上部或中央，字体清晰、易读、适合小红书封面。
 
-输出格式为英文 Prompt，必须包含以下**固定风格后缀**以保证统一性：
-*`--ar 3:4 --v 6.0 --style raw`*
-*Style Keywords: 1990s Beijing street photography, vintage kodak film, warm nostalgia tone, cinematic lighting, hyper-realistic, grainy texture.*
+输出格式为**中文 Prompt**，必须包含以下**固定风格关键词**以保证统一性：
+*风格关键词：90年代北京街头摄影，复古柯达胶片，温暖怀旧色调，电影级光影，超写实，颗粒质感，3:4比例*
 
 ## Output Format
 请严格按照以下JSON格式输出，不要包含任何其他文字：
@@ -143,19 +142,19 @@ class RedBookContentGenerator:
   "content": "正文内容（带Emoji，多分段）",
   "tags": "#老北京 #胡同记忆 #胶片 #童年回忆 #...",
   "image_prompts": [
-    {{ "scene": "场景简述", "prompt": "完整的英文Prompt，包含风格关键词和参数" }},
-    {{ "scene": "场景简述", "prompt": "完整的英文Prompt，包含风格关键词和参数" }},
-    {{ "scene": "场景简述", "prompt": "完整的英文Prompt，包含风格关键词和参数" }},
-    {{ "scene": "场景简述", "prompt": "完整的英文Prompt，包含风格关键词和参数" }}
+    {{ "scene": "场景简述", "prompt": "完整的中文Prompt，包含风格关键词" }},
+    {{ "scene": "场景简述", "prompt": "完整的中文Prompt，包含风格关键词" }},
+    {{ "scene": "场景简述", "prompt": "完整的中文Prompt，包含风格关键词" }},
+    {{ "scene": "场景简述", "prompt": "完整的中文Prompt，包含风格关键词" }}
   ],
   "cover": {{
     "scene": "封面画面简述（适合小红书封面的构图与氛围）",
     "title": "短标题（中文，6–12字，将醒目显示在封面图上）",
-    "prompt": "英文Prompt。必须包含：1) 用英文明确写出要显示的中文文字，例如 the Chinese text \"故宫门钉九为尊\" displayed prominently at the top center, bold and readable; 2) 适合小红书封面的画面构图与氛围；3) 上述风格关键词及 --ar 3:4。title 与 prompt 中的中文短标题须一致"
+    "prompt": "中文Prompt。必须包含：1) 明确写出要显示的中文短标题，例如 \"画面中央醒目显示中文文字：'故宫门钉九为尊'，字体粗体清晰易读\"；2) 适合小红书封面的画面构图与氛围；3) 上述风格关键词。title 与 prompt 中的中文短标题须一致"
   }}
 }}
 
-注意：image_prompts 至少 4 条；cover.prompt 里要写出具体的中文短标题（与 cover.title 一致），便于文生图在画面中画出该文字。
+注意：image_prompts 至少 4 条；所有 prompt 均使用中文描述；cover.prompt 里要明确写出具体的中文短标题（与 cover.title 一致），便于文生图在画面中画出该文字。
 
 ## 用户输入的原始文案：
 {raw_content}
