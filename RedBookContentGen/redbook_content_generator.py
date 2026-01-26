@@ -14,6 +14,7 @@ from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 import openai
 from typing import List, Dict, Tuple
+import re
 
 
 class RedBookContentGenerator:
@@ -53,6 +54,138 @@ class RedBookContentGenerator:
             print(f"✅ 已创建默认配置文件: {config_path}")
         
         return default_config
+    
+    def check_content_safety(self, text: str) -> Tuple[bool, str]:
+        """
+        检查内容是否可能触发内容审核失败
+        
+        Args:
+            text: 要检查的内容
+            
+        Returns:
+            (是否安全, 修改后的内容)
+        """
+        if not text:
+            return True, text
+        
+        import re
+        
+        # 真正敏感的词汇（只检查明显不当的内容）
+        # 注意：不包含"天安门"、"广场"、"故宫"等正常历史文化词汇
+        sensitive_keywords = [
+            # 明显政治敏感（不含正常历史描述）
+            '革命', '暴动', '叛乱', '政变',
+            # 明显暴力
+            '血腥', '杀戮', '屠杀', '武器', '枪', '刀',
+            # 明显色情
+            '色情', '裸露', '情色',
+            # 其他明显敏感
+            '恐怖', '爆炸', '毒品', '赌博',
+        ]
+        
+        # 检查是否包含敏感词
+        # 注意：只检查明显敏感的词，不误杀正常历史文化内容
+        found_keywords = []
+        for keyword in sensitive_keywords:
+            if keyword in text:
+                found_keywords.append(keyword)
+        
+        if found_keywords:
+            # 尝试移除敏感词
+            modified_text = text
+            for keyword in found_keywords:
+                modified_text = modified_text.replace(keyword, '')
+            # 清理多余空格
+            modified_text = re.sub(r'\s+', ' ', modified_text).strip()
+            return False, modified_text
+        
+        return True, text
+    
+    def check_and_fix_content_safety(self, content_data: Dict, max_retries: int = 3) -> Dict:
+        """
+        检查并修复内容安全性，如果3次都不行，标记可疑内容
+        
+        Args:
+            content_data: 生成的内容数据
+            max_retries: 最大重试次数
+            
+        Returns:
+            修复后的内容数据
+        """
+        retry_count = 0
+        suspicious_items = []
+        
+        while retry_count < max_retries:
+            has_issue = False
+            
+            # 检查正文内容
+            content = content_data.get("content", "")
+            is_safe, modified_content = self.check_content_safety(content)
+            if not is_safe:
+                has_issue = True
+                content_data["content"] = modified_content
+                print(f"  ⚠️  检测到可疑正文内容，已自动修改（尝试 {retry_count + 1}/{max_retries}）")
+            
+            # 检查所有图片提示词
+            image_prompts = content_data.get("image_prompts", [])
+            for idx, prompt_data in enumerate(image_prompts):
+                prompt = prompt_data.get("prompt", "")
+                is_safe, modified_prompt = self.check_content_safety(prompt)
+                if not is_safe:
+                    has_issue = True
+                    prompt_data["prompt"] = modified_prompt
+                    print(f"  ⚠️  检测到可疑提示词（图{idx+1}），已自动修改（尝试 {retry_count + 1}/{max_retries}）")
+            
+            # 检查封面提示词
+            cover = content_data.get("cover", {})
+            cover_prompt = cover.get("prompt", "")
+            if cover_prompt:
+                is_safe, modified_prompt = self.check_content_safety(cover_prompt)
+                if not is_safe:
+                    has_issue = True
+                    cover["prompt"] = modified_prompt
+                    print(f"  ⚠️  检测到可疑封面提示词，已自动修改（尝试 {retry_count + 1}/{max_retries}）")
+            
+            # 如果没有问题，返回
+            if not has_issue:
+                if retry_count > 0:
+                    print(f"  ✅ 内容已修复，可以安全使用")
+                return content_data
+            
+            retry_count += 1
+            
+            # 如果还有问题且已达到最大重试次数，记录可疑内容
+            if retry_count >= max_retries and has_issue:
+                print(f"  ⚠️  经过 {max_retries} 次自动修复，仍有可疑内容")
+                # 记录可疑内容
+                suspicious_file = os.path.join(self.image_dir, "suspicious_content.txt")
+                with open(suspicious_file, 'w', encoding='utf-8') as f:
+                    f.write("# 可疑内容记录\n\n")
+                    f.write("以下内容在生成时可能触发内容审核失败，请手动修改后重新生成。\n\n")
+                    f.write("=" * 60 + "\n\n")
+                    
+                    if content and not self.check_content_safety(content)[0]:
+                        f.write("## 正文内容\n\n")
+                        f.write(f"```\n{content}\n```\n\n")
+                        f.write("-" * 60 + "\n\n")
+                    
+                    for idx, prompt_data in enumerate(image_prompts):
+                        prompt = prompt_data.get("prompt", "")
+                        if prompt and not self.check_content_safety(prompt)[0]:
+                            f.write(f"## 图{idx+1}提示词\n\n")
+                            f.write(f"```\n{prompt}\n```\n\n")
+                            f.write("-" * 60 + "\n\n")
+                    
+                    cover_prompt = cover.get("prompt", "")
+                    if cover_prompt and not self.check_content_safety(cover_prompt)[0]:
+                        f.write("## 封面提示词\n\n")
+                        f.write(f"```\n{cover_prompt}\n```\n\n")
+                        f.write("-" * 60 + "\n\n")
+                
+                print(f"  📝 可疑内容已保存到: suspicious_content.txt")
+                print(f"  💡 请查看并手动修改后重新运行脚本")
+        
+        return content_data
     
     def setup_paths(self):
         """设置路径"""
@@ -111,8 +244,13 @@ class RedBookContentGenerator:
    - **排版**：多分段，每段不超过3行，多用Emoji，视觉舒适。
 
 2. **视觉风格（必须统一）**：
-   - 设定为：**90年代胶片摄影风格 (Vintage 90s Film Photography)** 或 **怀旧水彩插画风格 (Nostalgic Watercolor)**。
-   - 画面需充满生活气息，色调偏暖（黄昏、灯光、阳光），带有颗粒感。
+   - **核心基调**：**90年代北京纪实摄影 (90s Beijing Documentary Photography)**。
+   - **胶片质感**：模拟 **Kodak Vision3 500T** 或 **Fujifilm Superia** 胶卷色彩，带有细腻的颗粒感 (Subtle Film Grain) 和 宽容度高的光影。
+   - **光影氛围**：偏好 **暖色调 (Warm Tone)**，如夕阳余晖 (Golden Hour)、老式白炽灯光、冬日暖阳。避免过于冷冽或现代的高对比度霓虹感。
+   - **画面细节**：
+     - 环境：老旧的红砖墙、斑驳的木门、甚至胡同里的杂物（如堆放的大白菜、停靠的二八大杠自行车）。
+     - 人物：穿着90年代特色的服装（如军大衣、毛衣、运动校服），表情自然朴实。
+     - 构图：采用 **中焦段 (35mm-50mm)**，既交代环境由于有主体，避免过于广角畸变。
 
 ## Workflow
 
@@ -120,19 +258,24 @@ class RedBookContentGenerator:
 请提供 5 个吸引人的**【标题】**（包含悬念、情感或特定地名）。
 正文请按以下结构撰写：
 - **开头**：用一个具体的场景或声音切入，瞬间拉回那个年代。
-- **中间**：展开故事，加入感官细节。
+- **中间**：展开故事，加入感官细节。请使用**连贯的叙事风格**，而不是碎片的句子。
 - **结尾**：升华情感，引导互动（问问大家还记不记得）。
 - **标签**：添加 #老北京 #胡同记忆 #胶片 #童年回忆 等相关Tag。
+- **重要格式要求**：文中需要换行的地方，请直接使用**标准的换行符 (\\n)**，**严禁**使用转义的 `\\\\n` 或 `\\\\\\\\n`。确保输出的 JSON 字符串可以直接被 Python 解析出正确的换行。
 
 ### Step 2: 画面提取 (AI Image Prompts)
 - **故事图**：基于改写后的文案，提取 **至少 4 个**最具画面感的场景（必须 ≥4 个）。
+- **【特殊要求：牌匾文字精准还原】**：如果画面中涉及“太和殿”、“牌匾”等场景，请务必在 Prompt 中明确指定牌匾上的四个大字为 **"建极绥猷"** (Traditional Chinese: 建極綏猷)。描述其为“金色木制牌匾，蓝色底色，遒劲有力的皇家楷书书法”。
+- **重要提示**：故事图的正文内容分段会叠加到图片底部，**每段文字建议控制在50-80字以内**，确保能在3行内完整显示，避免文字被截断或重叠。
 - **封面图**：额外生成 1 张适合小红书的**封面图**，要求：
   - 画面符合主题故事、适合做笔记封面；
-  - 封面上**必须出现中文短标题**，由你根据主题创作一句吸引人的短标题（6–12 字为宜）；
-  - 在封面的中文 Prompt 中**明确写出**：画面中要出现该中文短标题，醒目地显示在画面上部或中央，字体清晰、易读、适合小红书封面。
+  - 由你根据主题创作一句吸引人的短标题，存储在cover.title中。**标题长度建议控制在8-10字以内**，避免过长导致显示时超出图片范围。如果主题需要较长标题，可以适当精简或使用更简洁的表达。
+  - **重要说明**：封面图的画面**不需要包含文字**，只需要生成适合做封面的背景画面。文字标题会通过后期处理叠加到图片上，确保文字100%准确。因此，cover.prompt中**不要描述文字内容**，只描述画面构图、氛围和风格即可。
+  - 画面要求：适合小红书封面，构图美观，在画面顶部或中央区域留出空间（用于后续叠加文字），色调与风格与故事图保持一致。
 
-输出格式为**中文 Prompt**，必须包含以下**固定风格关键词**以保证统一性：
-*风格关键词：90年代北京街头摄影，复古柯达胶片，温暖怀旧色调，电影级光影，超写实，颗粒质感，3:4比例*
+输出格式为**中文 Prompt**，但为了更好的生成效果，请在中文描述后附带关键的**英文风格词**。
+必须包含以下**固定风格关键词**：
+*Fixed Style Keywords: 90s Beijing street photography, vintage Kodak film look, nostalgic warm tone, cinematic lighting, photorealistic, highly detailed, 8k resolution, 3:4 aspect ratio*
 
 ## Output Format
 请严格按照以下JSON格式输出，不要包含任何其他文字：
@@ -150,78 +293,150 @@ class RedBookContentGenerator:
   "cover": {{
     "scene": "封面画面简述（适合小红书封面的构图与氛围）",
     "title": "短标题（中文，6–12字，将醒目显示在封面图上）",
-    "prompt": "中文Prompt。必须包含：1) 明确写出要显示的中文短标题，例如 \"画面中央醒目显示中文文字：'故宫门钉九为尊'，字体粗体清晰易读\"；2) 适合小红书封面的画面构图与氛围；3) 上述风格关键词。title 与 prompt 中的中文短标题须一致"
+    "prompt": "中文Prompt。包含详细的画面描述、构图描述、氛围描述 and 固定风格关键词。要求确保画面适合叠加文字。"
   }}
 }}
 
-注意：image_prompts 至少 4 条；所有 prompt 均使用中文描述；cover.prompt 里要明确写出具体的中文短标题（与 cover.title 一致），便于文生图在画面中画出该文字。
+注意：image_prompts 至少 4 条；所有 prompt 均使用中文描述；cover.prompt **不需要描述文字内容**（文字会通过后期处理叠加）。
 
 ## 用户输入的原始文案：
 {raw_content}
 
 请开始生成内容："""
 
-        try:
-            # 调用 API（支持 OpenAI 或 阿里云通义千问 DashScope）
-            api_key = self.config.get("openai_api_key") or os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                raise ValueError("❌ 未找到 API Key，请设置环境变量 OPENAI_API_KEY 或在 config.json 中配置 openai_api_key")
+    def generate_content(self, raw_content: str) -> Dict:
+        """
+        调用AI生成小红书文案和绘画提示词，包含 3 次重写逻辑。
+        """
+        # 获取基础配置
+        api_key = self.config.get("openai_api_key") or os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("❌ 未找到 API Key")
+        
+        base_url = self.config.get("openai_base_url")
+        model = self.config.get("openai_model", "gpt-4")
+        
+        # 兼容性处理
+        if model == "qwen" or (isinstance(model, str) and model.startswith("qwen-")):
+            if not base_url:
+                base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+            if model == "qwen":
+                model = "qwen-plus"
+        
+        client_kwargs = {"api_key": api_key}
+        if base_url:
+            client_kwargs["base_url"] = base_url
+        client = openai.OpenAI(**client_kwargs)
+
+        best_result = None
+        max_rewrite_attempts = 3
+        
+        for attempt in range(1, max_rewrite_attempts + 1):
+            print(f"\n🤖 正在尝试生成内容 (第 {attempt}/{max_rewrite_attempts} 次)...")
             
-            base_url = self.config.get("openai_base_url")
-            model = self.config.get("openai_model", "gpt-4")
+            try:
+                # 1. 初步生成
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": "你是一位专业的小红书内容创作专家。请严格按照JSON格式输出。"},
+                        {"role": "user", "content": self._build_generation_prompt(raw_content)}
+                    ],
+                    temperature=0.8,
+                    response_format={"type": "json_object"}
+                )
+                result_text = response.choices[0].message.content.strip()
+                result = json.loads(result_text)
+                
+                # 2. 自我评估与改写逻辑
+                if attempt < max_rewrite_attempts:
+                    eval_prompt = f"""请作为资深主编审阅以下小红书文案：
+---
+{result.get('content', '')}
+---
+评价该文案是否符合：
+1. 京味儿是否地道？
+2. 情感是否细腻？
+3. 排版是否舒适？
+4. 是否通过“叙事”而不是“说教”？
+
+如果评价为“优秀”，请直接返回“PASS”。
+如果需要优化，请指出不足，并给出修改意见。"""
+                    
+                    eval_response = client.chat.completions.create(
+                        model=model,
+                        messages=[
+                            {"role": "system", "content": "你是一位极其挑剔的小红书内容主编。"},
+                            {"role": "user", "content": eval_prompt}
+                        ],
+                        temperature=0.5
+                    )
+                    eval_feedback = eval_response.choices[0].message.content.strip()
+                    
+                    if "PASS" in eval_feedback.upper():
+                        print(f"  ✨ 文案质量优秀，通过审核。")
+                        best_result = result
+                        break
+                    else:
+                        print(f"  📝 主编反馈：{eval_feedback[:100]}...")
+                        # 准备下一次生成的 prompt
+                        raw_content = f"{raw_content}\n\n[上一次生成的不足之处及改进意见]：{eval_feedback}"
+                        best_result = result # 先存一个保底
+                else:
+                    best_result = result
+                    
+            except Exception as e:
+                print(f"  ❌ 第 {attempt} 次生成失败: {e}")
+                if attempt == max_rewrite_attempts and not best_result:
+                    raise
+        
+        # 3. 结果验证与安全检查
+        if not best_result:
+            raise ValueError("❌ 无法生成有效内容")
             
-            # 使用通义千问 (Qwen) 且未指定 base_url 时，自动使用 DashScope 兼容接口
-            if model == "qwen" or (isinstance(model, str) and model.startswith("qwen-")):
-                if not base_url:
-                    base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-                if model == "qwen":
-                    model = "qwen-plus"
-            
-            client_kwargs = {"api_key": api_key}
-            if base_url:
-                client_kwargs["base_url"] = base_url
-            
-            client = openai.OpenAI(**client_kwargs)
-            
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": "你是一位专业的小红书内容创作专家和AI绘画提示词专家。请严格按照用户要求的JSON格式输出，不要添加任何解释性文字。"},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.8,
-                response_format={"type": "json_object"}
-            )
-            
-            result_text = response.choices[0].message.content.strip()
-            
-            # 解析JSON响应
-            result = json.loads(result_text)
-            
-            # 验证必要字段
-            for field in ["titles", "content", "tags", "image_prompts", "cover"]:
-                if field not in result:
-                    raise ValueError(f"❌ AI返回结果缺少必要字段: {field}")
-            imgs = result.get("image_prompts", [])
-            if len(imgs) < 4:
-                raise ValueError(f"❌ image_prompts 至少需要 4 条，当前 {len(imgs)} 条")
-            cov = result.get("cover", {})
-            if not cov.get("title") or not cov.get("prompt"):
-                raise ValueError("❌ cover 必须包含 title 与 prompt")
-            
-            print("✅ AI内容生成成功")
-            return result
-            
-        except json.JSONDecodeError as e:
-            print(f"❌ JSON解析失败: {e}")
-            if 'result_text' in locals():
-                print(f"原始响应: {result_text[:500]}")
-            raise
-        except Exception as e:
-            print(f"❌ AI生成失败: {e}")
-            import traceback
-            traceback.print_exc()
-            raise
+        print("\n🔍 正在检查生成内容的安全性...")
+        best_result = self.check_and_fix_content_safety(best_result)
+        print("✅ AI内容生成成功")
+        return best_result
+
+    def _build_generation_prompt(self, raw_content: str) -> str:
+        """构建生成提示词"""
+        return f"""# Role: 老北京文化·小红书金牌运营 & 视觉导演
+
+## Goals
+1. 读取用户输入的原始内容。
+2. 改写为具备"爆款潜质"的小红书文案。文案必须充满生活气息，避免总结性、AI感的陈述，多用细节描写。
+3. 生成 3-5 组 AI 绘画提示词。
+
+## Constraints
+- **文字风格**：必须地道，多用短句，多用Emoji。拒绝“总分总”的枯燥结构。
+- **画面风格**：90年代北京纪实，胶片质感。
+- **牌匾文字**：如果涉及故宫牌匾，请明确要求文字为“建极绥猷”，并描述其颜色（蓝底金字）。
+
+## Workflow
+### Step 1: 文案创作
+- 请提供 5 个【标题】。
+- 正文：开头要抓人，中间要动人，结尾要有互动。
+
+### Step 2: 画面提取
+- 包含至少 4 张故事图提示词。
+- 牌匾策略：针对包含牌匾的图，在 Prompt 中强制加入“建极绥猷 (Jian Ji Sui You)”字样。
+
+## Output Format
+{{
+  "titles": ["...", "..."],
+  "content": "...",
+  "tags": "...",
+  "image_prompts": [
+    {{ "scene": "...", "prompt": "..." }},
+    ...
+  ],
+  "cover": {{ "scene": "...", "title": "...", "prompt": "..." }}
+}}
+
+## 原始内容：
+{raw_content}
+"""
     
     def save_to_excel(self, content_data: Dict, raw_content: str):
         """
@@ -318,6 +533,13 @@ class RedBookContentGenerator:
         with open(prompts_file, 'w', encoding='utf-8') as f:
             f.write("# AI绘画提示词\n\n")
             f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            
+            # 保存正文内容（用于后续分段叠加到图片上）
+            content = content_data.get("content", "").strip()
+            if content:
+                f.write(f"## 正文内容\n\n")
+                f.write(f"{content}\n\n")
+                f.write("---\n\n")
             
             # 故事图：至少 4 张
             image_prompts = content_data.get("image_prompts", [])[:4]

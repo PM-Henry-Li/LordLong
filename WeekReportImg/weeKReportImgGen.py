@@ -216,14 +216,66 @@ class WeekReportImageGenerator:
         total_progress = total_data.get('progress', 0)
         total_progress_100 = (total_progress == 100)
         
+        # 记录哪些分项没有明确指定已启动数（使用总体推进率计算）
+        items_without_started = []
+        
         # 跳过第一行（总计行）
         for line in lines[1:]:
             # 解析每一行
-            item = self.parse_item_line(line, total_progress, total_progress_100)
+            item, has_explicit_started = self.parse_item_line(line, total_progress, total_progress_100)
             if item:
                 items.append(item)
+                if not has_explicit_started:
+                    items_without_started.append(item)
+        
+        # 调整使用总体推进率计算的分项，确保总和等于总体已启动数
+        if items_without_started and total_data.get('started', 0) > 0:
+            self.adjust_started_counts(items, items_without_started, total_data)
         
         return items, total_data
+    
+    def adjust_started_counts(self, all_items: List[Dict], items_without_started: List[Dict], total_data: Dict) -> None:
+        """
+        调整使用总体推进率计算的分项已启动数，确保总和等于总体已启动数
+        
+        Args:
+            all_items: 所有分项
+            items_without_started: 没有明确指定已启动数的分项
+            total_data: 总体数据
+        """
+        # 计算已明确指定已启动数的分项总和
+        explicit_started_sum = sum(item['started'] for item in all_items if item not in items_without_started)
+        
+        # 计算需要分配给未指定分项的总数
+        total_started = total_data.get('started', 0)
+        remaining_started = total_started - explicit_started_sum
+        
+        if remaining_started < 0:
+            # 如果已明确指定的总和已经超过总体，则按比例缩减
+            scale = total_started / explicit_started_sum if explicit_started_sum > 0 else 0
+            for item in all_items:
+                if item not in items_without_started:
+                    item['started'] = int(item['started'] * scale)
+                    item['progress'] = int((item['started'] / item['total']) * 100) if item['total'] > 0 else 0
+            remaining_started = 0
+        
+        if remaining_started > 0 and items_without_started:
+            # 按计划数的比例分配剩余的已启动数
+            total_plan = sum(item['total'] for item in items_without_started)
+            if total_plan > 0:
+                allocated_sum = 0
+                # 先按比例分配（向下取整）
+                for item in items_without_started[:-1]:  # 除了最后一个
+                    ratio = item['total'] / total_plan
+                    item['started'] = int(remaining_started * ratio)
+                    allocated_sum += item['started']
+                    item['progress'] = int((item['started'] / item['total']) * 100) if item['total'] > 0 else 0
+                
+                # 最后一个分项分配剩余的数量，确保总和准确
+                if items_without_started:
+                    last_item = items_without_started[-1]
+                    last_item['started'] = remaining_started - allocated_sum
+                    last_item['progress'] = int((last_item['started'] / last_item['total']) * 100) if last_item['total'] > 0 else 0
     
     def extract_total_data(self, first_line: str) -> Dict:
         """
@@ -257,7 +309,7 @@ class WeekReportImageGenerator:
         
         return total_data
     
-    def parse_item_line(self, line: str, total_progress: int = 0, total_progress_100: bool = False) -> Dict:
+    def parse_item_line(self, line: str, total_progress: int = 0, total_progress_100: bool = False) -> Tuple[Dict, bool]:
         """
         解析单行数据
         
@@ -271,7 +323,7 @@ class WeekReportImageGenerator:
             total_progress_100: 总体推进率是否为100%
             
         Returns:
-            解析后的项目数据
+            (解析后的项目数据, 是否明确指定了已启动数)
         """
         # 移除末尾的分号
         line = line.rstrip('；').strip()
@@ -331,12 +383,14 @@ class WeekReportImageGenerator:
         if progress == 100 and started == 0:
             started = total
         
-        return {
+        item = {
             'platform': platform,
             'total': total,
             'started': started,
             'progress': progress
         }
+        
+        return item, has_started
     
     def calculate_view_b(self, items: List[Dict]) -> Tuple[Dict, List[Dict]]:
         """
