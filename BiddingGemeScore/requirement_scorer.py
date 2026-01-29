@@ -262,26 +262,26 @@ class RequirementScorer:
         """
         计算FY26战略加分
         
-        FY26战略加分规则：
+        FY26战略加分规则（基于最新Prompt）：
         - O1：提升私域引流与资源转化能力（+20分）
-          - KR1：考研未报名学员转工单率
-          - KR2：考研私域运营APP年度营收
-          - KR3：专升本择校小程序及渠道专题
-          - KR4：考研AI择校能力
-          - KR5：轻学学科小程序升级
+          - KR1：（考研）未报名学员转工单率提升至15%
+          - KR2：（考研）通过私域运营实现APP年度营收400万
+          - KR3：（专升本）通过择校小程序及渠道专题升级收资能力
+          - KR4：（考研）打造满足线下&在线多场景的AI择校能力
+          - KR5：（轻学）将学科小程序从单一资料工具升级为用户全生命周期管理平台
         - O2：考研APP核心功能鸿蒙系统版本支持（已暂停，不计分）
         - O3：练测功能升级迭代（+15分）
-          - KR1：考研题库能力更新
-          - KR2：考研+四六级练测与模考模块
-          - KR3：考研+四六级学习成绩回收和个性化报告
+          - KR1：（考研）完成题库能力更新，增加题库标准题目数量
+          - KR2：（考研+四六级+专升本）练测与模考模块功能迭代
+          - KR3：（考研+四六级+专升本）学习成绩回收和个性化报告能力迭代
         - O4：赋能教师与教研（+15分）
-          - KR1：考研教师工作台
-          - KR2：考研资料管理能力
-          - KR3：考研AI答疑
+          - KR1：（考研）构建教师工作台，实现核心教学教务动作平台化
+          - KR2：（考研）通过资料管理能力搭建，提升标化教研内容上传下达
+          - KR3：（考研）通过AI答疑建设，降低教师在“非授课”环节的人均工作耗时
         - O5：实现学员差异化运营（+15分）
-          - KR1：考研学员分层运营策略
-          - KR2：考研已报名学员学习进度
-          - KR3：全品线OMO融合能力建设
+          - KR1：（考研）基于报名项目，完成学员分层运营策略
+          - KR2：（考研）已报名学员学习进度提升至30~35%（当前24%）
+          - KR3：（全品线）OMO融合能力建设
         
         Args:
             req: 需求字典
@@ -307,40 +307,32 @@ class RequirementScorer:
         
         # O1：提升私域引流与资源转化能力（+20分）
         o1_keywords = [
-            # KR1：考研未报名学员转工单率
+            # KR1：（考研）未报名学员转工单率
             ('转工单', '工单率', '未报名学员', '工单转化'),
-            # KR2：考研私域运营APP年度营收
+            # KR2：（考研）通过私域运营实现APP年度营收
             ('私域运营', '私域', 'APP营收', '年度营收', '营收'),
-            # KR3：专升本择校小程序及渠道专题
+            # KR3：（专升本）通过择校小程序及渠道专题升级收资能力
             ('择校小程序', '渠道专题', '专升本择校', '收资能力'),
-            # KR4：考研AI择校能力
-            ('AI择校', '择校能力', '智能择校'),
-            # KR5：轻学学科小程序升级
-            ('学科小程序', '全生命周期管理', '拉新', '留存', '转化', '私域闭环')
+            # KR4：（考研）打造满足线下&在线多场景的AI择校能力
+            ('AI择校', '择校能力', '智能择校', '多场景'),
+            # KR5：（轻学）将学科小程序升级为用户全生命周期管理平台
+            ('学科小程序', '全生命周期管理', '拉新', '留存', '转化', '私域闭环', '小程序', '二维码', '功能', '优化')
         ]
         
         o1_matched = False
-        for kr_keywords in o1_keywords:
+        for i, kr_keywords in enumerate(o1_keywords):
+            kr_index = i + 1
             if any(keyword in full_text for keyword in kr_keywords):
                 # 检查业务线匹配
-                kr_index = o1_keywords.index(kr_keywords) + 1
-                if kr_index == 1 and ('考研' in business_line):  # KR1：考研
+                if kr_index in [1, 2, 4] and ('考研' in business_line):  # KR1, KR2, KR4: 考研
                     o1_matched = True
                     matched_oks.append(f'O1-KR{kr_index}')
                     break
-                elif kr_index == 2 and ('考研' in business_line):  # KR2：考研
+                elif kr_index == 3 and ('专升本' in business_line):  # KR3: 专升本
                     o1_matched = True
                     matched_oks.append(f'O1-KR{kr_index}')
                     break
-                elif kr_index == 3 and ('专升本' in business_line or '专业课' in business_line):  # KR3：专升本
-                    o1_matched = True
-                    matched_oks.append(f'O1-KR{kr_index}')
-                    break
-                elif kr_index == 4 and ('考研' in business_line):  # KR4：考研
-                    o1_matched = True
-                    matched_oks.append(f'O1-KR{kr_index}')
-                    break
-                elif kr_index == 5 and is_qingxue:  # KR5：轻学
+                elif kr_index == 5 and is_qingxue:  # KR5: 轻学
                     o1_matched = True
                     matched_oks.append(f'O1-KR{kr_index}')
                     break
@@ -350,46 +342,47 @@ class RequirementScorer:
         
         # O3：练测功能升级迭代（+15分）
         o3_keywords = [
-            # KR1：考研题库能力更新
+            # KR1：（考研）完成题库能力更新
             ('题库', '题库更新', '题库能力', '题库升级', '知识点', '试题'),
-            # KR2：考研+四六级练测与模考模块
+            # KR2：（考研+四六级+专升本）练测与模考模块功能迭代
             ('练测', '模考', '练测模块', '模考模块', '阶段测', '标准化'),
-            # KR3：考研+四六级学习成绩回收和个性化报告
+            # KR3：（考研+四六级+专升本）学习成绩回收和个性化报告
             ('学习成绩回收', '个性化报告', '学习效果', '学习报告', '成绩回收')
         ]
         
         o3_matched = False
-        for kr_keywords in o3_keywords:
+        for i, kr_keywords in enumerate(o3_keywords):
+            kr_index = i + 1
             if any(keyword in full_text for keyword in kr_keywords):
-                kr_index = o3_keywords.index(kr_keywords) + 1
-                # KR1：考研；KR2和KR3：考研+四六级
-                if kr_index == 1 and ('考研' in business_line):
+                if kr_index == 1 and ('考研' in business_line): # KR1: 考研
                     o3_matched = True
                     matched_oks.append(f'O3-KR{kr_index}')
                     break
-                elif kr_index in [2, 3] and ('考研' in business_line or '四六级' in business_line or '集训营' in business_line):
-                    o3_matched = True
-                    matched_oks.append(f'O3-KR{kr_index}')
-                    break
+                elif kr_index in [2, 3]: # KR2, KR3: 考研+四六级+专升本
+                     # check if business line is one of them
+                     if any(bl in business_line for bl in ['考研', '四六级', '专升本', '集训营', '专业课']):
+                        o3_matched = True
+                        matched_oks.append(f'O3-KR{kr_index}')
+                        break
         
         if o3_matched:
             bonus += 15
         
         # O4：赋能教师与教研（+15分）
         o4_keywords = [
-            # KR1：考研教师工作台
+            # KR1：（考研）构建教师工作台
             ('教师工作台', '工作台', '教师平台'),
-            # KR2：考研资料管理能力
+            # KR2：（考研）通过资料管理能力搭建
             ('资料管理', '教研内容', '标化教研', '内容上传下达'),
-            # KR3：考研AI答疑
+            # KR3：（考研）通过AI答疑建设
             ('AI答疑', '答疑', '智能答疑', '自动答疑')
         ]
         
         o4_matched = False
-        for kr_keywords in o4_keywords:
+        for i, kr_keywords in enumerate(o4_keywords):
+            kr_index = i + 1
             if any(keyword in full_text for keyword in kr_keywords) and ('考研' in business_line):
                 o4_matched = True
-                kr_index = o4_keywords.index(kr_keywords) + 1
                 matched_oks.append(f'O4-KR{kr_index}')
                 break
         
@@ -398,22 +391,22 @@ class RequirementScorer:
         
         # O5：实现学员差异化运营（+15分）
         o5_keywords = [
-            # KR1：考研学员分层运营策略
+            # KR1：（考研）完成学员分层运营策略
             ('学员分层', '分层运营', '分层策略'),
-            # KR2：考研已报名学员学习进度
+            # KR2：（考研）已报名学员学习进度提升
             ('学习进度', '已报名学员', '进度提升'),
-            # KR3：全品线OMO融合能力建设
+            # KR3：（全品线）OMO融合能力建设
             ('OMO', 'OMO融合', '融合能力', '线上线下融合')
         ]
         
         o5_matched = False
-        for kr_keywords in o5_keywords:
+        for i, kr_keywords in enumerate(o5_keywords):
+            kr_index = i + 1
             if any(keyword in full_text for keyword in kr_keywords):
-                kr_index = o5_keywords.index(kr_keywords) + 1
                 if kr_index in [1, 2] and ('考研' in business_line):
-                    o5_matched = True
-                    matched_oks.append(f'O5-KR{kr_index}')
-                    break
+                     o5_matched = True
+                     matched_oks.append(f'O5-KR{kr_index}')
+                     break
                 elif kr_index == 3:  # KR3：全品线
                     o5_matched = True
                     matched_oks.append(f'O5-KR{kr_index}')
@@ -852,67 +845,80 @@ class RequirementScorer:
     
     def calculate_quotas(self, normal_requirements: List[Dict]) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, float], Dict[str, float]]:
         """
-        计算各业务线的配额
+        计算各业务线的配额（实现动态回流机制）
         
         Args:
-            normal_requirements: 普通需求列表
+            normal_requirements: 普通需求列表（已包含 calculated_score）
             
         Returns:
             (各业务线的配额字典, 最终比例字典, 初始比例字典, 轻学配额字典（已废弃，返回空字典）)
         """
-        # 统计各业务线是否有需求
-        business_lines = set()
+        # 初始比例（考研、四六级、专升本）
+        initial_ratios = {
+            '考研': 0.6,   # Kaoyan (including Qingxue)
+            '四六级': 0.2, # CET-4/6 (previously Camp)
+            '专升本': 0.2  # Zhanshengben (previously Professional Course)
+        }
+        
+        # 业务线名称映射
+        business_line_mapping = {
+            '集训营': '四六级',
+            '专业课': '专升本'
+        }
+        
+        # 1. 计算各桶的初始配额
+        initial_quotas = {k: self.total_score * v for k, v in initial_ratios.items()}
+        
+        # 2. 计算各桶的实际需求（总分）
+        bucket_demands = {
+            '考研': 0.0,
+            '四六级': 0.0,
+            '专升本': 0.0
+        }
         
         for req in normal_requirements:
             bl = req.get('business_line', '').strip()
-            if bl:
-                # 处理轻学业务线名称（轻学属于考研）
-                if '轻学' in bl:
-                    business_lines.add('考研')
-                else:
-                    business_lines.add(bl)
+            score = req.get('calculated_score', 0)
+            
+            # 映射到三大桶
+            if '考研' in bl or '轻学' in bl:
+                bucket = '考研'
+            else:
+                bucket = business_line_mapping.get(bl, bl)
+            
+            if bucket in bucket_demands:
+                bucket_demands[bucket] += score
+            else:
+                # 未知业务线，暂归入考研或者忽略（这里归入考研以防万一）
+                bucket_demands['考研'] += score
+
+        # 3. 计算回流（Flow Back）
+        # 规则：若四六级或专升本需求不足（Demand < Quota），剩余配额回流给考研
+        final_quotas = initial_quotas.copy()
+        flow_back_amount = 0.0
         
-        # 初始比例（更新：考研、集训营、专业课）
-        initial_ratios = {
-            '考研': 0.6,
-            '集训营': 0.2,
-            '专业课': 0.2
-        }
+        # 检查四六级
+        if bucket_demands['四六级'] < initial_quotas['四六级']:
+            surplus = initial_quotas['四六级'] - bucket_demands['四六级']
+            final_quotas['四六级'] = bucket_demands['四六级'] # 缩减配额至正好覆盖需求
+            flow_back_amount += surplus
         
-        # 业务线名称映射（向后兼容：四六级->集训营，专升本->专业课）
-        business_line_mapping = {
-            '四六级': '集训营',
-            '专升本': '专业课'
-        }
+        # 检查专升本
+        if bucket_demands['专升本'] < initial_quotas['专升本']:
+            surplus = initial_quotas['专升本'] - bucket_demands['专升本']
+            final_quotas['专升本'] = bucket_demands['专升本'] # 缩减配额至正好覆盖需求
+            flow_back_amount += surplus
+            
+        # 回流给考研
+        final_quotas['考研'] += flow_back_amount
         
-        # 标准化业务线名称
-        normalized_business_lines = set()
-        for bl in business_lines:
-            normalized_bl = business_line_mapping.get(bl, bl)
-            normalized_business_lines.add(normalized_bl)
+        # 4. 计算最终比例（仅用于报告展示）
+        final_ratios = {k: v / self.total_score if self.total_score > 0 else 0 for k, v in final_quotas.items()}
         
-        # 回流机制
-        final_ratios = initial_ratios.copy()
-        
-        # 检查集训营是否有需求
-        if '集训营' not in normalized_business_lines:
-            final_ratios['考研'] += final_ratios['集训营']
-            final_ratios['集训营'] = 0
-        
-        # 检查专业课是否有需求
-        if '专业课' not in normalized_business_lines:
-            final_ratios['考研'] += final_ratios['专业课']
-            final_ratios['专业课'] = 0
-        
-        # 计算基础配额
-        quotas = {}
-        for bl, ratio in final_ratios.items():
-            quotas[bl] = self.total_score * ratio
-        
-        # 轻学不再单独预留配额，参与考研配额竞争
+        # 轻学不再单独预留配额
         qingxue_quotas = {}
         
-        return quotas, final_ratios, initial_ratios, qingxue_quotas
+        return final_quotas, final_ratios, initial_ratios, qingxue_quotas
     
     def allocate_resources(self, normal_requirements: List[Dict], quotas: Dict[str, float], qingxue_quotas: Dict[str, float] = None) -> List[Dict]:
         """
@@ -931,8 +937,8 @@ class RequirementScorer:
         
         # 按业务线分组（轻学归入考研，业务线名称映射）
         business_line_mapping = {
-            '四六级': '集训营',
-            '专升本': '专业课'
+            '集训营': '四六级',
+            '专业课': '专升本'
         }
         
         by_business_line = {}
@@ -1002,11 +1008,11 @@ class RequirementScorer:
         
         # 业务线名称映射（用于显示）
         business_line_display_mapping = {
-            '四六级': '集训营',
-            '专升本': '专业课'
+            '集训营': '四六级',
+            '专业课': '专升本'
         }
         
-        for bl in ['考研', '集训营', '专业课']:
+        for bl in ['考研', '四六级', '专升本']:
             initial_ratio = initial_ratios.get(bl, 0)
             final_ratio = final_ratios.get(bl, 0)
             quota = quotas.get(bl, 0)
@@ -1014,6 +1020,8 @@ class RequirementScorer:
             # 判断是否触发回流
             if initial_ratio > 0 and final_ratio == 0:
                回流说明 = "是（无需求，配额回流）"
+            elif initial_ratio > final_ratio:
+                回流说明 = "是（部分配额回流）"
             elif initial_ratio < final_ratio:
                 回流说明 = "是（接收回流配额）"
             else:
@@ -1112,11 +1120,11 @@ class RequirementScorer:
         
         # 业务线名称映射（用于统计）
         business_line_mapping = {
-            '四六级': '集训营',
-            '专升本': '专业课'
+            '集训营': '四六级',
+            '专业课': '专升本'
         }
         
-        for bl in ['考研', '集训营', '专业课']:
+        for bl in ['考研', '四六级', '专升本']:
             # 考研业务线包含轻学需求
             if bl == '考研':
                 bl_reqs = [r for r in allocated_reqs if (r.get('business_line') == bl or r.get('business_line') == '轻学')]
@@ -1197,6 +1205,32 @@ class RequirementScorer:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>需求优先级打分与资源分配报告</title>
     <style>
+        :root {{
+            /* Ant Design Spec: Geek Blue #1890ff */
+            --primary-color: #1890ff; 
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #f5222d;
+            --text-color: rgba(0, 0, 0, 0.85);
+            --text-secondary: rgba(0, 0, 0, 0.45);
+            --border-color: #f0f0f0;
+            --bg-color: #f0f2f5;
+            
+            /* Design Spec: Certainty (4px-6px radius) */
+            --card-radius: 6px; 
+            --border-radius-base: 4px;
+            
+            /* Design Spec: Natural & Subtle Shadows */
+            --box-shadow-base: 0 1px 2px -2px rgba(0, 0, 0, 0.16), 0 3px 6px 0 rgba(0, 0, 0, 0.12), 0 5px 12px 4px rgba(0, 0, 0, 0.09);
+            --box-shadow-card: 0 1px 2px 0 rgba(0,0,0,0.03);
+            
+            /* Design Spec: 8px Grid System */
+            --space-xs: 8px;
+            --space-sm: 16px;
+            --space-md: 24px;
+            --space-lg: 32px;
+        }}
+
         * {{
             margin: 0;
             padding: 0;
@@ -1204,351 +1238,366 @@ class RequirementScorer:
         }}
         
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5715;
+            padding: var(--space-md); /* 24px */
         }}
         
         .container {{
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
         }}
         
         .header {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+            background: #fff;
+            padding: var(--space-md); /* 24px */
+            border-radius: var(--card-radius); /* 6px */
+            margin-bottom: var(--space-md); /* 24px */
+            box-shadow: var(--box-shadow-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
         }}
         
         .header h1 {{
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 20px;
             font-weight: 600;
+            margin: 0;
+            color: rgba(0,0,0,0.85);
         }}
         
         .header .meta {{
             font-size: 14px;
-            opacity: 0.9;
-            margin-top: 10px;
+            color: var(--text-secondary);
         }}
         
-        .content {{
-            padding: 30px;
+        /* 卡片样式 */
+        .ant-card {{
+            background: #fff;
+            border-radius: var(--card-radius); /* 6px */
+            box-shadow: var(--box-shadow-card);
+            margin-bottom: var(--space-md); /* 24px */
         }}
         
-        .section {{
-            margin-bottom: 40px;
+        .ant-card-head {{
+            min-height: 48px;
+            margin-bottom: -1px;
+            padding: 0 var(--space-md); /* 24px */
+            color: rgba(0, 0, 0, 0.85);
+            font-weight: 500;
+            font-size: 16px;
+            background: transparent;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
         }}
         
-        .section-title {{
-            font-size: 22px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #667eea;
+        .ant-card-body {{
+            padding: var(--space-md); /* 24px */
         }}
         
+        /* 统计卡片 */
         .stats-grid {{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md); /* 24px */
+            margin-bottom: var(--space-md); /* 24px */
         }}
         
         .stat-card {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
+            background: #fff;
+            padding: var(--space-md); /* 24px */
+            border-radius: var(--card-radius); /* 6px */
+            box-shadow: var(--box-shadow-card);
+            border: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s;
         }}
         
-        .stat-card .value {{
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }}
-        
-        .stat-card .label {{
+        .stat-label {{
             font-size: 14px;
-            opacity: 0.9;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
         }}
         
-        table {{
+        .stat-value {{
+            font-size: 30px;
+            color: rgba(0,0,0,0.85);
+            font-weight: 500;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }}
+        
+        /* 表格样式 */
+        .ant-table {{
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
         }}
         
-        thead {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }}
-        
-        th {{
-            padding: 15px;
+        .ant-table th {{
+            background: #fafafa;
+            color: rgba(0,0,0,0.85);
+            font-weight: 500;
             text-align: left;
-            font-weight: 600;
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            white-space: nowrap;
+        }}
+        
+        .ant-table td {{
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.3s;
             font-size: 14px;
         }}
         
-        td {{
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
+        .ant-table tbody tr:hover td {{
+            background: #fafafa;
         }}
         
-        tbody tr:hover {{
-            background-color: #f8f9fa;
-        }}
-        
-        tbody tr:last-child td {{
-            border-bottom: none;
-        }}
-        
-        .badge {{
+        /* 标签样式 */
+        .ant-tag {{
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
+            height: auto;
+            margin-right: 8px;
+            padding: 2px 7px;
             font-size: 12px;
-            font-weight: 600;
+            line-height: 20px;
+            white-space: nowrap;
+            background: #fafafa;
+            border: 1px solid #d9d9d9;
+            border-radius: 2px;
+            cursor: default;
+            opacity: 1;
+            transition: all 0.3s;
+            color: rgba(0,0,0,0.65);
         }}
         
-        .badge-success {{
-            background: #10b981;
-            color: white;
-        }}
+        .ant-tag-blue {{ color: #1890ff; background: #e6f7ff; border-color: #91d5ff; }}
+        .ant-tag-green {{ color: #52c41a; background: #f6ffed; border-color: #b7eb8f; }}
+        .ant-tag-gold {{ color: #faad14; background: #fffbe6; border-color: #ffe58f; }}
+        .ant-tag-red {{ color: #f5222d; background: #fff1f0; border-color: #ffa39e; }}
+        .ant-tag-purple {{ color: #722ed1; background: #f9f0ff; border-color: #d3adf7; }}
         
-        .badge-warning {{
-            background: #f59e0b;
-            color: white;
-        }}
-        
-        .badge-info {{
-            background: #3b82f6;
-            color: white;
-        }}
-        
-        .badge-danger {{
-            background: #ef4444;
-            color: white;
-        }}
-        
-        .progress-bar {{
+        /* 进度条 */
+        .ant-progress {{
+            display: inline-block;
             width: 100%;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1;
+        }}
+        
+        .ant-progress-outer {{
+            display: inline-block;
+            width: 100%;
+            margin-right: 0;
+            padding-right: 0;
+            vertical-align: middle;
+        }}
+        
+        .ant-progress-inner {{
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            background-color: #f5f5f5;
+            border-radius: 100px;
+            vertical-align: middle;
             overflow: hidden;
-            margin-top: 5px;
         }}
         
-        .progress-fill {{
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
+        .ant-progress-bg {{
+            position: relative;
+            background-color: var(--primary-color);
+            border-radius: 100px;
+            transition: all 0.4s cubic-bezier(0.08, 0.82, 0.17, 1) 0s;
+            height: 8px;
         }}
         
-        .x-class-list {{
-            background: #fef2f2;
-            border-left: 4px solid #ef4444;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
+        /* 业务线颜色 */
+        .business-line-text {{
+            font-weight: 500;
+            white-space: nowrap;
         }}
         
-        .x-class-list li {{
-            margin: 8px 0;
-            color: #991b1b;
+        .decision-check {{ color: var(--success-color); font-size: 16px; font-weight: bold; }}
+        .decision-pause {{ color: var(--warning-color); font-size: 16px; font-weight: bold; }}
+        
+        .score-val {{ font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-weight: 600; color: #000; }}
+        
+        .alert-info {{
+            padding: 8px 15px;
+            margin-bottom: 16px;
+            border: 1px solid #91d5ff;
+            background-color: #e6f7ff;
+            border-radius: 2px;
+            color: rgba(0,0,0,0.65);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
         }}
         
-        .qingxue-info {{
-            background: #eff6ff;
-            border-left: 4px solid #3b82f6;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
+        .alert-error {{
+            padding: 8px 15px;
+            margin-bottom: 16px;
+            border: 1px solid #ffccc7;
+            background-color: #fff2f0;
+            border-radius: 2px;
+            color: rgba(0,0,0,0.65);
+            font-size: 13px;
         }}
-        
-        .summary-list {{
-            list-style: none;
-            padding: 0;
+
+        .footer {{
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 40px;
+            padding-bottom: 24px;
         }}
-        
-        .summary-list li {{
-            padding: 10px;
-            margin: 5px 0;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border-left: 3px solid #667eea;
-        }}
-        
-        .business-line {{
-            font-weight: 600;
-            color: #667eea;
-        }}
-        
-        .score-highlight {{
-            font-weight: 600;
-            color: #667eea;
-            font-size: 16px;
-        }}
-        
-        .decision-selected {{
-            color: #10b981;
-            font-weight: 600;
-        }}
-        
-        .decision-backlog {{
-            color: #f59e0b;
-            font-weight: 600;
-        }}
-        
-        @media print {{
-            body {{
-                background: white;
-            }}
-            .container {{
-                box-shadow: none;
-            }}
-        }}
+
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- 头部 -->
         <div class="header">
             <h1>需求优先级打分与资源分配报告</h1>
             <div class="meta">
-                <div>生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</div>
-                <div>可用总分池: {self.total_score}分</div>
+                <span>生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</span>
+                <span style="margin: 0 8px; color: #d9d9d9;">|</span>
+                <span>可用总分池: <span style="color:var(--primary-color);font-weight:600;">{self.total_score}</span> 分</span>
+            </div>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">总需求数</div>
+                <div class="stat-value">{len(self.requirements)}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">入选需求</div>
+                <div class="stat-value" style="color: var(--success-color);">{len(selected)}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">待办需求</div>
+                <div class="stat-value" style="color: var(--warning-color);">{len(backlog)}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">X类紧急需求</div>
+                <div class="stat-value" style="color: var(--error-color);">{len(x_class_reqs)}</div>
             </div>
         </div>
         
         <div class="content">
-            <!-- 统计概览 -->
-            <div class="section">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="value">{len(self.requirements)}</div>
-                        <div class="label">总需求数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">{len(selected)}</div>
-                        <div class="label">入选需求</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">{len(backlog)}</div>
-                        <div class="label">待办需求</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="value">{len(x_class_reqs)}</div>
-                        <div class="label">X类需求</div>
-                    </div>
+
+            <!-- 1. 配额分配概览 -->
+            <div class="ant-card">
+                <div class="ant-card-head">
+                    <span>1. 配额分配概览</span>
                 </div>
-            </div>
-            
-            <!-- 配额分配概览 -->
-            <div class="section">
-                <h2 class="section-title">1. 配额分配概览</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>业务线</th>
-                            <th>初始比例</th>
-                            <th>是否触发回流</th>
-                            <th>最终可用配额 (分)</th>
-                        </tr>
-                    </thead>
-                    <tbody>"""
+                <div class="ant-card-body">
+                    <table class="ant-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px;">业务线</th>
+                                <th>初始比例</th>
+                                <th>是否触发回流</th>
+                                <th>最终可用配额 (分)</th>
+                            </tr>
+                        </thead>
+                        <tbody>"""
         
-        for bl in ['考研', '集训营', '专业课']:
+        for bl in ['考研', '四六级', '专升本']:
             initial_ratio = initial_ratios.get(bl, 0)
             final_ratio = final_ratios.get(bl, 0)
             quota = quotas.get(bl, 0)
             
             if initial_ratio > 0 and final_ratio == 0:
-                回流说明 = "是（无需求，配额回流）"
-                回流样式 = "badge-warning"
+                tag = '<span class="ant-tag ant-tag-gold">是 (无需求回流)</span>'
+            elif initial_ratio > final_ratio:
+                tag = '<span class="ant-tag ant-tag-gold">是 (部分回流)</span>'
             elif initial_ratio < final_ratio:
-                回流说明 = "是（接收回流配额）"
-                回流样式 = "badge-info"
+                tag = '<span class="ant-tag ant-tag-blue">是 (接收回流)</span>'
             else:
-                回流说明 = "否"
-                回流样式 = "badge-success"
+                tag = '<span class="ant-tag">否</span>'
             
             html_content += f"""
-                        <tr>
-                            <td><span class="business-line">{bl}</span></td>
-                            <td>{initial_ratio*100:.0f}%</td>
-                            <td><span class="badge {回流样式}">{回流说明}</span></td>
-                            <td><strong>{quota:.2f}</strong></td>
-                        </tr>"""
+                            <tr>
+                                <td><span class="business-line-text">{bl}</span></td>
+                                <td>{initial_ratio*100:.0f}%</td>
+                                <td>{tag}</td>
+                                <td><span style="font-weight:600; font-size:16px;">{quota:.2f}</span></td>
+                            </tr>"""
         
         html_content += """
-                    </tbody>
-                </table>"""
+                        </tbody>
+                    </table>
+                    
+                    """
         
         # 轻学规则说明
         qingxue_reqs_count = len([r for r in normal_reqs if self._is_qingxue(r)])
         if qingxue_reqs_count > 0:
             html_content += """
-                <div class="qingxue-info">
-                    <strong>轻学规则说明：</strong>
-                    <ul class="summary-list">
-                        <li>轻学需求参与考研配额竞争，得分已应用<strong>1.2倍权重</strong>，优先排序</li>
-                    </ul>
-                </div>"""
-        
-        # X类紧急通道
+                    <div style="margin-top: 16px;"></div>
+                    <div class="alert-info">
+                        <span style="margin-right: 8px; font-size: 16px;">📘</span>
+                        <span><strong>轻学规则：</strong> 轻学需求参与考研配额竞争，得分已应用 <strong>1.2倍权重</strong> 优先排序。</span>
+                    </div>"""
+            
         html_content += """
-            <div class="section">
-                <h2 class="section-title">2. X类紧急通道 (不占分/优先处理)</h2>"""
+                </div>
+            </div>
+        
+            <!-- 2. X类紧急通道 -->
+            <div class="ant-card">
+                <div class="ant-card-head">
+                    <span>2. X类紧急通道 (不占分/优先处理)</span>
+                </div>
+                <div class="ant-card-body">"""
         
         if x_class_reqs:
-            html_content += '<div class="x-class-list"><ul>'
+            html_content += '<div class="alert-error" style="border-left: 4px solid #f5222d;">'
             for req in x_class_reqs:
                 name = req.get('name', '未知需求')
                 business_line = req.get('business_line', '未知业务线')
-                html_content += f'<li><strong>{name}</strong> - {business_line}业务线（系统故障/阻断性问题）</li>'
-            html_content += '</ul></div>'
+                html_content += f'<div style="margin-bottom:4px;">🚨 <strong>{name}</strong> <span class="ant-tag ant-tag-red" style="margin-left:8px;">{business_line}</span> - 系统故障/阻断性问题</div>'
+            html_content += '</div>'
         else:
-            html_content += '<p style="color: #6b7280; padding: 15px;">无X类需求</p>'
+            html_content += '<div style="text-align:center; color:rgba(0,0,0,0.25); padding: 20px 0;">暂无 X 类紧急需求</div>'
         
         html_content += """
+                </div>
             </div>
             
-            <!-- 最终排期决策表 -->
-            <div class="section">
-                <h2 class="section-title">3. 最终排期决策表</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>优先级</th>
-                            <th>业务线</th>
-                            <th>需求名称</th>
-                            <th>战略基分</th>
-                            <th>规划系数</th>
-                            <th>紧迫度</th>
-                            <th>真需求判断</th>
-                            <th>FY26战略加分</th>
-                            <th>业务加权</th>
-                            <th>最终价值分</th>
-                            <th>分配得分</th>
-                            <th>决策结果</th>
-                        </tr>
-                    </thead>
-                    <tbody>"""
+            <!-- 3. 最终排期决策表 -->
+            <div class="ant-card">
+                <div class="ant-card-head">
+                    <span>3. 最终排期决策表</span>
+                </div>
+                <div class="ant-card-body" style="padding: 0;">
+                    <table class="ant-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>业务线</th>
+                                <th>需求名称</th>
+                                <th>基分</th>
+                                <th>规划</th>
+                                <th>紧迫度</th>
+                                <th>真伪</th>
+                                <th>FY26战略</th>
+                                <th>业务加权</th>
+                                <th>最终分</th>
+                                <th>消耗分配</th>
+                                <th>决策</th>
+                            </tr>
+                        </thead>
+                        <tbody>"""
         
         for idx, req in enumerate(allocated_reqs, 1):
             name = req.get('name', '未知需求')
@@ -1562,71 +1611,77 @@ class RequirementScorer:
             fy26_bonus = req.get('fy26_bonus', 0)
             fy26_matched_oks = req.get('fy26_matched_oks', [])
             business_boost = req.get('business_boost', 1.0)
-            final_score = req.get('raw_score', 0)  # raw_score已经是最终价值分（已应用业务加权）
+            final_score = req.get('raw_score', 0)
             allocated_score = req.get('calculated_score', 0)
             decision = req.get('decision', '')
             
-            # 格式化真需求判断显示
+            # 真伪标签
             if true_demand_correction > 0:
-                judgment_display = f"真(+{true_demand_correction})"
-                judgment_class = "badge-success"
+                judgment_tag = f'<span class="ant-tag ant-tag-green" title="{true_demand_reason}">真(+{true_demand_correction})</span>'
             elif true_demand_correction < 0:
-                judgment_display = f"伪({true_demand_correction})"
-                judgment_class = "badge-danger"
+                judgment_tag = f'<span class="ant-tag ant-tag-red" title="{true_demand_reason}">伪({true_demand_correction})</span>'
             else:
-                judgment_display = "真(0)"
-                judgment_class = "badge-info"
+                judgment_tag = '<span class="ant-tag">真(0)</span>'
             
-            # 如果有关键词分析结果，添加提示
-            if true_demand_reason and '特征' in true_demand_reason:
-                judgment_display += " [自动分析]"
-            
-            # FY26战略加分和业务加权显示
+            # FY26标签
             if fy26_bonus > 0:
-                fy26_display = f"+{fy26_bonus}"
-                if fy26_matched_oks:
-                    fy26_display += f" ({', '.join(fy26_matched_oks)})"
+                okr_tips = ', '.join(fy26_matched_oks) if fy26_matched_oks else ''
+                fy26_cell = f'<span class="ant-tag ant-tag-purple" title="{okr_tips}">+{fy26_bonus}</span>'
             else:
-                fy26_display = "0"
-            boost_display = f"{business_boost:.1f}x" if business_boost != 1.0 else "1.0x"
+                fy26_cell = '<span style="color:#d9d9d9;">-</span>'
+                
+            boost_display = f"{business_boost:.1f}x"
+            if business_boost > 1.0:
+                boost_display = f'<span style="color:var(--primary-color); font-weight:bold;">{boost_display}</span>'
             
-            # 决策结果样式
+            # 决策结果
             if '✅' in decision:
-                decision_class = 'decision-selected'
-                decision_text = decision.replace('✅', '✓')
+                decision_html = '<span class="decision-check">✓ 通过</span>'
+                row_bg = ''
             elif '⏸️' in decision:
-                decision_class = 'decision-backlog'
-                decision_text = decision.replace('⏸️', '⏸')
+                decision_html = '<span class="decision-pause">⏸ 待办</span>'
+                row_bg = 'background-color: #fafafa;'
             else:
-                decision_class = ''
-                decision_text = decision
+                decision_html = decision
+                row_bg = ''
+                
+            # 业务线颜色映射
+            bl_color = 'blue'
+            if bl == '四六级': bl_color = 'cyan'
+            if bl == '专升本': bl_color = 'geekblue'
+            if bl == '轻学': bl_color = 'purple'
+            
+            bl_tag = f'<span class="ant-tag ant-tag-{bl_color}">{bl}</span>'
             
             html_content += f"""
-                        <tr>
-                            <td>{idx}</td>
-                            <td><span class="business-line">{bl}</span></td>
-                            <td>{name}</td>
-                            <td>{strategic_base}</td>
-                            <td>{planning_factor:.1f}</td>
-                            <td>{urgency}({urgency_factor:.1f})</td>
-                            <td><span class="badge {judgment_class}" title="{true_demand_reason if true_demand_reason else ''}">{judgment_display}</span></td>
-                            <td title="{', '.join(fy26_matched_oks) if fy26_matched_oks else '无匹配'}">{fy26_display}</td>
-                            <td>{boost_display}</td>
-                            <td><span class="score-highlight">{final_score:.1f}</span></td>
-                            <td>{allocated_score:.2f}</td>
-                            <td><span class="{decision_class}">{decision_text}</span></td>
-                        </tr>"""
+                            <tr style="{row_bg}">
+                                <td style="color:#8c8c8c;">{idx}</td>
+                                <td>{bl_tag}</td>
+                                <td style="font-weight:500;">{name}</td>
+                                <td>{strategic_base}</td>
+                                <td>{planning_factor:.1f}</td>
+                                <td>{urgency} <span style="font-size:12px;color:#8c8c8c;">({urgency_factor:.1f})</span></td>
+                                <td>{judgment_tag}</td>
+                                <td>{fy26_cell}</td>
+                                <td>{boost_display}</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">{final_score:.1f}</span></td>
+                                <td>{allocated_score:.2f}</td>
+                                <td>{decision_html}</td>
+                            </tr>"""
         
         html_content += """
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
-            <!-- 分析总结 -->
-            <div class="section">
-                <h2 class="section-title">4. 分析总结</h2>
-                
-                <h3 style="margin-top: 20px; margin-bottom: 15px; color: #4b5563;">各业务线资源使用情况</h3>"""
+            <!-- 4. 分析总结 -->
+             <div class="ant-card">
+                <div class="ant-card-head">
+                    <span>4. 分析总结</span>
+                </div>
+                <div class="ant-card-body">
+                    <h4 style="margin-bottom: 16px; color: rgba(0,0,0,0.85);">各业务线资源使用情况</h4>"""
         
         # 各业务线资源使用情况（业务线名称映射）
         business_line_mapping = {
@@ -1634,7 +1689,7 @@ class RequirementScorer:
             '专升本': '专业课'
         }
         
-        for bl in ['考研', '集训营', '专业课']:
+        for bl in ['考研', '四六级', '专升本']:
             # 考研业务线包含轻学需求
             if bl == '考研':
                 bl_reqs = [r for r in allocated_reqs if (r.get('business_line') == bl or r.get('business_line') == '轻学')]
@@ -1657,53 +1712,62 @@ class RequirementScorer:
             
             if quota > 0:
                 utilization = (bl_used_score / quota * 100) if quota > 0 else 0
-                if qingxue_in_bl:
-                    html_content += f"""
-                <div class="summary-list">
-                    <li>
-                        <strong>{bl}</strong>: 使用 {bl_used_score:.2f}/{quota:.2f}分 ({utilization:.1f}%)，入选{len(bl_selected)}个需求（其中轻学{len(qingxue_in_bl)}个，得分{qingxue_score:.2f}分）
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {min(utilization, 100):.1f}%"></div>
+                
+                # 进度条颜色
+                progress_color = "var(--primary-color)"
+                if utilization > 100: progress_color = "var(--error-color)"
+                elif utilization > 90: progress_color = "var(--warning-color)"
+                
+                qingxue_text = f"（含轻学 {len(qingxue_in_bl)} 个，共 {qingxue_score:.2f} 分）" if qingxue_in_bl else ""
+                
+                html_content += f"""
+                    <div style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span><strong>{bl}</strong> {qingxue_text}</span>
+                            <span>{bl_used_score:.2f} / {quota:.2f} ({utilization:.1f}%)</span>
                         </div>
-                    </li>
-                </div>"""
-                else:
-                    html_content += f"""
-                <div class="summary-list">
-                    <li>
-                        <strong>{bl}</strong>: 使用 {bl_used_score:.2f}/{quota:.2f}分 ({utilization:.1f}%)，入选{len(bl_selected)}个需求
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {min(utilization, 100):.1f}%"></div>
+                        <div class="ant-progress">
+                            <div class="ant-progress-outer">
+                                <div class="ant-progress-inner">
+                                    <div class="ant-progress-bg" style="width: {min(utilization, 100)}%; background-color: {progress_color};"></div>
+                                </div>
+                            </div>
                         </div>
-                    </li>
-                </div>"""
+                    </div>"""
             else:
                 html_content += f"""
-                <div class="summary-list">
-                    <li><strong>{bl}</strong>: 无配额分配</li>
-                </div>"""
+                    <div style="margin-bottom: 24px; color: rgba(0,0,0,0.45);">
+                        <strong>{bl}</strong>: 无配额分配
+                    </div>"""
         
         # 高优待办需求建议
         if backlog:
             html_content += """
-                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #4b5563;">高优待办需求建议</h3>
-                <ul class="summary-list">"""
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px dashed #f0f0f0;">
+                    <h4 style="margin-bottom: 16px; color: rgba(0,0,0,0.85);">✨ 高优待办需求建议</h4>
+                    <ul style="padding-left: 20px; color: rgba(0,0,0,0.65);">"""
             high_priority_backlog = sorted(backlog, key=lambda x: -x.get('calculated_score', 0))[:3]
             for req in high_priority_backlog:
                 name = req.get('name', '未知需求')
                 score = req.get('calculated_score', 0)
                 bl = req.get('business_line', '未知业务线')
-                html_content += f'<li><strong>{name}</strong> ({bl}) - 得分{score:.2f}分，建议优先考虑</li>'
-            html_content += '</ul>'
+                html_content += f'<li style="margin-bottom: 8px;"><strong>{name}</strong> <span class="ant-tag" style="margin: 0 4px;">{bl}</span> - 得分 <span style="color:#1890ff; font-weight:600;">{score:.2f}</span>，建议下个周期优先考虑</li>'
+            html_content += '</ul></div>'
         
         html_content += """
+                </div>
             </div>
+            
+        </div>
+        
+        <div class="footer">
+            Generated by Requirement Scorer System v2.0 | Ant Design Edition
         </div>
     </div>
 </body>
 </html>"""
         
-        # 写入文件
+        return html_content
         if output_file:
             output_path = Path(output_file)
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1719,7 +1783,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='需求优先级打分与资源分配系统')
-    parser.add_argument('--input', '-i', type=str, required=True, help='输入文件路径（CSV或JSON）')
+    parser.add_argument('--input', '-i', type=str, default='requirements_template_new_v2.csv', help='输入文件路径（CSV或JSON），默认: requirements_template_new_v2.csv')
     parser.add_argument('--total-score', '-t', type=float, required=True, help='可用总分池')
     parser.add_argument('--output', '-o', type=str, default='output/report.md', help='输出文件路径（默认: output/report.md）')
     parser.add_argument('--format', '-f', type=str, choices=['csv', 'json', 'auto'], default='auto', help='输入文件格式（默认: auto自动检测）')

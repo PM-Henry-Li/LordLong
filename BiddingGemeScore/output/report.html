@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>需求优先级打分与资源分配报告</title>
     <style>
+        :root {
+            /* 莫兰迪色系 (Morandi Palette) */
+            --bg-color: #Fdfbf7;       /* 暖白背景 */
+            --primary-color: #6D8B96;  /* 灰蓝 */
+            --secondary-color: #D3A795; /* 脏粉/赤陶 */
+            --accent-color: #90A99E;   /* 鼠尾草绿 */
+            --text-color: #4A4A4A;     /* 深灰文字 */
+            --border-color: #2F3542;   /* 深色边框 */
+            
+            /* 孟菲斯风格元素 */
+            --shadow-offset: 4px;
+            --border-width: 2px;
+            --card-radius: 12px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,225 +27,231 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
+            font-family: 'Outfit', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--primary-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-color);
+            padding: 40px 20px;
             min-height: 100vh;
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: #fff;
+            border: var(--border-width) solid var(--border-color);
+            border-radius: var(--card-radius);
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.15);
+            padding: 40px;
+            position: relative;
             overflow: hidden;
         }
         
+        /* 装饰性元素 */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            opacity: 0.2;
+            z-index: 0;
+        }
+
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
             text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
         }
         
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            font-weight: 600;
+            font-size: 36px;
+            color: var(--border-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px var(--secondary-color);
         }
         
         .header .meta {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-top: 10px;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .section {
-            margin-bottom: 40px;
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 8px 24px;
+            border: var(--border-width) solid var(--border-color);
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 3px 3px 0px var(--border-color);
         }
         
         .section-title {
-            font-size: 22px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #667eea;
+            font-size: 24px;
+            border-left: 8px solid var(--secondary-color);
+            padding-left: 15px;
+            margin-bottom: 25px;
+            color: var(--border-color);
+            font-weight: 800;
         }
         
+        /* 统计卡片 */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
         }
         
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            border: var(--border-width) solid var(--border-color);
+            border-radius: var(--card-radius);
             padding: 20px;
-            border-radius: 8px;
             text-align: center;
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--primary-color);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--primary-color);
         }
         
         .stat-card .value {
-            font-size: 32px;
-            font-weight: bold;
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--border-color);
             margin-bottom: 5px;
         }
         
         .stat-card .label {
             font-size: 14px;
-            opacity: 0.9;
+            color: var(--primary-color);
+            font-weight: bold;
+            text-transform: uppercase;
         }
         
+        /* 表格样式 */
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: var(--border-width) solid var(--border-color);
+            border-radius: var(--card-radius);
             overflow: hidden;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
         
         thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-color);
             color: white;
         }
         
         th {
             padding: 15px;
             text-align: left;
-            font-weight: 600;
-            font-size: 14px;
+            font-weight: bold;
+            border-bottom: var(--border-width) solid var(--border-color);
+            border-right: 1px solid rgba(255,255,255,0.2);
         }
         
         td {
-            padding: 12px 15px;
+            padding: 15px;
             border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-        
-        tbody tr:hover {
-            background-color: #f8f9fa;
+            color: var(--text-color);
         }
         
         tbody tr:last-child td {
             border-bottom: none;
         }
         
+        tbody tr:hover {
+            background-color: #f7f9fc;
+        }
+        
         .badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
+            padding: 4px 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: bold;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
         }
         
-        .badge-success {
-            background: #10b981;
-            color: white;
-        }
+        .badge-success { background: #A3D9C9; color: var(--border-color); }
+        .badge-warning { background: #FAEDCD; color: var(--border-color); }
+        .badge-info { background: #D0E1F9; color: var(--border-color); }
+        .badge-danger { background: #F4B8B8; color: var(--border-color); }
         
-        .badge-warning {
-            background: #f59e0b;
-            color: white;
-        }
-        
-        .badge-info {
-            background: #3b82f6;
-            color: white;
-        }
-        
-        .badge-danger {
-            background: #ef4444;
-            color: white;
-        }
-        
+        /* 进度条 */
         .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 4px;
+            height: 12px;
+            background: #eee;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
             overflow: hidden;
-            margin-top: 5px;
+            margin-top: 8px;
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
-        }
-        
-        .x-class-list {
-            background: #fef2f2;
-            border-left: 4px solid #ef4444;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
-        }
-        
-        .x-class-list li {
-            margin: 8px 0;
-            color: #991b1b;
-        }
-        
-        .qingxue-info {
-            background: #eff6ff;
-            border-left: 4px solid #3b82f6;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
-        }
-        
-        .summary-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .summary-list li {
-            padding: 10px;
-            margin: 5px 0;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border-left: 3px solid #667eea;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--secondary-color),
+                var(--secondary-color) 10px,
+                #E3B7A5 10px,
+                #E3B7A5 20px
+            );
+            border-right: 2px solid var(--border-color);
         }
         
         .business-line {
-            font-weight: 600;
-            color: #667eea;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: rgba(109, 139, 150, 0.1); /* light primary */
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            display: inline-block;
         }
         
-        .score-highlight {
-            font-weight: 600;
-            color: #667eea;
-            font-size: 16px;
+        .qingxue-info {
+            background: #F0F4F8;
+            border: 2px solid var(--primary-color);
+            padding: 20px;
+            border-radius: var(--card-radius);
+            box-shadow: 4px 4px 0px var(--primary-color);
+            margin-bottom: 30px;
         }
         
-        .decision-selected {
-            color: #10b981;
-            font-weight: 600;
+        .x-class-list {
+            background: #FFF5F5;
+            border: 2px solid #E57373;
+            padding: 20px;
+            border-radius: var(--card-radius);
+            box-shadow: 4px 4px 0px #E57373;
         }
         
-        .decision-backlog {
-            color: #f59e0b;
-            font-weight: 600;
+        .summary-list li {
+            background: white;
+            border: 2px solid var(--border-color);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0px var(--border-color);
+            list-style: none;
         }
         
-        @media print {
-            body {
-                background: white;
-            }
-            .container {
-                box-shadow: none;
-            }
-        }
+        .decision-selected { color: #2E8B57; font-weight: 800; }
+        .decision-backlog { color: #D78A28; font-weight: 800; }
+        .score-highlight { font-weight: 900; color: var(--border-color); font-size: 16px; }
+
     </style>
 </head>
 <body>
@@ -238,8 +259,7 @@
         <div class="header">
             <h1>需求优先级打分与资源分配报告</h1>
             <div class="meta">
-                <div>生成时间: 2026-01-18 23:17:31</div>
-                <div>可用总分池: 150.0分</div>
+                <span>生成时间: 2026-01-29 19:28:22 | 可用总分池: 150.0分</span>
             </div>
         </div>
         
@@ -248,18 +268,18 @@
             <div class="section">
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="value">18</div>
+                        <div class="value">10</div>
                         <div class="label">总需求数</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="background-color: #E8F3EE;">
                         <div class="value">9</div>
                         <div class="label">入选需求</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="value">9</div>
+                    <div class="stat-card" style="background-color: #FFF8E7;">
+                        <div class="value">1</div>
                         <div class="label">待办需求</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="background-color: #FCEAEA;">
                         <div class="value">0</div>
                         <div class="label">X类需求</div>
                     </div>
@@ -282,31 +302,31 @@
                         <tr>
                             <td><span class="business-line">考研</span></td>
                             <td>60%</td>
-                            <td><span class="badge badge-success">否</span></td>
-                            <td><strong>90.00</strong></td>
+                            <td><span class="badge badge-info">是（接收回流配额）</span></td>
+                            <td><strong>104.00</strong></td>
                         </tr>
                         <tr>
-                            <td><span class="business-line">集训营</span></td>
+                            <td><span class="business-line">四六级</span></td>
                             <td>20%</td>
                             <td><span class="badge badge-success">否</span></td>
                             <td><strong>30.00</strong></td>
                         </tr>
                         <tr>
-                            <td><span class="business-line">专业课</span></td>
+                            <td><span class="business-line">专升本</span></td>
                             <td>20%</td>
-                            <td><span class="badge badge-success">否</span></td>
-                            <td><strong>30.00</strong></td>
+                            <td><span class="badge badge-warning">是（部分配额回流）</span></td>
+                            <td><strong>16.00</strong></td>
                         </tr>
                     </tbody>
                 </table>
                 <div class="qingxue-info">
-                    <strong>轻学规则说明：</strong>
-                    <ul class="summary-list">
-                        <li>轻学需求参与考研配额竞争，得分已应用<strong>1.2倍权重</strong>，优先排序</li>
+                    <strong>📘 轻学规则说明：</strong>
+                    <ul class="summary-list" style="box-shadow:none; margin-top:10px;">
+                        <li style="box-shadow:none; border:none; padding:0; background:none;">轻学需求参与考研配额竞争，得分已应用<strong>1.2倍权重</strong>，优先排序</li>
                     </ul>
                 </div>
             <div class="section">
-                <h2 class="section-title">2. X类紧急通道 (不占分/优先处理)</h2><p style="color: #6b7280; padding: 15px;">无X类需求</p>
+                <h2 class="section-title">2. X类紧急通道 (不占分/优先处理)</h2><div style="background:#f9f9f9; padding:20px; border-radius:12px; border:2px dashed #ddd; text-align:center;">🍵 暂无X类紧急需求</div>
             </div>
             
             <!-- 最终排期决策表 -->
@@ -332,255 +352,143 @@
                     <tbody>
                         <tr>
                             <td>1</td>
-                            <td><span class="business-line">专升本</span></td>
-                            <td>专升本择校小程序上架杭州相关数据</td>
+                            <td><span class="business-line">轻学</span></td>
+                            <td>图片任务生成二维码功能</td>
                             <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-success" title="真需求特征明显（场景描述(1个关键词), 数据指标(1个关键词), 业务价值(3个关键词), 具备问题/价值/场景描述, 包含数据指标），得分9 vs 0">真(+50) [自动分析]</span></td>
-                            <td title="O1-KR3">+20 (O1-KR3)</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">166.0</span></td>
-                            <td>21.03</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
+                            <td>1.5</td>
+                            <td>P1(1.5)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="O1-KR5">+20 <small style="display:block;color:#999;font-size:10px;">O1-KR5</small></td>
+                            <td>1.2x</td>
+                            <td><span class="score-highlight">246.0</span></td>
+                            <td>23.71</td>
+                            <td><span class="decision-selected">✓ 入选（轻学）</span></td>
                         </tr>
                         <tr>
                             <td>2</td>
                             <td><span class="business-line">考研</span></td>
                             <td>教师工作台搭建</td>
                             <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-success" title="真需求特征明显（场景描述(2个关键词), 数据指标(3个关键词), 业务价值(1个关键词), 包含数据指标），得分7 vs 4">真(+50) [自动分析]</span></td>
-                            <td title="O4-KR1">+15 (O4-KR1)</td>
+                            <td>1.5</td>
+                            <td>P1(1.5)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="O4-KR1">+15 <small style="display:block;color:#999;font-size:10px;">O4-KR1</small></td>
                             <td>1.0x</td>
-                            <td><span class="score-highlight">161.0</span></td>
-                            <td>20.39</td>
+                            <td><span class="score-highlight">200.0</span></td>
+                            <td>19.28</td>
                             <td><span class="decision-selected">✓ 入选</span></td>
                         </tr>
                         <tr>
                             <td>3</td>
                             <td><span class="business-line">考研</span></td>
-                            <td>功能优化</td>
+                            <td>【练测】集团标化阶段测-题库升级</td>
                             <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-success" title="真需求特征明显（价值提升(1个关键词), 场景描述(2个关键词), 具备问题/价值/场景描述），得分6 vs 2">真(+50) [自动分析]</span></td>
-                            <td title="O5-KR3">+15 (O5-KR3)</td>
+                            <td>1.5</td>
+                            <td>P1(1.5)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="O3-KR1">+15 <small style="display:block;color:#999;font-size:10px;">O3-KR1</small></td>
                             <td>1.0x</td>
-                            <td><span class="score-highlight">161.0</span></td>
-                            <td>20.39</td>
+                            <td><span class="score-highlight">200.0</span></td>
+                            <td>19.28</td>
                             <td><span class="decision-selected">✓ 入选</span></td>
                         </tr>
                         <tr>
                             <td>4</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>【练测】集团标化阶段测-题库升级</td>
+                            <td><span class="business-line">四六级</span></td>
+                            <td>自动收分新增院校字段</td>
                             <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-info" title="特征不明显（真需求得分3，伪需求得分3），保守判断为真需求，不计修正">真(0) [自动分析]</span></td>
-                            <td title="O3-KR1">+15 (O3-KR1)</td>
+                            <td>1.5</td>
+                            <td>P1(1.5)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
                             <td>1.0x</td>
-                            <td><span class="score-highlight">111.0</span></td>
-                            <td>14.06</td>
+                            <td><span class="score-highlight">185.0</span></td>
+                            <td>17.83</td>
                             <td><span class="decision-selected">✓ 入选</span></td>
                         </tr>
                         <tr>
                             <td>5</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>保温课优化</td>
-                            <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-info" title="真需求特征较明显（价值提升(1个关键词)），得分1 vs 0，保守判断为真需求，不计修正">真(0) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">96.0</span></td>
-                            <td>12.16</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
                             <td><span class="business-line">四六级</span></td>
                             <td>课前规划四六级适配</td>
                             <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-danger" title="存在伪需求特征（缺乏价值或问题说明），得分1 vs 3，保守判断为真需求，给予轻微负修正">伪(-20) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
+                            <td>1.5</td>
+                            <td>P1(1.5)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
                             <td>1.0x</td>
-                            <td><span class="score-highlight">76.0</span></td>
-                            <td>9.63</td>
+                            <td><span class="score-highlight">185.0</span></td>
+                            <td>17.83</td>
+                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><span class="business-line">考研</span></td>
+                            <td>保温课优化</td>
+                            <td>60</td>
+                            <td>1.5</td>
+                            <td>P1(1.5)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
+                            <td>1.0x</td>
+                            <td><span class="score-highlight">185.0</span></td>
+                            <td>17.83</td>
                             <td><span class="decision-selected">✓ 入选</span></td>
                         </tr>
                         <tr>
                             <td>7</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>精选功能优化</td>
-                            <td>10</td>
+                            <td><span class="business-line">专升本</span></td>
+                            <td>专升本择校小程序上架杭州相关数据</td>
+                            <td>60</td>
                             <td>0.8</td>
                             <td>P0(2.0)</td>
-                            <td><span class="badge badge-success" title="真需求特征明显（价值提升(1个关键词), 场景描述(1个关键词), 业务价值(1个关键词), 具备问题/价值/场景描述），得分6 vs 1">真(+50) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="O1-KR3">+20 <small style="display:block;color:#999;font-size:10px;">O1-KR3</small></td>
                             <td>1.0x</td>
-                            <td><span class="score-highlight">66.0</span></td>
-                            <td>8.36</td>
+                            <td><span class="score-highlight">166.0</span></td>
+                            <td>16.00</td>
                             <td><span class="decision-selected">✓ 入选</span></td>
                         </tr>
                         <tr>
                             <td>8</td>
                             <td><span class="business-line">考研</span></td>
-                            <td>三方小程序迁移</td>
-                            <td>60</td>
+                            <td>答疑优化</td>
+                            <td>10</td>
                             <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-danger" title="伪需求特征明显（缺乏价值或问题说明），得分0 vs 3">伪(-50) [自动分析]</span></td>
-                            <td title="O3-KR1">+15 (O3-KR1)</td>
+                            <td>P2(1.0)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="O4-KR3">+15 <small style="display:block;color:#999;font-size:10px;">O4-KR3</small></td>
                             <td>1.0x</td>
-                            <td><span class="score-highlight">61.0</span></td>
-                            <td>7.73</td>
+                            <td><span class="score-highlight">73.0</span></td>
+                            <td>7.04</td>
                             <td><span class="decision-selected">✓ 入选</span></td>
                         </tr>
                         <tr>
                             <td>9</td>
-                            <td><span class="business-line">轻学</span></td>
-                            <td>图片任务生成二维码功能</td>
-                            <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-danger" title="伪需求特征明显（模糊描述(1个关键词), 缺乏场景(1个关键词), 缺乏价值或问题说明），得分2 vs 5">伪(-50) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
-                            <td>1.2x</td>
-                            <td><span class="score-highlight">55.2</span></td>
-                            <td>6.99</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
-                        </tr>
-                        <tr>
-                            <td>10</td>
-                            <td><span class="business-line">四六级</span></td>
-                            <td>自动收分新增院校字段</td>
-                            <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-danger" title="伪需求特征明显（缺乏场景(1个关键词), 缺乏价值或问题说明），得分0 vs 4">伪(-50) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">46.0</span></td>
-                            <td>5.83</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>11</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>视频和音频播放支持功能</td>
-                            <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-danger" title="伪需求特征明显（模糊描述(1个关键词), 缺乏价值或问题说明），得分0 vs 4">伪(-50) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">46.0</span></td>
-                            <td>5.83</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
-                        </tr>
-                        <tr>
-                            <td>12</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>补充正确率及完成频次</td>
-                            <td>20</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-info" title="真需求特征较明显（数据指标(4个关键词), 业务价值(1个关键词), 包含数据指标），得分6 vs 4，保守判断为真需求，不计修正">真(0) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">32.0</span></td>
-                            <td>4.05</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
-                        </tr>
-                        <tr>
-                            <td>13</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>小程序数据看板升级</td>
-                            <td>20</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-info" title="特征不明显（真需求得分3，伪需求得分3），保守判断为真需求，不计修正">真(0) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">32.0</span></td>
-                            <td>4.05</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
-                        </tr>
-                        <tr>
-                            <td>14</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>答疑优化</td>
-                            <td>10</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-info" title="真需求特征较明显（价值提升(1个关键词), 业务价值(1个关键词)），得分2 vs 1，保守判断为真需求，不计修正">真(0) [自动分析]</span></td>
-                            <td title="O4-KR3">+15 (O4-KR3)</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">31.0</span></td>
-                            <td>3.93</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
-                        </tr>
-                        <tr>
-                            <td>15</td>
                             <td><span class="business-line">考研</span></td>
                             <td>随堂测优化</td>
                             <td>10</td>
                             <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-info" title="真需求特征较明显（价值提升(1个关键词), 业务价值(1个关键词)），得分2 vs 0，保守判断为真需求，不计修正">真(0) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
+                            <td>P2(1.0)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
                             <td>1.0x</td>
-                            <td><span class="score-highlight">16.0</span></td>
-                            <td>2.03</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
+                            <td><span class="score-highlight">58.0</span></td>
+                            <td>5.59</td>
+                            <td><span class="decision-selected">✓ 入选</span></td>
                         </tr>
                         <tr>
-                            <td>16</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>学员界面打通错题本收藏本</td>
                             <td>10</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-info" title="特征不明显（真需求得分3，伪需求得分3），保守判断为真需求，不计修正">真(0) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">16.0</span></td>
-                            <td>2.03</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
-                        </tr>
-                        <tr>
-                            <td>17</td>
                             <td><span class="business-line">考研</span></td>
-                            <td>专业课VIP定校规则优化</td>
-                            <td>10</td>
+                            <td>补充正确率及完成频次</td>
+                            <td>20</td>
                             <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-info" title="真需求特征较明显（价值提升(1个关键词), 业务价值(1个关键词)），得分2 vs 0，保守判断为真需求，不计修正">真(0) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
+                            <td>P3(0.5)</td>
+                            <td><span class="badge badge-success" title="">真(+50)</span></td>
+                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
                             <td>1.0x</td>
-                            <td><span class="score-highlight">16.0</span></td>
-                            <td>2.03</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
-                        </tr>
-                        <tr>
-                            <td>18</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>功能迭代</td>
-                            <td>10</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-danger" title="存在伪需求特征（模糊描述(1个关键词), 缺乏价值或问题说明），得分2 vs 4，保守判断为真需求，给予轻微负修正">伪(-20) [自动分析]</span></td>
-                            <td title="无匹配">0</td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">-4.0</span></td>
-                            <td>-0.51</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
+                            <td><span class="score-highlight">58.0</span></td>
+                            <td>5.59</td>
+                            <td><span class="decision-selected">✓ 入选</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -590,33 +498,36 @@
             <div class="section">
                 <h2 class="section-title">4. 分析总结</h2>
                 
-                <h3 style="margin-top: 20px; margin-bottom: 15px; color: #4b5563;">各业务线资源使用情况</h3>
+                <h3 style="margin-top: 20px; margin-bottom: 15px; color: var(--border-color);">各业务线资源使用情况</h3>
                 <div class="summary-list">
                     <li>
-                        <strong>考研</strong>: 使用 83.09/90.00分 (92.3%)，入选6个需求
+                        <strong>考研</strong>: 使用 <strong>98.33/104.00分</strong> (94.5%)，入选7个需求（其中轻学1个，得分23.71分）
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 92.3%"></div>
+                            <div class="progress-fill" style="width: 94.5%"></div>
                         </div>
                     </li>
                 </div>
                 <div class="summary-list">
                     <li>
-                        <strong>集训营</strong>: 使用 15.45/30.00分 (51.5%)，入选2个需求
+                        <strong>四六级</strong>: 使用 <strong>0.00/30.00分</strong> (0.0%)，入选0个需求
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 51.5%"></div>
+                            <div class="progress-fill" style="width: 0.0%"></div>
                         </div>
                     </li>
                 </div>
                 <div class="summary-list">
                     <li>
-                        <strong>专业课</strong>: 使用 21.03/30.00分 (70.1%)，入选1个需求
+                        <strong>专升本</strong>: 使用 <strong>0.00/16.00分</strong> (0.0%)，入选0个需求
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 70.1%"></div>
+                            <div class="progress-fill" style="width: 0.0%"></div>
                         </div>
                     </li>
                 </div>
-                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #4b5563;">高优待办需求建议</h3>
-                <ul class="summary-list"><li><strong>图片任务生成二维码功能</strong> (轻学) - 得分6.99分，建议优先考虑</li><li><strong>视频和音频播放支持功能</strong> (考研) - 得分5.83分，建议优先考虑</li><li><strong>补充正确率及完成频次</strong> (考研) - 得分4.05分，建议优先考虑</li></ul>
+                <h3 style="margin-top: 30px; margin-bottom: 15px; color: var(--border-color);">✨ 高优待办需求建议</h3>
+                <ul class="summary-list"><li><strong>课前规划四六级适配</strong> (四六级) - 得分17.83分，建议优先考虑</li></ul>
+            </div>
+            <div style="text-align: center; margin-top: 50px; color: #999; font-size: 12px;">
+                Generated by Requirement Scorer System v2.0 | Memphis x Morandi Edition
             </div>
         </div>
     </div>
