@@ -531,9 +531,24 @@ class RequirementScorer:
                 urgency_factor = 1.0  # 默认P2
         
         # 4. 真需求修正（基于梁宁《真需求》理论，通过分析需求标题和描述自动判断）
-        # 优先使用字段指定（向后兼容），如果没有则自动分析
+        # 4. 真需求修正（基于梁宁《真需求》理论）
         true_demand_field = req.get('true_demand', '').strip()
-        if true_demand_field and ('真' in true_demand_field or 'true' in true_demand_field.lower() or true_demand_field.lower() == 't'):
+        
+        # 梁宁四种类型判定
+        if '核心真需求' in true_demand_field:
+            true_demand_correction = 50
+            true_demand_reason = "💎 核心真需求 (高价值+高频)"
+        elif '魅力型需求' in true_demand_field:
+             true_demand_correction = 30
+             true_demand_reason = "✨ 魅力型需求 (高情绪价值)"
+        elif '基础型需求' in true_demand_field:
+             true_demand_correction = 40
+             true_demand_reason = "🔧 基础型需求 (必备属性)"
+        elif '伪需求' in true_demand_field or '弱需求' in true_demand_field:
+             true_demand_correction = -50
+             true_demand_reason = "❌ 伪需求 (无场景/无代价)"
+        # 向后兼容逻辑
+        elif true_demand_field and ('真' in true_demand_field or 'true' in true_demand_field.lower() or true_demand_field.lower() == 't'):
             true_demand_correction = 50
             true_demand_reason = "字段指定为真需求"
         elif true_demand_field and ('伪' in true_demand_field or 'false' in true_demand_field.lower() or true_demand_field.lower() == 'f'):
@@ -893,21 +908,30 @@ class RequirementScorer:
                 bucket_demands['考研'] += score
 
         # 3. 计算回流（Flow Back）
-        # 规则：若四六级或专升本需求不足（Demand < Quota），剩余配额回流给考研
+        # 改进规则：
+        # - 如果总需求 > 配额（即存在Backlog）：余下的零头不回流，保留为“启动积分”
+        # - 如果总需求 <= 配额（即全部满足）：真正的剩余配额才回流给考研
         final_quotas = initial_quotas.copy()
         flow_back_amount = 0.0
         
         # 检查四六级
-        if bucket_demands['四六级'] < initial_quotas['四六级']:
+        if bucket_demands['四六级'] <= initial_quotas['四六级']:
+            # 全部需求都能满足，剩余的钱回流
             surplus = initial_quotas['四六级'] - bucket_demands['四六级']
-            final_quotas['四六级'] = bucket_demands['四六级'] # 缩减配额至正好覆盖需求
+            final_quotas['四六级'] = bucket_demands['四六级']
             flow_back_amount += surplus
+        else:
+            # 需求爆了，全额保留配额，不回流（余下的钱留作下期启动）
+            final_quotas['四六级'] = initial_quotas['四六级']
         
         # 检查专升本
-        if bucket_demands['专升本'] < initial_quotas['专升本']:
+        if bucket_demands['专升本'] <= initial_quotas['专升本']:
             surplus = initial_quotas['专升本'] - bucket_demands['专升本']
-            final_quotas['专升本'] = bucket_demands['专升本'] # 缩减配额至正好覆盖需求
+            final_quotas['专升本'] = bucket_demands['专升本']
             flow_back_amount += surplus
+        else:
+             # 需求爆了，全额保留配额
+            final_quotas['专升本'] = initial_quotas['专升本']
             
         # 回流给考研
         final_quotas['考研'] += flow_back_amount
@@ -970,12 +994,12 @@ class RequirementScorer:
                     if cumulative_score <= quota:
                         req['decision'] = '✅ 入选（轻学）'
                     else:
-                        req['decision'] = '⏸️ 待办(Backlog)'
+                        req['decision'] = '仅启动'
                 else:
                     if cumulative_score <= quota:
                         req['decision'] = '✅ 入选'
                     else:
-                        req['decision'] = '⏸️ 待办(Backlog)'
+                        req['decision'] = '仅启动'
                 
                 result.append(req)
         
@@ -1382,6 +1406,8 @@ class RequirementScorer:
         .ant-tag-gold {{ color: #faad14; background: #fffbe6; border-color: #ffe58f; }}
         .ant-tag-red {{ color: #f5222d; background: #fff1f0; border-color: #ffa39e; }}
         .ant-tag-purple {{ color: #722ed1; background: #f9f0ff; border-color: #d3adf7; }}
+        .ant-tag-cyan {{ color: #13c2c2; background: #e6fffb; border-color: #87e8de; }}
+        .ant-tag-orange {{ color: #fa8c16; background: #fff7e6; border-color: #ffd591; }}
         
         /* 进度条 */
         .ant-progress {{
@@ -1424,7 +1450,7 @@ class RequirementScorer:
         }}
         
         .decision-check {{ color: var(--success-color); font-size: 16px; font-weight: bold; }}
-        .decision-pause {{ color: var(--warning-color); font-size: 16px; font-weight: bold; }}
+        .decision-start {{ color: #1890ff; font-size: 15px; font-weight: normal; }}
         
         .score-val {{ font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-weight: 600; color: #000; }}
         
@@ -1586,14 +1612,14 @@ class RequirementScorer:
                                 <th>排名</th>
                                 <th>业务线</th>
                                 <th>需求名称</th>
-                                <th>基分</th>
+                                <th title="来源于需求分类：A类(100), B类(60), C类(20), D类(10)">需求分类得分</th>
                                 <th>规划</th>
                                 <th>紧迫度</th>
-                                <th>真伪</th>
+                                <th>梁宁判定结果</th>
                                 <th>FY26战略</th>
-                                <th>业务加权</th>
+
                                 <th>最终分</th>
-                                <th>消耗分配</th>
+                                <th>bidding分</th>
                                 <th>决策</th>
                             </tr>
                         </thead>
@@ -1602,6 +1628,7 @@ class RequirementScorer:
         for idx, req in enumerate(allocated_reqs, 1):
             name = req.get('name', '未知需求')
             bl = req.get('business_line', '未知业务线')
+            category = req.get('category', '')
             strategic_base = req.get('strategic_base', 0)
             planning_factor = req.get('planning_factor', 1.0)
             urgency = req.get('urgency', 'P2').upper()
@@ -1615,8 +1642,16 @@ class RequirementScorer:
             allocated_score = req.get('calculated_score', 0)
             decision = req.get('decision', '')
             
-            # 真伪标签
-            if true_demand_correction > 0:
+            # 梁宁真伪判定标签
+            if '核心真需求' in true_demand_reason:
+                judgment_tag = f'<span class="ant-tag ant-tag-blue" style="border-color:#91d5ff;" title="{true_demand_reason}">💎 核心真(+50)</span>'
+            elif '魅力型需求' in true_demand_reason:
+                judgment_tag = f'<span class="ant-tag ant-tag-purple" title="{true_demand_reason}">✨ 魅力型(+30)</span>'
+            elif '基础型需求' in true_demand_reason:
+                judgment_tag = f'<span class="ant-tag ant-tag-cyan" title="{true_demand_reason}">🔧 基础型(+40)</span>'
+            elif '伪需求' in true_demand_reason:
+                judgment_tag = f'<span class="ant-tag ant-tag-red" title="{true_demand_reason}">❌ 伪需求(-50)</span>'
+            elif true_demand_correction > 0:
                 judgment_tag = f'<span class="ant-tag ant-tag-green" title="{true_demand_reason}">真(+{true_demand_correction})</span>'
             elif true_demand_correction < 0:
                 judgment_tag = f'<span class="ant-tag ant-tag-red" title="{true_demand_reason}">伪({true_demand_correction})</span>'
@@ -1638,8 +1673,8 @@ class RequirementScorer:
             if '✅' in decision:
                 decision_html = '<span class="decision-check">✓ 通过</span>'
                 row_bg = ''
-            elif '⏸️' in decision:
-                decision_html = '<span class="decision-pause">⏸ 待办</span>'
+            elif decision == '仅启动':
+                decision_html = '<span class="decision-start">仅启动</span>'
                 row_bg = 'background-color: #fafafa;'
             else:
                 decision_html = decision
@@ -1648,7 +1683,7 @@ class RequirementScorer:
             # 业务线颜色映射
             bl_color = 'blue'
             if bl == '四六级': bl_color = 'cyan'
-            if bl == '专升本': bl_color = 'geekblue'
+            if bl == '专升本': bl_color = 'green'
             if bl == '轻学': bl_color = 'purple'
             
             bl_tag = f'<span class="ant-tag ant-tag-{bl_color}">{bl}</span>'
@@ -1658,14 +1693,14 @@ class RequirementScorer:
                                 <td style="color:#8c8c8c;">{idx}</td>
                                 <td>{bl_tag}</td>
                                 <td style="font-weight:500;">{name}</td>
-                                <td>{strategic_base}</td>
+                                <td title="{category}">{strategic_base}</td>
                                 <td>{planning_factor:.1f}</td>
                                 <td>{urgency} <span style="font-size:12px;color:#8c8c8c;">({urgency_factor:.1f})</span></td>
                                 <td>{judgment_tag}</td>
                                 <td>{fy26_cell}</td>
-                                <td>{boost_display}</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">{final_score:.1f}</span></td>
-                                <td>{allocated_score:.2f}</td>
+
+                                <td>{final_score:.1f}</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">{allocated_score:.2f}</span></td>
                                 <td>{decision_html}</td>
                             </tr>"""
         
@@ -1684,23 +1719,12 @@ class RequirementScorer:
                     <h4 style="margin-bottom: 16px; color: rgba(0,0,0,0.85);">各业务线资源使用情况</h4>"""
         
         # 各业务线资源使用情况（业务线名称映射）
-        business_line_mapping = {
-            '四六级': '集训营',
-            '专升本': '专业课'
-        }
-        
         for bl in ['考研', '四六级', '专升本']:
             # 考研业务线包含轻学需求
             if bl == '考研':
                 bl_reqs = [r for r in allocated_reqs if (r.get('business_line') == bl or r.get('business_line') == '轻学')]
             else:
-                # 需要映射旧业务线名称
-                bl_reqs = []
-                for r in allocated_reqs:
-                    req_bl = r.get('business_line', '').strip()
-                    normalized_bl = business_line_mapping.get(req_bl, req_bl)
-                    if normalized_bl == bl:
-                        bl_reqs.append(r)
+                bl_reqs = [r for r in allocated_reqs if r.get('business_line') == bl]
             
             bl_selected = [r for r in bl_reqs if '✅' in r.get('decision', '')]
             bl_used_score = sum(r.get('calculated_score', 0) for r in bl_selected)
@@ -1767,7 +1791,7 @@ class RequirementScorer:
 </body>
 </html>"""
         
-        return html_content
+
         if output_file:
             output_path = Path(output_file)
             output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -6,18 +6,29 @@
     <title>需求优先级打分与资源分配报告</title>
     <style>
         :root {
-            /* 莫兰迪色系 (Morandi Palette) */
-            --bg-color: #Fdfbf7;       /* 暖白背景 */
-            --primary-color: #6D8B96;  /* 灰蓝 */
-            --secondary-color: #D3A795; /* 脏粉/赤陶 */
-            --accent-color: #90A99E;   /* 鼠尾草绿 */
-            --text-color: #4A4A4A;     /* 深灰文字 */
-            --border-color: #2F3542;   /* 深色边框 */
+            /* Ant Design Spec: Geek Blue #1890ff */
+            --primary-color: #1890ff; 
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #f5222d;
+            --text-color: rgba(0, 0, 0, 0.85);
+            --text-secondary: rgba(0, 0, 0, 0.45);
+            --border-color: #f0f0f0;
+            --bg-color: #f0f2f5;
             
-            /* 孟菲斯风格元素 */
-            --shadow-offset: 4px;
-            --border-width: 2px;
-            --card-radius: 12px;
+            /* Design Spec: Certainty (4px-6px radius) */
+            --card-radius: 6px; 
+            --border-radius-base: 4px;
+            
+            /* Design Spec: Natural & Subtle Shadows */
+            --box-shadow-base: 0 1px 2px -2px rgba(0, 0, 0, 0.16), 0 3px 6px 0 rgba(0, 0, 0, 0.12), 0 5px 12px 4px rgba(0, 0, 0, 0.09);
+            --box-shadow-card: 0 1px 2px 0 rgba(0,0,0,0.03);
+            
+            /* Design Spec: 8px Grid System */
+            --space-xs: 8px;
+            --space-sm: 16px;
+            --space-md: 24px;
+            --space-lg: 32px;
         }
 
         * {
@@ -27,508 +38,541 @@
         }
         
         body {
-            font-family: 'Outfit', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
             background-color: var(--bg-color);
-            background-image: radial-gradient(var(--primary-color) 1px, transparent 1px);
-            background-size: 20px 20px;
             color: var(--text-color);
-            padding: 40px 20px;
-            min-height: 100vh;
+            line-height: 1.5715;
+            padding: var(--space-md); /* 24px */
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: #fff;
-            border: var(--border-width) solid var(--border-color);
-            border-radius: var(--card-radius);
-            box-shadow: 8px 8px 0px rgba(0,0,0,0.15);
-            padding: 40px;
-            position: relative;
-            overflow: hidden;
         }
         
-        /* 装饰性元素 */
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 150px;
-            height: 150px;
-            background: var(--secondary-color);
-            border-radius: 50%;
-            opacity: 0.2;
-            z-index: 0;
-        }
-
         .header {
-            text-align: center;
-            margin-bottom: 50px;
-            position: relative;
-            z-index: 1;
+            background: #fff;
+            padding: var(--space-md); /* 24px */
+            border-radius: var(--card-radius); /* 6px */
+            margin-bottom: var(--space-md); /* 24px */
+            box-shadow: var(--box-shadow-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
         }
         
         .header h1 {
-            font-size: 36px;
-            color: var(--border-color);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 0px var(--secondary-color);
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            color: rgba(0,0,0,0.85);
         }
         
         .header .meta {
-            display: inline-block;
-            background: var(--accent-color);
-            color: white;
-            padding: 8px 24px;
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 50px;
-            font-weight: bold;
-            box-shadow: 3px 3px 0px var(--border-color);
+            font-size: 14px;
+            color: var(--text-secondary);
         }
         
-        .section-title {
-            font-size: 24px;
-            border-left: 8px solid var(--secondary-color);
-            padding-left: 15px;
-            margin-bottom: 25px;
-            color: var(--border-color);
-            font-weight: 800;
+        /* 卡片样式 */
+        .ant-card {
+            background: #fff;
+            border-radius: var(--card-radius); /* 6px */
+            box-shadow: var(--box-shadow-card);
+            margin-bottom: var(--space-md); /* 24px */
+        }
+        
+        .ant-card-head {
+            min-height: 48px;
+            margin-bottom: -1px;
+            padding: 0 var(--space-md); /* 24px */
+            color: rgba(0, 0, 0, 0.85);
+            font-weight: 500;
+            font-size: 16px;
+            background: transparent;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .ant-card-body {
+            padding: var(--space-md); /* 24px */
         }
         
         /* 统计卡片 */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md); /* 24px */
+            margin-bottom: var(--space-md); /* 24px */
         }
         
         .stat-card {
-            background: white;
-            border: var(--border-width) solid var(--border-color);
-            border-radius: var(--card-radius);
-            padding: 20px;
-            text-align: center;
-            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--primary-color);
-            transition: transform 0.2s;
+            background: #fff;
+            padding: var(--space-md); /* 24px */
+            border-radius: var(--card-radius); /* 6px */
+            box-shadow: var(--box-shadow-card);
+            border: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s;
         }
         
-        .stat-card:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px var(--primary-color);
-        }
-        
-        .stat-card .value {
-            font-size: 42px;
-            font-weight: 900;
-            color: var(--border-color);
-            margin-bottom: 5px;
-        }
-        
-        .stat-card .label {
+        .stat-label {
             font-size: 14px;
-            color: var(--primary-color);
-            font-weight: bold;
-            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        
+        .stat-value {
+            font-size: 30px;
+            color: rgba(0,0,0,0.85);
+            font-weight: 500;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         
         /* 表格样式 */
-        table {
+        .ant-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            border: var(--border-width) solid var(--border-color);
-            border-radius: var(--card-radius);
-            overflow: hidden;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            border-collapse: collapse;
         }
         
-        thead {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        th {
-            padding: 15px;
+        .ant-table th {
+            background: #fafafa;
+            color: rgba(0,0,0,0.85);
+            font-weight: 500;
             text-align: left;
-            font-weight: bold;
-            border-bottom: var(--border-width) solid var(--border-color);
-            border-right: 1px solid rgba(255,255,255,0.2);
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            white-space: nowrap;
         }
         
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            color: var(--text-color);
+        .ant-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.3s;
+            font-size: 14px;
         }
         
-        tbody tr:last-child td {
-            border-bottom: none;
+        .ant-table tbody tr:hover td {
+            background: #fafafa;
         }
         
-        tbody tr:hover {
-            background-color: #f7f9fc;
-        }
-        
-        .badge {
+        /* 标签样式 */
+        .ant-tag {
             display: inline-block;
-            padding: 4px 10px;
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
+            height: auto;
+            margin-right: 8px;
+            padding: 2px 7px;
             font-size: 12px;
-            font-weight: bold;
-            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            line-height: 20px;
+            white-space: nowrap;
+            background: #fafafa;
+            border: 1px solid #d9d9d9;
+            border-radius: 2px;
+            cursor: default;
+            opacity: 1;
+            transition: all 0.3s;
+            color: rgba(0,0,0,0.65);
         }
         
-        .badge-success { background: #A3D9C9; color: var(--border-color); }
-        .badge-warning { background: #FAEDCD; color: var(--border-color); }
-        .badge-info { background: #D0E1F9; color: var(--border-color); }
-        .badge-danger { background: #F4B8B8; color: var(--border-color); }
+        .ant-tag-blue { color: #1890ff; background: #e6f7ff; border-color: #91d5ff; }
+        .ant-tag-green { color: #52c41a; background: #f6ffed; border-color: #b7eb8f; }
+        .ant-tag-gold { color: #faad14; background: #fffbe6; border-color: #ffe58f; }
+        .ant-tag-red { color: #f5222d; background: #fff1f0; border-color: #ffa39e; }
+        .ant-tag-purple { color: #722ed1; background: #f9f0ff; border-color: #d3adf7; }
+        .ant-tag-cyan { color: #13c2c2; background: #e6fffb; border-color: #87e8de; }
+        .ant-tag-orange { color: #fa8c16; background: #fff7e6; border-color: #ffd591; }
         
         /* 进度条 */
-        .progress-bar {
-            height: 12px;
-            background: #eee;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: repeating-linear-gradient(
-                45deg,
-                var(--secondary-color),
-                var(--secondary-color) 10px,
-                #E3B7A5 10px,
-                #E3B7A5 20px
-            );
-            border-right: 2px solid var(--border-color);
-        }
-        
-        .business-line {
-            font-weight: bold;
-            color: var(--primary-color);
-            background: rgba(109, 139, 150, 0.1); /* light primary */
-            padding: 2px 6px;
-            border-radius: 4px;
-            white-space: nowrap;
+        .ant-progress {
             display: inline-block;
+            width: 100%;
+            font-size: 14px;
+            line-height: 1;
         }
         
-        .qingxue-info {
-            background: #F0F4F8;
-            border: 2px solid var(--primary-color);
-            padding: 20px;
-            border-radius: var(--card-radius);
-            box-shadow: 4px 4px 0px var(--primary-color);
-            margin-bottom: 30px;
+        .ant-progress-outer {
+            display: inline-block;
+            width: 100%;
+            margin-right: 0;
+            padding-right: 0;
+            vertical-align: middle;
         }
         
-        .x-class-list {
-            background: #FFF5F5;
-            border: 2px solid #E57373;
-            padding: 20px;
-            border-radius: var(--card-radius);
-            box-shadow: 4px 4px 0px #E57373;
+        .ant-progress-inner {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            background-color: #f5f5f5;
+            border-radius: 100px;
+            vertical-align: middle;
+            overflow: hidden;
         }
         
-        .summary-list li {
-            background: white;
-            border: 2px solid var(--border-color);
-            margin-bottom: 10px;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 3px 3px 0px var(--border-color);
-            list-style: none;
+        .ant-progress-bg {
+            position: relative;
+            background-color: var(--primary-color);
+            border-radius: 100px;
+            transition: all 0.4s cubic-bezier(0.08, 0.82, 0.17, 1) 0s;
+            height: 8px;
         }
         
-        .decision-selected { color: #2E8B57; font-weight: 800; }
-        .decision-backlog { color: #D78A28; font-weight: 800; }
-        .score-highlight { font-weight: 900; color: var(--border-color); font-size: 16px; }
+        /* 业务线颜色 */
+        .business-line-text {
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .decision-check { color: var(--success-color); font-size: 16px; font-weight: bold; }
+        .decision-start { color: #1890ff; font-size: 15px; font-weight: normal; }
+        
+        .score-val { font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-weight: 600; color: #000; }
+        
+        .alert-info {
+            padding: 8px 15px;
+            margin-bottom: 16px;
+            border: 1px solid #91d5ff;
+            background-color: #e6f7ff;
+            border-radius: 2px;
+            color: rgba(0,0,0,0.65);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert-error {
+            padding: 8px 15px;
+            margin-bottom: 16px;
+            border: 1px solid #ffccc7;
+            background-color: #fff2f0;
+            border-radius: 2px;
+            color: rgba(0,0,0,0.65);
+            font-size: 13px;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 40px;
+            padding-bottom: 24px;
+        }
 
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- 头部 -->
         <div class="header">
             <h1>需求优先级打分与资源分配报告</h1>
             <div class="meta">
-                <span>生成时间: 2026-01-29 19:28:22 | 可用总分池: 150.0分</span>
+                <span>生成时间: 2026-01-30 10:44:16</span>
+                <span style="margin: 0 8px; color: #d9d9d9;">|</span>
+                <span>可用总分池: <span style="color:var(--primary-color);font-weight:600;">150.0</span> 分</span>
+            </div>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">总需求数</div>
+                <div class="stat-value">10</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">入选需求</div>
+                <div class="stat-value" style="color: var(--success-color);">9</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">待办需求</div>
+                <div class="stat-value" style="color: var(--warning-color);">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">X类紧急需求</div>
+                <div class="stat-value" style="color: var(--error-color);">0</div>
             </div>
         </div>
         
         <div class="content">
-            <!-- 统计概览 -->
-            <div class="section">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="value">10</div>
-                        <div class="label">总需求数</div>
+
+            <!-- 1. 配额分配概览 -->
+            <div class="ant-card">
+                <div class="ant-card-head">
+                    <span>1. 配额分配概览</span>
+                </div>
+                <div class="ant-card-body">
+                    <table class="ant-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px;">业务线</th>
+                                <th>初始比例</th>
+                                <th>是否触发回流</th>
+                                <th>最终可用配额 (分)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="business-line-text">考研</span></td>
+                                <td>60%</td>
+                                <td><span class="ant-tag ant-tag-blue">是 (接收回流)</span></td>
+                                <td><span style="font-weight:600; font-size:16px;">102.73</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="business-line-text">四六级</span></td>
+                                <td>20%</td>
+                                <td><span class="ant-tag">否</span></td>
+                                <td><span style="font-weight:600; font-size:16px;">30.00</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="business-line-text">专升本</span></td>
+                                <td>20%</td>
+                                <td><span class="ant-tag ant-tag-gold">是 (部分回流)</span></td>
+                                <td><span style="font-weight:600; font-size:16px;">17.27</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    
+                    <div style="margin-top: 16px;"></div>
+                    <div class="alert-info">
+                        <span style="margin-right: 8px; font-size: 16px;">📘</span>
+                        <span><strong>轻学规则：</strong> 轻学需求参与考研配额竞争，得分已应用 <strong>1.2倍权重</strong> 优先排序。</span>
                     </div>
-                    <div class="stat-card" style="background-color: #E8F3EE;">
-                        <div class="value">9</div>
-                        <div class="label">入选需求</div>
+                </div>
+            </div>
+        
+            <!-- 2. X类紧急通道 -->
+            <div class="ant-card">
+                <div class="ant-card-head">
+                    <span>2. X类紧急通道 (不占分/优先处理)</span>
+                </div>
+                <div class="ant-card-body"><div style="text-align:center; color:rgba(0,0,0,0.25); padding: 20px 0;">暂无 X 类紧急需求</div>
+                </div>
+            </div>
+            
+            <!-- 3. 最终排期决策表 -->
+            <div class="ant-card">
+                <div class="ant-card-head">
+                    <span>3. 最终排期决策表</span>
+                </div>
+                <div class="ant-card-body" style="padding: 0;">
+                    <table class="ant-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>业务线</th>
+                                <th>需求名称</th>
+                                <th title="来源于需求分类：A类(100), B类(60), C类(20), D类(10)">需求分类得分</th>
+                                <th>规划</th>
+                                <th>紧迫度</th>
+                                <th>梁宁判定结果</th>
+                                <th>FY26战略</th>
+
+                                <th>最终分</th>
+                                <th>bidding分</th>
+                                <th>决策</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">1</td>
+                                <td><span class="ant-tag ant-tag-purple">轻学</span></td>
+                                <td style="font-weight:500;">图片任务生成二维码功能</td>
+                                <td title="B类">60</td>
+                                <td>1.5</td>
+                                <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+30)</span></td>
+                                <td><span class="ant-tag ant-tag-purple" title="O1-KR5">+20</span></td>
+
+                                <td>222.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">23.09</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">2</td>
+                                <td><span class="ant-tag ant-tag-blue">考研</span></td>
+                                <td style="font-weight:500;">教师工作台搭建</td>
+                                <td title="E类">60</td>
+                                <td>1.5</td>
+                                <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
+                                <td><span class="ant-tag ant-tag-purple" title="O4-KR1">+15</span></td>
+
+                                <td>190.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">19.76</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">3</td>
+                                <td><span class="ant-tag ant-tag-blue">考研</span></td>
+                                <td style="font-weight:500;">【练测】集团标化阶段测-题库升级</td>
+                                <td title="B类">60</td>
+                                <td>1.5</td>
+                                <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
+                                <td><span class="ant-tag ant-tag-purple" title="O3-KR1">+15</span></td>
+
+                                <td>190.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">19.76</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">4</td>
+                                <td><span class="ant-tag ant-tag-cyan">四六级</span></td>
+                                <td style="font-weight:500;">自动收分新增院校字段</td>
+                                <td title="B类">60</td>
+                                <td>1.5</td>
+                                <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
+                                <td><span style="color:#d9d9d9;">-</span></td>
+
+                                <td>175.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">18.20</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                            <tr style="background-color: #fafafa;">
+                                <td style="color:#8c8c8c;">5</td>
+                                <td><span class="ant-tag ant-tag-cyan">四六级</span></td>
+                                <td style="font-weight:500;">课前规划四六级适配</td>
+                                <td title="B类">60</td>
+                                <td>1.5</td>
+                                <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
+                                <td><span style="color:#d9d9d9;">-</span></td>
+
+                                <td>175.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">18.20</span></td>
+                                <td><span class="decision-start">仅启动</span></td>
+                            </tr>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">6</td>
+                                <td><span class="ant-tag ant-tag-green">专升本</span></td>
+                                <td style="font-weight:500;">专升本择校小程序上架杭州相关数据</td>
+                                <td title="B类">60</td>
+                                <td>0.8</td>
+                                <td>P0 <span style="font-size:12px;color:#8c8c8c;">(2.0)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+50)</span></td>
+                                <td><span class="ant-tag ant-tag-purple" title="O1-KR3">+20</span></td>
+
+                                <td>166.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">17.27</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">7</td>
+                                <td><span class="ant-tag ant-tag-blue">考研</span></td>
+                                <td style="font-weight:500;">保温课优化</td>
+                                <td title="E类">60</td>
+                                <td>1.5</td>
+                                <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+30)</span></td>
+                                <td><span style="color:#d9d9d9;">-</span></td>
+
+                                <td>165.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">17.16</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">8</td>
+                                <td><span class="ant-tag ant-tag-blue">考研</span></td>
+                                <td style="font-weight:500;">答疑优化</td>
+                                <td title="D类">10</td>
+                                <td>0.8</td>
+                                <td>P2 <span style="font-size:12px;color:#8c8c8c;">(1.0)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
+                                <td><span class="ant-tag ant-tag-purple" title="O4-KR3">+15</span></td>
+
+                                <td>63.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">6.55</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">9</td>
+                                <td><span class="ant-tag ant-tag-blue">考研</span></td>
+                                <td style="font-weight:500;">随堂测优化</td>
+                                <td title="D类">10</td>
+                                <td>0.8</td>
+                                <td>P2 <span style="font-size:12px;color:#8c8c8c;">(1.0)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
+                                <td><span style="color:#d9d9d9;">-</span></td>
+
+                                <td>48.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">4.99</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                            <tr style="">
+                                <td style="color:#8c8c8c;">10</td>
+                                <td><span class="ant-tag ant-tag-blue">考研</span></td>
+                                <td style="font-weight:500;">补充正确率及完成频次</td>
+                                <td title="C类">20</td>
+                                <td>0.8</td>
+                                <td>P3 <span style="font-size:12px;color:#8c8c8c;">(0.5)</span></td>
+                                <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
+                                <td><span style="color:#d9d9d9;">-</span></td>
+
+                                <td>48.0</td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">4.99</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 4. 分析总结 -->
+             <div class="ant-card">
+                <div class="ant-card-head">
+                    <span>4. 分析总结</span>
+                </div>
+                <div class="ant-card-body">
+                    <h4 style="margin-bottom: 16px; color: rgba(0,0,0,0.85);">各业务线资源使用情况</h4>
+                    <div style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span><strong>考研</strong> （含轻学 1 个，共 23.09 分）</span>
+                            <span>96.32 / 102.73 (93.8%)</span>
+                        </div>
+                        <div class="ant-progress">
+                            <div class="ant-progress-outer">
+                                <div class="ant-progress-inner">
+                                    <div class="ant-progress-bg" style="width: 93.76265694613201%; background-color: var(--warning-color);"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card" style="background-color: #FFF8E7;">
-                        <div class="value">1</div>
-                        <div class="label">待办需求</div>
+                    <div style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span><strong>四六级</strong> </span>
+                            <span>18.20 / 30.00 (60.7%)</span>
+                        </div>
+                        <div class="ant-progress">
+                            <div class="ant-progress-outer">
+                                <div class="ant-progress-inner">
+                                    <div class="ant-progress-bg" style="width: 60.67961165048544%; background-color: var(--primary-color);"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card" style="background-color: #FCEAEA;">
-                        <div class="value">0</div>
-                        <div class="label">X类需求</div>
+                    <div style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span><strong>专升本</strong> </span>
+                            <span>17.27 / 17.27 (100.0%)</span>
+                        </div>
+                        <div class="ant-progress">
+                            <div class="ant-progress-outer">
+                                <div class="ant-progress-inner">
+                                    <div class="ant-progress-bg" style="width: 100.0%; background-color: var(--warning-color);"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 配额分配概览 -->
-            <div class="section">
-                <h2 class="section-title">1. 配额分配概览</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>业务线</th>
-                            <th>初始比例</th>
-                            <th>是否触发回流</th>
-                            <th>最终可用配额 (分)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><span class="business-line">考研</span></td>
-                            <td>60%</td>
-                            <td><span class="badge badge-info">是（接收回流配额）</span></td>
-                            <td><strong>104.00</strong></td>
-                        </tr>
-                        <tr>
-                            <td><span class="business-line">四六级</span></td>
-                            <td>20%</td>
-                            <td><span class="badge badge-success">否</span></td>
-                            <td><strong>30.00</strong></td>
-                        </tr>
-                        <tr>
-                            <td><span class="business-line">专升本</span></td>
-                            <td>20%</td>
-                            <td><span class="badge badge-warning">是（部分配额回流）</span></td>
-                            <td><strong>16.00</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="qingxue-info">
-                    <strong>📘 轻学规则说明：</strong>
-                    <ul class="summary-list" style="box-shadow:none; margin-top:10px;">
-                        <li style="box-shadow:none; border:none; padding:0; background:none;">轻学需求参与考研配额竞争，得分已应用<strong>1.2倍权重</strong>，优先排序</li>
-                    </ul>
-                </div>
-            <div class="section">
-                <h2 class="section-title">2. X类紧急通道 (不占分/优先处理)</h2><div style="background:#f9f9f9; padding:20px; border-radius:12px; border:2px dashed #ddd; text-align:center;">🍵 暂无X类紧急需求</div>
-            </div>
-            
-            <!-- 最终排期决策表 -->
-            <div class="section">
-                <h2 class="section-title">3. 最终排期决策表</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>优先级</th>
-                            <th>业务线</th>
-                            <th>需求名称</th>
-                            <th>战略基分</th>
-                            <th>规划系数</th>
-                            <th>紧迫度</th>
-                            <th>真需求判断</th>
-                            <th>FY26战略加分</th>
-                            <th>业务加权</th>
-                            <th>最终价值分</th>
-                            <th>分配得分</th>
-                            <th>决策结果</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td><span class="business-line">轻学</span></td>
-                            <td>图片任务生成二维码功能</td>
-                            <td>60</td>
-                            <td>1.5</td>
-                            <td>P1(1.5)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="O1-KR5">+20 <small style="display:block;color:#999;font-size:10px;">O1-KR5</small></td>
-                            <td>1.2x</td>
-                            <td><span class="score-highlight">246.0</span></td>
-                            <td>23.71</td>
-                            <td><span class="decision-selected">✓ 入选（轻学）</span></td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>教师工作台搭建</td>
-                            <td>60</td>
-                            <td>1.5</td>
-                            <td>P1(1.5)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="O4-KR1">+15 <small style="display:block;color:#999;font-size:10px;">O4-KR1</small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">200.0</span></td>
-                            <td>19.28</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>【练测】集团标化阶段测-题库升级</td>
-                            <td>60</td>
-                            <td>1.5</td>
-                            <td>P1(1.5)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="O3-KR1">+15 <small style="display:block;color:#999;font-size:10px;">O3-KR1</small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">200.0</span></td>
-                            <td>19.28</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td><span class="business-line">四六级</span></td>
-                            <td>自动收分新增院校字段</td>
-                            <td>60</td>
-                            <td>1.5</td>
-                            <td>P1(1.5)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">185.0</span></td>
-                            <td>17.83</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td><span class="business-line">四六级</span></td>
-                            <td>课前规划四六级适配</td>
-                            <td>60</td>
-                            <td>1.5</td>
-                            <td>P1(1.5)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">185.0</span></td>
-                            <td>17.83</td>
-                            <td><span class="decision-backlog">⏸ 待办(Backlog)</span></td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>保温课优化</td>
-                            <td>60</td>
-                            <td>1.5</td>
-                            <td>P1(1.5)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">185.0</span></td>
-                            <td>17.83</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>7</td>
-                            <td><span class="business-line">专升本</span></td>
-                            <td>专升本择校小程序上架杭州相关数据</td>
-                            <td>60</td>
-                            <td>0.8</td>
-                            <td>P0(2.0)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="O1-KR3">+20 <small style="display:block;color:#999;font-size:10px;">O1-KR3</small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">166.0</span></td>
-                            <td>16.00</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>8</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>答疑优化</td>
-                            <td>10</td>
-                            <td>0.8</td>
-                            <td>P2(1.0)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="O4-KR3">+15 <small style="display:block;color:#999;font-size:10px;">O4-KR3</small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">73.0</span></td>
-                            <td>7.04</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>9</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>随堂测优化</td>
-                            <td>10</td>
-                            <td>0.8</td>
-                            <td>P2(1.0)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">58.0</span></td>
-                            <td>5.59</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                        <tr>
-                            <td>10</td>
-                            <td><span class="business-line">考研</span></td>
-                            <td>补充正确率及完成频次</td>
-                            <td>20</td>
-                            <td>0.8</td>
-                            <td>P3(0.5)</td>
-                            <td><span class="badge badge-success" title="">真(+50)</span></td>
-                            <td title="无匹配">0 <small style="display:block;color:#999;font-size:10px;"></small></td>
-                            <td>1.0x</td>
-                            <td><span class="score-highlight">58.0</span></td>
-                            <td>5.59</td>
-                            <td><span class="decision-selected">✓ 入选</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- 分析总结 -->
-            <div class="section">
-                <h2 class="section-title">4. 分析总结</h2>
-                
-                <h3 style="margin-top: 20px; margin-bottom: 15px; color: var(--border-color);">各业务线资源使用情况</h3>
-                <div class="summary-list">
-                    <li>
-                        <strong>考研</strong>: 使用 <strong>98.33/104.00分</strong> (94.5%)，入选7个需求（其中轻学1个，得分23.71分）
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 94.5%"></div>
-                        </div>
-                    </li>
-                </div>
-                <div class="summary-list">
-                    <li>
-                        <strong>四六级</strong>: 使用 <strong>0.00/30.00分</strong> (0.0%)，入选0个需求
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 0.0%"></div>
-                        </div>
-                    </li>
-                </div>
-                <div class="summary-list">
-                    <li>
-                        <strong>专升本</strong>: 使用 <strong>0.00/16.00分</strong> (0.0%)，入选0个需求
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 0.0%"></div>
-                        </div>
-                    </li>
-                </div>
-                <h3 style="margin-top: 30px; margin-bottom: 15px; color: var(--border-color);">✨ 高优待办需求建议</h3>
-                <ul class="summary-list"><li><strong>课前规划四六级适配</strong> (四六级) - 得分17.83分，建议优先考虑</li></ul>
-            </div>
-            <div style="text-align: center; margin-top: 50px; color: #999; font-size: 12px;">
-                Generated by Requirement Scorer System v2.0 | Memphis x Morandi Edition
-            </div>
+        </div>
+        
+        <div class="footer">
+            Generated by Requirement Scorer System v2.0 | Ant Design Edition
         </div>
     </div>
 </body>
