@@ -1,0 +1,742 @@
+/* ===============================================
+   虚拟键盘样式
+   =============================================== */
+
+.keyboard-container {
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(180deg, #F5F5F5 0%, #E0E0E0 100%);
+    border-top: 3px solid #BDBDBD;
+}
+
+.keyboard {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* 根据行调整偏移 */
+.keyboard-row:nth-child(2) {
+    padding-left: 30px;
+}
+
+.keyboard-row:nth-child(3) {
+    padding-left: 50px;
+}
+
+/* 按键基础样式 */
+.key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+    font-weight: 700;
+    font-family: var(--font-family);
+    color: #424242;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%);
+    border: 3px solid #BDBDBD;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow:
+        0 4px 0 #9E9E9E,
+        0 6px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.1s ease;
+    user-select: none;
+    text-transform: uppercase;
+}
+
+.key:hover {
+    background: linear-gradient(180deg, #FFFFFF 0%, #EEEEEE 100%);
+}
+
+.key:active,
+.key.pressed {
+    transform: translateY(4px);
+    box-shadow:
+        0 0 0 #9E9E9E,
+        0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 左手区按键 - 蓝色调 */
+.key.left-hand {
+    background: linear-gradient(180deg, #E3F2FD 0%, #BBDEFB 100%);
+    border-color: #64B5F6;
+    box-shadow:
+        0 4px 0 #42A5F5,
+        0 6px 10px rgba(33, 150, 243, 0.2);
+}
+
+.key.left-hand:active,
+.key.left-hand.pressed {
+    box-shadow:
+        0 0 0 #42A5F5,
+        0 2px 5px rgba(33, 150, 243, 0.2);
+}
+
+/* 右手区按键 - 橙色调 */
+.key.right-hand {
+    background: linear-gradient(180deg, #FFF3E0 0%, #FFE0B2 100%);
+    border-color: #FFB74D;
+    box-shadow:
+        0 4px 0 #FFA726,
+        0 6px 10px rgba(255, 152, 0, 0.2);
+}
+
+.key.right-hand:active,
+.key.right-hand.pressed {
+    box-shadow:
+        0 0 0 #FFA726,
+        0 2px 5px rgba(255, 152, 0, 0.2);
+}
+
+/* 高亮目标按键 */
+.key.highlight {
+    background: linear-gradient(180deg, #FFF8E1 0%, #FFD54F 100%);
+    border-color: #FFD700;
+    color: #5D4037;
+    box-shadow:
+        0 4px 0 #FFC107,
+        0 0 20px rgba(255, 215, 0, 0.5),
+        0 6px 10px rgba(255, 193, 7, 0.3);
+    animation: keyGlow 0.5s ease-in-out infinite alternate;
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+/* 正确按键 */
+.key.correct {
+    background: linear-gradient(180deg, #E8F5E9 0%, #A5D6A7 100%);
+    border-color: #66BB6A;
+    color: #2E7D32;
+    animation: keyCorrect 0.3s ease;
+}
+
+/* 错误按键 */
+.key.wrong {
+    background: linear-gradient(180deg, #FFEBEE 0%, #EF9A9A 100%);
+    border-color: #EF5350;
+    color: #C62828;
+    animation: keyWrong 0.3s ease;
+}
+
+/* 空格键 */
+.key.space {
+    width: 300px;
+    font-size: 18px;
+}
+
+/* ===============================================
+   动画
+   =============================================== */
+
+@keyframes keyGlow {
+    from {
+        box-shadow:
+            0 4px 0 #FFC107,
+            0 0 20px rgba(255, 215, 0, 0.5),
+            0 6px 10px rgba(255, 193, 7, 0.3);
+    }
+
+    to {
+        box-shadow:
+            0 4px 0 #FFC107,
+            0 0 40px rgba(255, 215, 0, 0.8),
+            0 10px 20px rgba(255, 193, 7, 0.4);
+    }
+}
+
+@keyframes keyCorrect {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes keyWrong {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+/* ===============================================
+   覆盖式虚拟手引导系统 (图片版)
+   =============================================== */
+
+/* 确保键盘容器有相对定位 */
+.keyboard-container {
+    position: relative;
+    overflow: visible;
+}
+
+/* 虚拟手覆盖层 */
+.virtual-hands-overlay {
+    position: absolute;
+    top: -60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 50;
+    width: 100%;
+    height: 100%;
+}
+
+/* CSS 绘制的卡通手 */
+.virtual-hand-css {
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    opacity: 0.85;
+    transition: all 0.3s ease;
+}
+
+/* 手掌 */
+.palm {
+    position: absolute;
+    width: 140px;
+    height: 120px;
+    border-radius: 60px 60px 40px 40px;
+    background: linear-gradient(135deg, rgba(100, 180, 255, 0.7) 0%, rgba(66, 165, 245, 0.5) 100%);
+    box-shadow:
+        inset 0 -10px 20px rgba(255, 255, 255, 0.3),
+        0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+/* 手指基础样式 */
+.css-finger {
+    position: absolute;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom center;
+    z-index: 2;
+}
+
+.finger-segment {
+    width: 35px;
+    height: 90px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(100, 180, 255, 0.8) 0%, rgba(66, 165, 245, 0.6) 100%);
+    box-shadow:
+        inset 2px 0 8px rgba(255, 255, 255, 0.4),
+        0 3px 10px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.fingertip {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(150, 200, 255, 0.9), rgba(80, 150, 230, 0.7));
+    box-shadow:
+        inset -2px -2px 5px rgba(0, 0, 0, 0.1),
+        0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 左手定位 */
+.left-hand-css {
+    left: -20px;
+    top: 30px;
+}
+
+.left-hand-css .palm {
+    left: 50px;
+    top: 150px;
+}
+
+/* 左手各手指位置 */
+.left-hand-css .pinky {
+    left: 30px;
+    top: 100px;
+}
+
+.left-hand-css .ring {
+    left: 75px;
+    top: 60px;
+}
+
+.left-hand-css .middle {
+    left: 120px;
+    top: 40px;
+}
+
+.left-hand-css .index {
+    left: 165px;
+    top: 60px;
+}
+
+.left-hand-css .thumb {
+    left: 200px;
+    top: 160px;
+    transform: rotate(60deg);
+}
+
+.left-hand-css .thumb .finger-segment {
+    width: 40px;
+    height: 70px;
+}
+
+/* 右手定位 */
+.right-hand-css {
+    right: -20px;
+    top: 30px;
+}
+
+.right-hand-css .palm {
+    right: 50px;
+    top: 150px;
+    background: linear-gradient(135deg, rgba(255, 200, 100, 0.7) 0%, rgba(255, 167, 38, 0.5) 100%);
+}
+
+/* 右手手指颜色 */
+.right-hand-css .finger-segment {
+    background: linear-gradient(135deg, rgba(255, 200, 100, 0.8) 0%, rgba(255, 167, 38, 0.6) 100%);
+}
+
+.right-hand-css .fingertip {
+    background: radial-gradient(circle at 30% 30%, rgba(255, 220, 150, 0.9), rgba(255, 180, 80, 0.7));
+}
+
+/* 右手各手指位置 */
+.right-hand-css .thumb {
+    right: 200px;
+    top: 160px;
+    transform: rotate(-60deg);
+}
+
+.right-hand-css .thumb .finger-segment {
+    width: 40px;
+    height: 70px;
+}
+
+.right-hand-css .index {
+    right: 165px;
+    top: 60px;
+}
+
+.right-hand-css .middle {
+    right: 120px;
+    top: 40px;
+}
+
+.right-hand-css .ring {
+    right: 75px;
+    top: 60px;
+}
+
+.right-hand-css .pinky {
+    right: 30px;
+    top: 100px;
+}
+
+/* 手指激活状态 */
+.css-finger.active {
+    transform: translateY(-20px) scale(1.1);
+    filter: brightness(1.4) drop-shadow(0 0 15px rgba(255, 255, 100, 0.8));
+    z-index: 10;
+}
+
+.css-finger.active .fingertip {
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 150, 1), rgba(255, 220, 80, 0.9));
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.6);
+}
+
+/* 手指按压状态 */
+.css-finger.pressing {
+    transform: translateY(8px) scale(0.95);
+    transition: all 0.1s ease-out;
+}
+
+.css-finger.pressing .finger-segment {
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.9) 0%, rgba(50, 150, 255, 0.7) 100%);
+}
+
+/* 手指成功状态 */
+.css-finger.success {
+    animation: fingerSuccessShake 0.5s ease;
+}
+
+.css-finger.success .finger-segment {
+    background: linear-gradient(135deg, rgba(100, 255, 150, 0.9) 0%, rgba(50, 220, 100, 0.7) 100%);
+}
+
+.css-finger.success .fingertip {
+    background: radial-gradient(circle at 30% 30%, rgba(150, 255, 200, 1), rgba(80, 230, 150, 0.9));
+    box-shadow: 0 0 25px rgba(76, 255, 80, 0.9);
+}
+
+@keyframes fingerSuccessShake {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    50% {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    75% {
+        transform: scale(1.05);
+    }
+}
+
+/* 虚拟手 Emoji 容器 */
+.virtual-hand-emoji {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    opacity: 0.6;
+    /* 半透明避免遮挡 */
+    transition: all 0.3s ease;
+}
+
+.hand-emoji {
+    font-size: 280px;
+    /* 超大 emoji */
+    line-height: 1;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* 左手定位和颜色 */
+.left-hand-emoji {
+    left: -30px;
+    top: 20px;
+}
+
+.left-hand-emoji .hand-emoji {
+    filter: hue-rotate(200deg) saturate(1.5) brightness(1.1);
+    /* 蓝色调 */
+    transform: scaleX(-1);
+    /* 镜像翻转 */
+}
+
+/* 右手定位和颜色 */
+.right-hand-emoji {
+    right: -30px;
+    top: 20px;
+}
+
+.right-hand-emoji .hand-emoji {
+    filter: hue-rotate(20deg) saturate(1.3) brightness(1.1);
+    /* 橙色调 */
+}
+
+/* 虚拟手图片容器 */
+.virtual-hand-img {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    opacity: 0.5;
+    /* 降低不透明度避免遮挡 */
+    transition: all 0.3s ease;
+    mix-blend-mode: multiply;
+    /* 融合模式让手更好地融入背景 */
+}
+
+.virtual-hand-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 左手定位 */
+.left-hand-img {
+    left: -50px;
+    top: 40px;
+}
+
+/* 右手定位 */
+.right-hand-img {
+    right: -50px;
+    top: 40px;
+}
+
+/* 手指高亮遮罩层（暂时隐藏，后续用 JS 控制） */
+.finger-highlight {
+    position: absolute;
+    width: 70px;
+    /* 加大尺寸 */
+    height: 110px;
+    border-radius: 35px;
+    background: radial-gradient(circle, rgba(255, 255, 100, 0.9) 0%, rgba(255, 200, 0, 0.5) 50%, transparent 80%);
+    /* 更明显的黄色高亮 */
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.6);
+    /* 添加发光效果 */
+}
+
+/* 左手各手指位置 */
+.left-hand-img .finger-highlight[data-finger="left-pinky"] {
+    left: 40px;
+    top: 80px;
+}
+
+.left-hand-img .finger-highlight[data-finger="left-ring"] {
+    left: 95px;
+    top: 50px;
+}
+
+.left-hand-img .finger-highlight[data-finger="left-middle"] {
+    left: 150px;
+    top: 30px;
+}
+
+.left-hand-img .finger-highlight[data-finger="left-index"] {
+    left: 205px;
+    top: 50px;
+}
+
+.left-hand-img .finger-highlight[data-finger="left-thumb"] {
+    left: 260px;
+    top: 150px;
+    width: 80px;
+    height: 80px;
+    transform: rotate(45deg);
+}
+
+/* 右手各手指位置 */
+.right-hand-img .finger-highlight[data-finger="right-thumb"] {
+    left: 60px;
+    top: 150px;
+    width: 80px;
+    height: 80px;
+    transform: rotate(-45deg);
+}
+
+.right-hand-img .finger-highlight[data-finger="right-index"] {
+    left: 135px;
+    top: 50px;
+}
+
+.right-hand-img .finger-highlight[data-finger="right-middle"] {
+    left: 190px;
+    top: 30px;
+}
+
+.right-hand-img .finger-highlight[data-finger="right-ring"] {
+    left: 245px;
+    top: 50px;
+}
+
+.right-hand-img .finger-highlight[data-finger="right-pinky"] {
+    left: 300px;
+    top: 80px;
+}
+
+/* 激活状态 */
+.finger-highlight.active {
+    opacity: 1;
+    animation: fingerPulse 0.6s infinite alternate;
+    /* 加快频率 */
+    filter: brightness(1.5);
+    /* 更亮 */
+}
+
+/* 按下状态 */
+.finger-highlight.pressing {
+    transform: scale(0.85);
+    /* 更明显的缩小 */
+    opacity: 1;
+    background: radial-gradient(circle, rgba(100, 200, 255, 0.9) 0%, rgba(0, 150, 255, 0.6) 50%, transparent 80%);
+    /* 蓝色按压效果 */
+}
+
+/* 成功状态 */
+.finger-highlight.success {
+    background: radial-gradient(circle, rgba(76, 255, 80, 1) 0%, rgba(50, 200, 50, 0.7) 50%, transparent 80%);
+    /* 更亮的绿色 */
+    animation: fingerSuccessPulse 0.5s ease;
+    box-shadow: 0 0 30px rgba(76, 255, 80, 0.9);
+    /* 强烈的绿色光晕 */
+}
+
+/* 动画定义 */
+@keyframes fingerPulse {
+    from {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    to {
+        transform: scale(1.25);
+        opacity: 1;
+    }
+
+    /* 更大的缩放和透明度变化 */
+}
+
+@keyframes fingerSuccessPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.3);
+        opacity: 0.6;
+    }
+}
+
+/* 隐藏旧的文字手指指引 */
+.finger-guide {
+    display: none !important;
+}
+
+/* ===============================================
+   响应式
+   =============================================== */
+
+@media (max-width: 900px) {
+    .key {
+        width: 50px;
+        height: 50px;
+        font-size: 22px;
+    }
+
+    .key.space {
+        width: 220px;
+    }
+
+    .keyboard-row:nth-child(2) {
+        padding-left: 20px;
+    }
+
+    .keyboard-row:nth-child(3) {
+        padding-left: 35px;
+    }
+
+    /* 手指引导响应式 */
+    .finger-hands-wrapper {
+        padding: 0 10px;
+    }
+
+    .hand-label {
+        font-size: 14px;
+    }
+
+    .finger-indicator {
+        padding: 5px 8px;
+    }
+
+    .finger-indicator .finger-emoji {
+        font-size: 22px;
+    }
+
+    .finger-indicator .finger-label {
+        font-size: 10px;
+    }
+
+    .active-finger-emoji {
+        font-size: 36px;
+    }
+}
+
+@media (max-width: 600px) {
+    .keyboard-container {
+        padding: 10px;
+    }
+
+    .keyboard {
+        gap: 5px;
+    }
+
+    .keyboard-row {
+        gap: 4px;
+    }
+
+    .key {
+        width: 32px;
+        height: 40px;
+        font-size: 16px;
+        border-radius: 6px;
+        border-width: 2px;
+        box-shadow:
+            0 2px 0 #9E9E9E,
+            0 3px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .key.space {
+        width: 140px;
+        font-size: 12px;
+    }
+
+    .keyboard-row:nth-child(2) {
+        padding-left: 12px;
+    }
+
+    .keyboard-row:nth-child(3) {
+        padding-left: 22px;
+    }
+
+    /* 小屏幕手指引导 - 简化显示 */
+    .finger-hands-wrapper {
+        min-height: 50px;
+        margin-bottom: 8px;
+    }
+
+    .hand-label {
+        font-size: 12px;
+    }
+
+    .fingers-row {
+        gap: 4px;
+    }
+
+    .finger-indicator {
+        padding: 4px 6px;
+        border-width: 1px;
+    }
+
+    .finger-indicator .finger-emoji {
+        font-size: 18px;
+    }
+
+    .finger-indicator .finger-label {
+        display: none;
+        /* 小屏幕隐藏文字 */
+    }
+
+    .active-finger-emoji {
+        font-size: 28px;
+    }
+}

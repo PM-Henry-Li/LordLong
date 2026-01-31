@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="拼音探险家 - 专为6岁儿童设计的拼音学习游戏">
+    <title>拼音探险家 | Pinyin Explorer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/keyboard.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- 开始界面 -->
+    <div id="start-screen" class="screen active">
+        <div class="title-container">
+            <h1 class="game-title">🌳 拼音探险家 🌳</h1>
+            <p class="game-subtitle">和小动物们一起学拼音！</p>
+        </div>
+
+        <div class="user-selection">
+            <h2>选择你的头像</h2>
+            <div class="avatar-grid">
+                <button class="avatar-btn" data-avatar="cat">🐱</button>
+                <button class="avatar-btn" data-avatar="dog">🐶</button>
+                <button class="avatar-btn" data-avatar="rabbit">🐰</button>
+                <button class="avatar-btn" data-avatar="bear">🐻</button>
+                <button class="avatar-btn" data-avatar="panda">🐼</button>
+                <button class="avatar-btn" data-avatar="fox">🦊</button>
+            </div>
+            <div class="username-input">
+                <input type="text" id="username" placeholder="输入你的名字" maxlength="8">
+            </div>
+        </div>
+
+        <div class="existing-users" id="existing-users" style="display: none;">
+            <h3>或者选择已有玩家</h3>
+            <div class="user-list" id="user-list"></div>
+        </div>
+
+        <button class="btn-primary btn-large" id="btn-enter">
+            🚀 开始冒险
+        </button>
+    </div>
+
+    <!-- 模式选择界面 -->
+    <div id="mode-screen" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" id="btn-back-start">⬅️ 返回</button>
+            <div class="user-info">
+                <span class="user-avatar" id="current-avatar">🐱</span>
+                <span class="user-name" id="current-name">小玩家</span>
+                <span class="user-score">🏆 <span id="total-score">0</span></span>
+            </div>
+        </div>
+
+        <h2 class="section-title">选择探险模式</h2>
+
+        <div class="mode-cards">
+            <div class="mode-card" data-mode="letters">
+                <button class="btn-help" data-mode="letters" title="查看说明">❓</button>
+                <div class="mode-icon">🍎</div>
+                <h3>字母森林</h3>
+                <p>认识键盘上的字母</p>
+                <div class="mode-badge">入门</div>
+            </div>
+
+            <div class="mode-card locked" data-mode="pinyin">
+                <button class="btn-help" data-mode="pinyin" title="查看说明">❓</button>
+                <div class="mode-icon">🧩</div>
+                <h3>拼音合成室</h3>
+                <p>学习声母和韵母</p>
+                <div class="mode-badge">进阶</div>
+                <div class="lock-overlay">🔒 需要500分</div>
+            </div>
+
+            <div class="mode-card locked" data-mode="words">
+                <button class="btn-help" data-mode="words" title="查看说明">❓</button>
+                <div class="mode-icon">📚</div>
+                <h3>词语竞速</h3>
+                <p>挑战汉字拼写</p>
+                <div class="mode-badge">高级</div>
+                <div class="lock-overlay">🔒 需要1500分</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <button class="btn-back" id="btn-back-mode">⬅️</button>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span class="stat-label">⏱️</span>
+                    <span class="stat-value" id="timer">5:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">⭐</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">✅</span>
+                    <span class="stat-value" id="correct-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">❌</span>
+                    <span class="stat-value" id="wrong-count">0</span>
+                </div>
+            </div>
+            <!-- 速度控制 -->
+            <div class="speed-control">
+                <button class="btn-speed" id="btn-speed-down" title="减慢速度">➖</button>
+                <div class="speed-display">
+                    <span class="speed-label">速度</span>
+                    <span class="speed-value" id="speed-value">1.0x</span>
+                </div>
+                <button class="btn-speed" id="btn-speed-up" title="加快速度">➕</button>
+            </div>
+            <button class="btn-pause" id="btn-pause">⏸️</button>
+        </div>
+
+        <!-- 游戏区域 -->
+        <div class="game-area" id="game-area">
+            <canvas id="game-canvas"></canvas>
+
+            <!-- 拼音合成室专用 -->
+            <div class="pinyin-display" id="pinyin-display" style="display: none;">
+                <span class="pinyin-part shengmu" id="shengmu"></span>
+                <span class="pinyin-plus">+</span>
+                <span class="pinyin-part yunmu" id="yunmu"></span>
+                <span class="pinyin-equals">=</span>
+                <span class="pinyin-result" id="pinyin-result">?</span>
+            </div>
+
+            <!-- 词语竞速专用 -->
+            <div class="word-display" id="word-display" style="display: none;">
+                <div class="hanzi" id="hanzi"></div>
+                <div class="pinyin-hint" id="pinyin-hint"></div>
+                <div class="input-display" id="input-display"></div>
+            </div>
+        </div>
+
+        <!-- 虚拟键盘 -->
+        <div class="keyboard-container" id="keyboard-container">
+            <!-- 键盘 -->
+            <div class="keyboard" id="virtual-keyboard"></div>
+
+            <!-- 覆盖式虚拟手 (CSS 绘制版) -->
+            <div class="virtual-hands-overlay" id="virtual-hands">
+                <!-- 左手 -->
+                <div class="virtual-hand-css left-hand-css" id="left-hand-css">
+                    <!-- 手掌 -->
+                    <div class="palm"></div>
+                    <!-- 手指 -->
+                    <div class="css-finger pinky" data-finger="left-pinky">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                    <div class="css-finger ring" data-finger="left-ring">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                    <div class="css-finger middle" data-finger="left-middle">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                    <div class="css-finger index" data-finger="left-index">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                    <div class="css-finger thumb" data-finger="left-thumb">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                </div>
+
+                <!-- 右手 -->
+                <div class="virtual-hand-css right-hand-css" id="right-hand-css">
+                    <!-- 手掌 -->
+                    <div class="palm"></div>
+                    <!-- 手指 -->
+                    <div class="css-finger thumb" data-finger="right-thumb">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                    <div class="css-finger index" data-finger="right-index">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                    <div class="css-finger middle" data-finger="right-middle">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                    <div class="css-finger ring" data-finger="right-ring">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                    <div class="css-finger pinky" data-finger="right-pinky">
+                        <div class="finger-segment"></div>
+                        <div class="fingertip"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结算界面 -->
+    <div id="result-screen" class="screen">
+        <div class="result-content">
+            <h2 class="result-title" id="result-title">🎉 太棒了！</h2>
+
+            <div class="result-stats">
+                <div class="result-stat">
+                    <span class="stat-icon">⭐</span>
+                    <span class="stat-label">得分</span>
+                    <span class="stat-value" id="final-score">0</span>
+                </div>
+                <div class="result-stat">
+                    <span class="stat-icon">✅</span>
+                    <span class="stat-label">正确</span>
+                    <span class="stat-value" id="final-correct">0</span>
+                </div>
+                <div class="result-stat">
+                    <span class="stat-icon">❌</span>
+                    <span class="stat-label">错误</span>
+                    <span class="stat-value" id="final-wrong">0</span>
+                </div>
+            </div>
+
+            <div class="badge-earned" id="badge-earned" style="display: none;">
+                <div class="badge-icon" id="badge-icon">🏅</div>
+                <p class="badge-name" id="badge-name">新勋章！</p>
+            </div>
+
+            <div class="result-buttons">
+                <button class="btn-primary" id="btn-play-again">🔄 再玩一次</button>
+                <button class="btn-secondary" id="btn-back-menu">🏠 返回菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 暂停弹窗 -->
+    <div id="pause-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>⏸️ 游戏暂停</h2>
+            <div class="modal-buttons">
+                <button class="btn-primary" id="btn-resume">▶️ 继续游戏</button>
+                <button class="btn-secondary" id="btn-quit">🚪 退出游戏</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 休息提示弹窗 -->
+    <div id="rest-modal" class="modal" style="display: none;">
+        <div class="modal-content rest-modal-content">
+            <div class="rest-animation">👀</div>
+            <h2>眼睛休息时间！</h2>
+            <p>你已经玩了两局啦～</p>
+            <p>让眼睛看看远处，休息一下吧！</p>
+            <div class="rest-timer" id="rest-timer">10</div>
+            <button class="btn-primary" id="btn-rest-done" disabled>🌟 休息好了！</button>
+        </div>
+    </div>
+
+    <!-- 游戏说明弹窗 -->
+    <div id="help-modal" class="modal" style="display: none;">
+        <div class="modal-content help-modal-content">
+            <button class="btn-close-modal" id="btn-close-help">✕</button>
+
+            <!-- 字母森林说明 -->
+            <div class="help-content" id="help-letters">
+                <div class="help-icon">🍎</div>
+                <h2>字母森林</h2>
+                <div class="help-section">
+                    <h3>🎯 游戏目标</h3>
+                    <p>学会认识键盘上 A-Z 所有字母的位置！</p>
+                </div>
+                <div class="help-section">
+                    <h3>🎮 怎么玩</h3>
+                    <ol>
+                        <li>屏幕上会掉落带字母的<strong>红苹果</strong></li>
+                        <li>看清苹果上的字母</li>
+                        <li>在键盘上找到对应的字母并按下</li>
+                        <li>按对了苹果会消失，你会得分 +10！</li>
+                        <li>按错了或苹果掉到地上会扣分 -5</li>
+                    </ol>
+                </div>
+                <div class="help-section">
+                    <h3>💡 小提示</h3>
+                    <ul>
+                        <li>看虚拟键盘上<strong>金色高亮</strong>的按键是正确答案</li>
+                        <li><span class="left-hand">蓝色</span>字母用左手按，<span class="right-hand">橙色</span>字母用右手按</li>
+                        <li>每局游戏有 5 分钟时间</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 拼音合成室说明 -->
+            <div class="help-content" id="help-pinyin" style="display: none;">
+                <div class="help-icon">🧩</div>
+                <h2>拼音合成室</h2>
+                <div class="help-section">
+                    <h3>🎯 游戏目标</h3>
+                    <p>学会拼音的声母和韵母，把它们拼在一起！</p>
+                </div>
+                <div class="help-section">
+                    <h3>🎮 怎么玩</h3>
+                    <ol>
+                        <li>屏幕会显示一个声母和一个韵母</li>
+                        <li>比如：<strong>b + a = ?</strong></li>
+                        <li>按顺序在键盘上输入 b 和 a</li>
+                        <li>系统会朗读："ba，爸爸的爸"</li>
+                        <li>按对了得分 +15！</li>
+                    </ol>
+                </div>
+                <div class="help-section">
+                    <h3>💡 小提示</h3>
+                    <ul>
+                        <li>声母是拼音的开头部分（如 b, p, m, f）</li>
+                        <li>韵母是拼音的结尾部分（如 a, o, e, i）</li>
+                        <li>仔细听语音，学习正确发音！</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 词语竞速说明 -->
+            <div class="help-content" id="help-words" style="display: none;">
+                <div class="help-icon">📚</div>
+                <h2>词语竞速</h2>
+                <div class="help-section">
+                    <h3>🎯 游戏目标</h3>
+                    <p>根据汉字，用键盘打出完整的拼音！</p>
+                </div>
+                <div class="help-section">
+                    <h3>🎮 怎么玩</h3>
+                    <ol>
+                        <li>屏幕会显示一个汉字词语</li>
+                        <li>比如：<strong>苹果</strong>（píng guǒ）</li>
+                        <li>用键盘依次输入拼音字母</li>
+                        <li>拼对一个汉字得分 +20！</li>
+                    </ol>
+                </div>
+                <div class="help-section">
+                    <h3>💡 小提示</h3>
+                    <ul>
+                        <li>第一次练习会显示拼音提示</li>
+                        <li>复习模式会隐藏拼音提示</li>
+                        <li>可以选择不同年级的词语难度</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="btn-start-game">🚀 开始游戏</button>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/keyboard.js"></script>
+    <script src="js/letters.js"></script>
+    <script src="js/pinyin.js"></script>
+    <script src="js/words.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+    <script src="data/pinyin-data.js"></script>
+    <script src="data/words-data.js"></script>
+</body>
+
+</html>
