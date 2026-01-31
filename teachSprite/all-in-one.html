@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>群发与学习任务 - 全部功能（单页）</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
       height: 100vh;
@@ -14,6 +20,7 @@
       background: #f5f5f5;
       color: #333;
     }
+
     /* ========== 统一入口：左侧菜单 ========== */
     .sidebar {
       width: 200px;
@@ -24,6 +31,7 @@
       flex-direction: column;
       padding: 16px 0;
     }
+
     .sidebar .logo {
       padding: 0 16px 16px;
       font-size: 15px;
@@ -32,6 +40,7 @@
       border-bottom: 1px solid #f0f0f0;
       margin-bottom: 12px;
     }
+
     .sidebar .nav-item {
       padding: 12px 16px;
       font-size: 14px;
@@ -44,14 +53,23 @@
       margin-left: 0;
       transition: background 0.2s, color 0.2s;
     }
-    .sidebar .nav-item:hover { background: #fafafa; color: #333; }
+
+    .sidebar .nav-item:hover {
+      background: #fafafa;
+      color: #333;
+    }
+
     .sidebar .nav-item.active {
       background: #e8f4ff;
       color: #1890ff;
       border-left-color: #1890ff;
       font-weight: 500;
     }
-    .sidebar .nav-item .icon { font-size: 16px; }
+
+    .sidebar .nav-item .icon {
+      font-size: 16px;
+    }
+
     .main {
       flex: 1;
       min-width: 0;
@@ -60,28 +78,83 @@
       background: #fff;
       overflow: hidden;
     }
+
     /* ========== 视图切换 ========== */
-    .view { display: none; height: 100%; flex: 1; min-height: 0; }
-    .view.active { display: block; }
-    #view-flowchart.active { overflow: auto; background: #f5f5f5; }
+    .view {
+      display: none;
+      height: 100%;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    #view-flowchart.active {
+      overflow: auto;
+      background: #f5f5f5;
+    }
+
     /* 系统流程图样式 - SVG时序图 */
-    .flowchart-container { padding: 30px 20px; max-width: 1800px; margin: 0 auto; background: #fff; }
-    .flowchart-title { text-align: center; font-size: 26px; font-weight: 600; color: #1a1a1a; margin-bottom: 30px; }
-    .flowchart-svg-wrapper { width: 100%; overflow-x: auto; }
-    .flowchart-svg { display: block; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
-    #view-config { background: #f0f2f5; }
-    #view-config.active { overflow: hidden; }
-    #view-task-h5.active { overflow: hidden; }
-    #view-do-quiz.active { overflow-y: auto; padding-bottom: 100px; background: #f5f5f5; }
+    .flowchart-container {
+      padding: 30px 20px;
+      max-width: 1800px;
+      margin: 0 auto;
+      background: #fff;
+    }
+
+    .flowchart-title {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 30px;
+    }
+
+    .flowchart-svg-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .flowchart-svg {
+      display: block;
+      margin: 0 auto;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+
+    #view-config {
+      background: #f0f2f5;
+    }
+
+    #view-config.active {
+      overflow: hidden;
+    }
+
+    #view-task-h5.active {
+      overflow: hidden;
+    }
+
+    #view-do-quiz.active {
+      overflow-y: auto;
+      padding-bottom: 100px;
+      background: #f5f5f5;
+    }
 
     /* ========== 群发配置：.layout 作用域 ========== */
-    .layout { display: flex; min-height: 100%; height: 100%; }
+    .layout {
+      display: flex;
+      min-height: 100%;
+      height: 100%;
+    }
+
     .layout .sidebar {
       width: 180px;
       background: #fff;
       border-right: 1px solid #EBEEF0;
       padding: 16px 0;
     }
+
     .layout .sidebar .btn-add {
       margin: 0 12px 16px;
       padding: 8px 16px;
@@ -93,7 +166,12 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    .layout .sidebar .btn-add:hover { border-color: #1890ff; color: #1890ff; }
+
+    .layout .sidebar .btn-add:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
     .layout .sidebar .task-tag {
       padding: 10px 16px;
       font-size: 14px;
@@ -102,31 +180,60 @@
       border-left: 3px solid transparent;
       margin-left: 0;
     }
+
     .layout .sidebar .task-tag.active {
       background: #e6f7ff;
       color: #1890ff;
       border-left-color: #1890ff;
       font-weight: 500;
     }
+
     .layout .main {
       flex: 1;
       padding: 24px;
       overflow-y: auto;
       padding-bottom: 88px;
     }
-    .main-inner { display: flex; gap: 24px; max-width: 1200px; margin: 0 auto; }
+
+    .main-inner {
+      display: flex;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
     .config-panel {
       flex: 1;
       min-width: 0;
       background: #fff;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       padding: 24px;
     }
-    .form-block { margin-bottom: 24px; }
-    .form-block .label { display: block; font-size: 14px; color: #333; margin-bottom: 12px; }
-    .form-block .label .required { color: #ff4d4f; margin-left: 2px; }
-    .form-block .label .count { float: right; font-weight: normal; color: #999; font-size: 12px; }
+
+    .form-block {
+      margin-bottom: 24px;
+    }
+
+    .form-block .label {
+      display: block;
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .form-block .label .required {
+      color: #ff4d4f;
+      margin-left: 2px;
+    }
+
+    .form-block .label .count {
+      float: right;
+      font-weight: normal;
+      color: #999;
+      font-size: 12px;
+    }
+
     input[type="text"] {
       width: 100%;
       padding: 10px 12px;
@@ -135,223 +242,1722 @@
       border-radius: 8px;
       outline: none;
     }
-    input[type="text"]:focus { border-color: #1890ff; }
-    .radio-group { display: flex; flex-wrap: wrap; gap: 12px; }
-    .radio-item { display: inline-flex; align-items: center; font-size: 14px; color: #5c5c5c; cursor: pointer; }
-    .radio-item input { display: none; }
-    .radio-item .dot { width: 14px; height: 14px; border: 1px solid #d0d0d0; border-radius: 50%; margin-right: 8px; position: relative; }
-    .radio-item input:checked + .dot { border-color: #52c41a; }
-    .radio-item input:checked + .dot::after {
-      content: ''; position: absolute; left: 3px; top: 3px; width: 8px; height: 8px; background: #52c41a; border-radius: 50%;
+
+    input[type="text"]:focus {
+      border-color: #1890ff;
     }
-    .radio-item input:checked ~ span { color: #333; font-weight: 500; }
-    .btn-group-inline { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .radio-item {
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
+      color: #5c5c5c;
+      cursor: pointer;
+    }
+
+    .radio-item input {
+      display: none;
+    }
+
+    .radio-item .dot {
+      width: 14px;
+      height: 14px;
+      border: 1px solid #d0d0d0;
+      border-radius: 50%;
+      margin-right: 8px;
+      position: relative;
+    }
+
+    .radio-item input:checked+.dot {
+      border-color: #52c41a;
+    }
+
+    .radio-item input:checked+.dot::after {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 8px;
+      height: 8px;
+      background: #52c41a;
+      border-radius: 50%;
+    }
+
+    .radio-item input:checked~span {
+      color: #333;
+      font-weight: 500;
+    }
+
+    .btn-group-inline {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
     .btn-outline {
-      padding: 8px 16px; font-size: 14px; color: #5c5c5c; background: #fff; border: 1px solid #e0e0e0;
-      border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      color: #5c5c5c;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .btn-outline:hover { border-color: #1890ff; color: #1890ff; }
-    .send-content-block .label { margin-bottom: 12px; }
-    .content-type-tabs { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+    .btn-outline:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
+    .send-content-block .label {
+      margin-bottom: 12px;
+    }
+
+    .content-type-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
     .content-type-tab {
-      padding: 10px 16px; font-size: 14px; color: #5c5c5c; background: #f5f5f5; border: 1px solid transparent;
-      border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #5c5c5c;
+      background: #f5f5f5;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .content-type-tab:hover { background: #ebebeb; color: #333; }
-    .content-type-tab.active { background: #e8e8e8; color: #333; border-color: #d0d0d0; }
-    .content-type-tab.tab-send-task { background: #f6ffed; border-color: #b7eb8f; color: #52c41a; }
-    .content-type-tab.tab-send-task:hover { background: #d9f7be; color: #389e0d; }
-    .content-type-tab .icon-i { width: 14px; height: 14px; border: 1px solid #999; border-radius: 50%; font-size: 10px; line-height: 12px; text-align: center; color: #999; }
-    .text-editor-card { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
-    .text-editor-tab { padding: 8px 12px; background: #fafafa; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; }
-    .text-editor-tab .tab-name { font-size: 14px; }
-    .text-editor-tab .tab-actions { display: flex; gap: 8px; color: #999; cursor: pointer; }
-    .vars-row { padding: 10px 12px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 8px; }
-    .var-tag { padding: 4px 10px; font-size: 12px; color: #1890ff; background: #e6f7ff; border-radius: 4px; cursor: pointer; }
-    .var-tag:hover { background: #bae7ff; }
-    .text-editor-body { padding: 12px; }
-    .text-editor-body textarea { width: 100%; min-height: 160px; padding: 12px; font-size: 14px; line-height: 1.6; border: none; outline: none; resize: vertical; }
-    .send-content-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 16px; background: #fafafa; border-top: 1px solid #eee; }
-    .send-content-footer .left { display: flex; align-items: center; gap: 16px; }
-    .btn-save-tpl { padding: 6px 12px; font-size: 13px; color: #5c5c5c; background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
-    .btn-save-tpl:hover { border-color: #1890ff; color: #1890ff; }
-    .char-count { font-size: 12px; color: #999; }
-    .link-more { font-size: 13px; color: #1890ff; cursor: pointer; }
-    .link-more:hover { text-decoration: underline; }
-    .btn-send-task { padding: 8px 20px; font-size: 14px; font-weight: 500; color: #fff; background: #52c41a; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-send-task:hover { background: #73d13d; }
-    .btn-send-task:active { transform: scale(0.98); }
-    .preview-phone { width: 320px; flex-shrink: 0; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 16px; }
-    .phone-frame { width: 100%; aspect-ratio: 9/19; max-height: 560px; border: 2px solid #e0e0e0; border-radius: 24px; overflow: hidden; margin: 0 auto; background: #fafafa; }
-    .phone-frame .header { padding: 12px 16px; font-size: 16px; text-align: center; background: #fff; border-bottom: 1px solid #eee; }
-    .phone-frame .body { height: calc(100% - 100px); background: #f5f5f5; }
-    .phone-frame .footer { padding: 12px; background: #fff; border-top: 1px solid #eee; display: flex; align-items: center; gap: 8px; }
-    .phone-frame .footer .input { flex: 1; height: 36px; border: 1px solid #eee; border-radius: 18px; background: #f5f5f5; }
-    .phone-frame .footer .ico { width: 24px; height: 24px; background: #e0e0e0; border-radius: 4px; }
+
+    .content-type-tab:hover {
+      background: #ebebeb;
+      color: #333;
+    }
+
+    .content-type-tab.active {
+      background: #e8e8e8;
+      color: #333;
+      border-color: #d0d0d0;
+    }
+
+    .content-type-tab.tab-send-task {
+      background: #f6ffed;
+      border-color: #b7eb8f;
+      color: #52c41a;
+    }
+
+    .content-type-tab.tab-send-task:hover {
+      background: #d9f7be;
+      color: #389e0d;
+    }
+
+    .content-type-tab .icon-i {
+      width: 14px;
+      height: 14px;
+      border: 1px solid #999;
+      border-radius: 50%;
+      font-size: 10px;
+      line-height: 12px;
+      text-align: center;
+      color: #999;
+    }
+
+    .text-editor-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .text-editor-tab {
+      padding: 8px 12px;
+      background: #fafafa;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .text-editor-tab .tab-name {
+      font-size: 14px;
+    }
+
+    .text-editor-tab .tab-actions {
+      display: flex;
+      gap: 8px;
+      color: #999;
+      cursor: pointer;
+    }
+
+    .vars-row {
+      padding: 10px 12px;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .var-tag {
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #1890ff;
+      background: #e6f7ff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .var-tag:hover {
+      background: #bae7ff;
+    }
+
+    .text-editor-body {
+      padding: 12px;
+    }
+
+    .text-editor-body textarea {
+      width: 100%;
+      min-height: 160px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      border: none;
+      outline: none;
+      resize: vertical;
+    }
+
+    .send-content-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #fafafa;
+      border-top: 1px solid #eee;
+    }
+
+    .send-content-footer .left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-save-tpl {
+      padding: 6px 12px;
+      font-size: 13px;
+      color: #5c5c5c;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-save-tpl:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
+    .char-count {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .link-more {
+      font-size: 13px;
+      color: #1890ff;
+      cursor: pointer;
+    }
+
+    .link-more:hover {
+      text-decoration: underline;
+    }
+
+    .btn-send-task {
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      background: #52c41a;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-send-task:hover {
+      background: #73d13d;
+    }
+
+    .btn-send-task:active {
+      transform: scale(0.98);
+    }
+
+    .preview-phone {
+      width: 320px;
+      flex-shrink: 0;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      padding: 16px;
+    }
+
+    .phone-frame {
+      width: 100%;
+      aspect-ratio: 9/19;
+      max-height: 560px;
+      border: 2px solid #e0e0e0;
+      border-radius: 24px;
+      overflow: hidden;
+      margin: 0 auto;
+      background: #fafafa;
+    }
+
+    .phone-frame .header {
+      padding: 12px 16px;
+      font-size: 16px;
+      text-align: center;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+
+    .phone-frame .body {
+      height: calc(100% - 100px);
+      background: #f5f5f5;
+    }
+
+    .phone-frame .footer {
+      padding: 12px;
+      background: #fff;
+      border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .phone-frame .footer .input {
+      flex: 1;
+      height: 36px;
+      border: 1px solid #eee;
+      border-radius: 18px;
+      background: #f5f5f5;
+    }
+
+    .phone-frame .footer .ico {
+      width: 24px;
+      height: 24px;
+      background: #e0e0e0;
+      border-radius: 4px;
+    }
+
     .bottom-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #fff; border-top: 1px solid #EBEEF0;
-      display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: #fff;
+      border-top: 1px solid #EBEEF0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
     }
-    .bottom-bar .left { display: flex; gap: 12px; }
-    .bottom-bar .center { font-size: 14px; color: #666; }
-    .bottom-bar .right { display: flex; gap: 12px; }
-    .btn-bar { padding: 8px 20px; font-size: 14px; border-radius: 8px; cursor: pointer; border: 1px solid #e0e0e0; background: #fff; color: #5c5c5c; }
-    .btn-bar:hover { border-color: #1890ff; color: #1890ff; }
-    .btn-bar.btn-send { background: #52c41a; border-color: #52c41a; color: #fff; }
-    .btn-bar.btn-send:hover { background: #73d13d; }
-    
+
+    .bottom-bar .left {
+      display: flex;
+      gap: 12px;
+    }
+
+    .bottom-bar .center {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .bottom-bar .right {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-bar {
+      padding: 8px 20px;
+      font-size: 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      color: #5c5c5c;
+    }
+
+    .btn-bar:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
+    .btn-bar.btn-send {
+      background: #52c41a;
+      border-color: #52c41a;
+      color: #fff;
+    }
+
+    .btn-bar.btn-send:hover {
+      background: #73d13d;
+    }
+
+
+    /* ========== Mobile Frame Wrapper Styles ========== */
+    .mobile-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100%;
+      background: #e0e0e0;
+      padding: 40px 0;
+    }
+
+    .mobile-content {
+      width: 375px;
+      height: 812px;
+      background: #f5f5f5;
+      border-radius: 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border: 12px solid #333;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scrollbar hidden for neatness */
+    .mobile-content::-webkit-scrollbar {
+      width: 0;
+    }
+
+    /* Adjust fixed elements to be absolute within the frame */
+    #view-do-quiz .foot-btn {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: 20;
+    }
+
+    #view-do-quiz .status-bar,
+    #view-do-quiz .header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      width: 100%;
+    }
+
+    /* Mobile Responsive Overrides */
+    @media screen and (max-width: 768px) {
+      .mobile-wrapper {
+        display: block;
+        padding: 0;
+        background: transparent;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .mobile-content {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        overflow-y: visible;
+      }
+
+      #view-do-quiz .foot-btn {
+        position: fixed;
+      }
+    }
+
+    /* Existing Styles */
     /* ========== 群发 弹窗 ========== */
-    .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0.25s; }
-    .modal-mask.show { opacity: 1; visibility: visible; }
-    .modal-wrap { position: fixed; inset: 0; z-index: 1001; display: flex; align-items: center; justify-content: center; padding: 24px; pointer-events: none; }
-    .modal-wrap .modal { pointer-events: auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; transform: scale(0.9); opacity: 0; transition: transform 0.25s, opacity 0.25s; }
-    .modal-wrap.show .modal { transform: scale(1); opacity: 1; }
-    .modal-wrap:not(.show) .modal { pointer-events: none; }
-    .modal-mask[data-layer="1"] { z-index: 1000; } .modal-wrap[data-layer="1"] { z-index: 1001; }
-    .modal-mask[data-layer="2"] { z-index: 1002; } .modal-wrap[data-layer="2"] { z-index: 1003; }
-    .modal-mask[data-layer="3"] { z-index: 1004; } .modal-wrap[data-layer="3"] { z-index: 1005; }
-    .modal.modal-type-select { width: 360px; }
-    .modal-type-select .modal-body { padding: 24px; }
-    .modal-type-select .type-tabs { display: flex; gap: 12px; margin-bottom: 20px; }
-    .modal-type-select .type-tab { flex: 1; padding: 16px; font-size: 15px; text-align: center; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; }
-    .modal-type-select .type-tab:hover { border-color: #52c41a; background: #f6ffed; color: #52c41a; }
-    .modal-type-select .type-tab.active { border-color: #52c41a; background: #f6ffed; color: #52c41a; font-weight: 500; }
-    .modal-type-select .btn-cancel { width: 100%; padding: 12px; font-size: 14px; color: #666; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; }
-    .modal-type-select .btn-cancel:hover { border-color: #1890ff; color: #1890ff; }
-    .modal.modal-new-task { width: 480px; max-width: 95vw; }
-    .modal-header { padding: 14px 16px; border-bottom: 1px solid #EBEEF0; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-    .modal-header .back { font-size: 18px; color: #333; cursor: pointer; padding: 4px 8px; margin: -4px 0 -4px -8px; }
-    .modal-header .title { font-size: 16px; font-weight: 600; }
-    .modal-header .actions { display: flex; gap: 8px; }
-    .modal-header .actions button { padding: 6px 14px; font-size: 14px; border-radius: 6px; cursor: pointer; border: 1px solid #e0e0e0; background: #fff; color: #5c5c5c; }
-    .modal-header .actions button.btn-publish { background: #52c41a; border-color: #52c41a; color: #fff; }
-    .modal-body { padding: 16px; overflow-y: auto; flex: 1; }
-    .modal-new-task .field { margin-bottom: 16px; }
-    .modal-new-task .field .l { font-size: 14px; color: #333; margin-bottom: 8px; }
-    .modal-new-task .field .l .rq { color: #ff4d4f; }
-    .modal-new-task .field textarea { width: 100%; min-height: 80px; padding: 10px 12px; font-size: 14px; border: 1px solid #e0e0e0; border-radius: 8px; resize: vertical; outline: none; }
-    .modal-new-task .field textarea:focus { border-color: #1890ff; }
-    .modal-new-task .field .count { font-size: 12px; color: #999; margin-top: 4px; }
-    .modal-new-task .set-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-    .modal-new-task .set-row:last-child { border-bottom: none; }
-    .modal-new-task .set-row .left { color: #333; }
-    .modal-new-task .set-row .left .rq { color: #ff4d4f; }
-    .modal-new-task .set-row .right { color: #999; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-    .modal-new-task .set-row .right .arrow { font-size: 12px; }
-    .switch { width: 44px; height: 24px; background: #e0e0e0; border-radius: 12px; cursor: pointer; position: relative; transition: background 0.2s; }
-    .switch.on { background: #52c41a; }
-    .switch::after { content: ''; position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #fff; top: 2px; left: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: left 0.2s; }
-    .switch.on::after { left: 22px; }
-    .btn-add-content { width: 100%; padding: 14px; font-size: 15px; color: #52c41a; background: #f6ffed; border: 1px dashed #b7eb8f; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; }
-    .btn-add-content:hover { background: #d9f7be; border-color: #52c41a; }
-    .modal-new-task .section-title { font-size: 14px; color: #333; margin-bottom: 8px; }
-    .modal.modal-paper-lib { width: 520px; max-width: 95vw; }
-    .modal-paper-lib .search-row { display: flex; gap: 12px; margin-bottom: 12px; }
-    .modal-paper-lib .search-row input { flex: 1; padding: 10px 12px 10px 36px; font-size: 14px; border: 1px solid #e0e0e0; border-radius: 8px; outline: none; }
-    .modal-paper-lib .search-row input:focus { border-color: #1890ff; }
-    .modal-paper-lib .search-wrap { position: relative; flex: 1; }
-    .modal-paper-lib .search-wrap::before { content: 'Q'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #999; }
-    .modal-paper-lib .filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .modal-paper-lib .filter-row select { padding: 8px 12px; font-size: 13px; border: 1px solid #e0e0e0; border-radius: 6px; background: #fff; min-width: 140px; }
-    .modal-paper-lib .paper-list { max-height: 320px; overflow-y: auto; }
-    .modal-paper-lib .paper-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 14px; }
-    .modal-paper-lib .paper-item:hover { background: #fafafa; }
-    .modal-paper-lib .paper-item .icon { width: 36px; height: 36px; background: #e6f7ff; border-radius: 6px; color: #1890ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .modal.modal-add-question { width: 520px; max-width: 95vw; }
-    .modal-add-question .modal-header .actions button.btn-save { background: #1890ff; border-color: #1890ff; color: #fff; }
-    .modal-add-question .editor-area { margin-bottom: 16px; }
-    .modal-add-question .editor-area textarea { width: 100%; min-height: 180px; padding: 12px; font-size: 14px; border: 1px solid #e0e0e0; border-radius: 8px; resize: vertical; outline: none; }
-    .modal-add-question .editor-area textarea:focus { border-color: #1890ff; }
-    .modal-add-question .toolbar { display: flex; gap: 16px; padding: 12px 0; border-top: 1px solid #f0f0f0; }
-    .modal-add-question .toolbar .ico { width: 40px; height: 40px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #666; }
-    .modal-add-question .toolbar .ico:hover { background: #e6f7ff; color: #1890ff; }
-    
+    .modal-mask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s, visibility 0.25s;
+    }
+
+    .modal-mask.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      pointer-events: none;
+    }
+
+    .modal-wrap .modal {
+      pointer-events: auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.25s, opacity 0.25s;
+    }
+
+    .modal-wrap.show .modal {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .modal-wrap:not(.show) .modal {
+      pointer-events: none;
+    }
+
+    .modal-mask[data-layer="1"] {
+      z-index: 1000;
+    }
+
+    .modal-wrap[data-layer="1"] {
+      z-index: 1001;
+    }
+
+    .modal-mask[data-layer="2"] {
+      z-index: 1002;
+    }
+
+    .modal-wrap[data-layer="2"] {
+      z-index: 1003;
+    }
+
+    .modal-mask[data-layer="3"] {
+      z-index: 1004;
+    }
+
+    .modal-wrap[data-layer="3"] {
+      z-index: 1005;
+    }
+
+    .modal.modal-type-select {
+      width: 360px;
+    }
+
+    .modal-type-select .modal-body {
+      padding: 24px;
+    }
+
+    .modal-type-select .type-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .modal-type-select .type-tab {
+      flex: 1;
+      padding: 16px;
+      font-size: 15px;
+      text-align: center;
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .modal-type-select .type-tab:hover {
+      border-color: #52c41a;
+      background: #f6ffed;
+      color: #52c41a;
+    }
+
+    .modal-type-select .type-tab.active {
+      border-color: #52c41a;
+      background: #f6ffed;
+      color: #52c41a;
+      font-weight: 500;
+    }
+
+    .modal-type-select .btn-cancel {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      color: #666;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .modal-type-select .btn-cancel:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+    }
+
+    .modal.modal-new-task {
+      width: 480px;
+      max-width: 95vw;
+    }
+
+    .modal-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid #EBEEF0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .modal-header .back {
+      font-size: 18px;
+      color: #333;
+      cursor: pointer;
+      padding: 4px 8px;
+      margin: -4px 0 -4px -8px;
+    }
+
+    .modal-header .title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .modal-header .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal-header .actions button {
+      padding: 6px 14px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      color: #5c5c5c;
+    }
+
+    .modal-header .actions button.btn-publish {
+      background: #52c41a;
+      border-color: #52c41a;
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-new-task .field {
+      margin-bottom: 16px;
+    }
+
+    .modal-new-task .field .l {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .modal-new-task .field .l .rq {
+      color: #ff4d4f;
+    }
+
+    .modal-new-task .field textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      resize: vertical;
+      outline: none;
+    }
+
+    .modal-new-task .field textarea:focus {
+      border-color: #1890ff;
+    }
+
+    .modal-new-task .field .count {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .modal-new-task .set-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+    }
+
+    .modal-new-task .set-row:last-child {
+      border-bottom: none;
+    }
+
+    .modal-new-task .set-row .left {
+      color: #333;
+    }
+
+    .modal-new-task .set-row .left .rq {
+      color: #ff4d4f;
+    }
+
+    .modal-new-task .set-row .right {
+      color: #999;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .modal-new-task .set-row .right .arrow {
+      font-size: 12px;
+    }
+
+    .switch {
+      width: 44px;
+      height: 24px;
+      background: #e0e0e0;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .switch.on {
+      background: #52c41a;
+    }
+
+    .switch::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      top: 2px;
+      left: 2px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      transition: left 0.2s;
+    }
+
+    .switch.on::after {
+      left: 22px;
+    }
+
+    .btn-add-content {
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      color: #52c41a;
+      background: #f6ffed;
+      border: 1px dashed #b7eb8f;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-add-content:hover {
+      background: #d9f7be;
+      border-color: #52c41a;
+    }
+
+    .modal-new-task .section-title {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .modal.modal-paper-lib {
+      width: 520px;
+      max-width: 95vw;
+    }
+
+    .modal-paper-lib .search-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .modal-paper-lib .search-row input {
+      flex: 1;
+      padding: 10px 12px 10px 36px;
+      font-size: 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .modal-paper-lib .search-row input:focus {
+      border-color: #1890ff;
+    }
+
+    .modal-paper-lib .search-wrap {
+      position: relative;
+      flex: 1;
+    }
+
+    .modal-paper-lib .search-wrap::before {
+      content: 'Q';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: #999;
+    }
+
+    .modal-paper-lib .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .modal-paper-lib .filter-row select {
+      padding: 8px 12px;
+      font-size: 13px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background: #fff;
+      min-width: 140px;
+    }
+
+    .modal-paper-lib .paper-list {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .modal-paper-lib .paper-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .modal-paper-lib .paper-item:hover {
+      background: #fafafa;
+    }
+
+    .modal-paper-lib .paper-item .icon {
+      width: 36px;
+      height: 36px;
+      background: #e6f7ff;
+      border-radius: 6px;
+      color: #1890ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .modal.modal-add-question {
+      width: 520px;
+      max-width: 95vw;
+    }
+
+    .modal-add-question .modal-header .actions button.btn-save {
+      background: #1890ff;
+      border-color: #1890ff;
+      color: #fff;
+    }
+
+    .modal-add-question .editor-area {
+      margin-bottom: 16px;
+    }
+
+    .modal-add-question .editor-area textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 12px;
+      font-size: 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      resize: vertical;
+      outline: none;
+    }
+
+    .modal-add-question .editor-area textarea:focus {
+      border-color: #1890ff;
+    }
+
+    .modal-add-question .toolbar {
+      display: flex;
+      gap: 16px;
+      padding: 12px 0;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .modal-add-question .toolbar .ico {
+      width: 40px;
+      height: 40px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .modal-add-question .toolbar .ico:hover {
+      background: #e6f7ff;
+      color: #1890ff;
+    }
+
     /* ========== 学习任务 H5 企微 ========== */
-    #view-task-h5 .wework { display: flex; height: 100%; width: 100%; }
-    .wework-side { width: 60px; background: #2E2E2E; flex-shrink: 0; border-right: 1px solid #3D3D3D; display: flex; flex-direction: column; align-items: center; padding-top: 12px; }
-    .wework-side .search { width: 36px; height: 36px; background: #3D3D3D; border-radius: 6px; margin-bottom: 12px; color: #8C8C8C; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-    .wework-side .nav-item { width: 44px; color: #8C8C8C; font-size: 10px; margin-bottom: 2px; padding: 8px 0; text-align: center; border-radius: 6px; }
-    .wework-side .nav-item.act { color: #07C160; background: rgba(7,193,96,0.12); }
-    .wework-list { width: 260px; background: #EDEDED; flex-shrink: 0; border-right: 1px solid #E0E0E0; display: flex; flex-direction: column; }
-    .wework-list .list-top { padding: 12px 14px; font-size: 15px; font-weight: 500; color: #1A1A1A; border-bottom: 1px solid #E0E0E0; background: #fff; }
-    .wework-list .list-item { padding: 12px 14px; border-bottom: 1px solid #F0F0F0; cursor: pointer; background: #fff; }
-    .wework-list .list-item.act { background: #E8F4FF; }
-    .wework-list .list-item .name { font-size: 14px; color: #1A1A1A; margin-bottom: 4px; }
-    .wework-list .list-item .preview { font-size: 12px; color: #8C8C8C; }
-    .wework-list .list-item .preview .t { float: right; color: #BFBFBF; }
-    .wework-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #F5F5F5; }
-    .wework-main .main-head { height: 56px; background: #fff; border-bottom: 1px solid #E8E8E8; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 16px; font-weight: 500; color: #1A1A1A; }
-    .wework-main .main-head .more { width: 28px; height: 28px; background: #F0F0F0; border-radius: 6px; font-size: 12px; color: #8C8C8C; display: flex; align-items: center; justify-content: center; }
-    .wework-main .main-body { flex: 1; overflow-y: auto; padding: 16px 20px 100px; background: #F5F5F5; }
-    .wework-main .main-body .sys { text-align: center; font-size: 12px; color: #BFBFBF; margin: 16px 0; }
-    .wework-main .main-body .bubble { margin-bottom: 16px; max-width: 420px; }
-    .wework-main .main-body .bubble .sender { font-size: 12px; color: #8C8C8C; margin-bottom: 6px; }
-    .wework-main .main-body .bubble .sender .n { color: #4A90E2; }
-    .wework-main .main-foot { padding: 12px 16px; background: #fff; border-top: 1px solid #E8E8E8; display: flex; align-items: center; gap: 8px; }
-    .wework-main .main-foot .ico { width: 32px; height: 32px; background: #F5F5F5; border-radius: 6px; flex-shrink: 0; }
-    .wework-main .main-foot .input { flex: 1; height: 36px; background: #F5F5F5; border-radius: 6px; min-width: 0; }
-    .wework-main .main-foot .send { padding: 0 16px; height: 36px; line-height: 36px; font-size: 14px; color: #07C160; flex-shrink: 0; }
-    .wework-info { width: 280px; background: #fff; flex-shrink: 0; border-left: 1px solid #E8E8E8; padding: 16px; font-size: 13px; color: #8C8C8C; }
-    .wework-info .info-t { font-size: 14px; font-weight: 500; color: #1A1A1A; margin-bottom: 12px; }
-    .wework-info .info-tabs { display: flex; gap: 12px; margin-bottom: 12px; font-size: 12px; }
-    .wework-info .info-tabs span.act { color: #4A90E2; }
-    .wework-bg { display: none; position: fixed; inset: 0; background: url('base_info/企微页面.jpg') no-repeat center; background-size: cover; z-index: 0; }
-    body.bg-img .wework-bg { display: block; }
-    body.bg-img .wework { position: relative; z-index: 1; }
-    body.bg-img .wework-side, body.bg-img .wework-list, body.bg-img .wework-info { width: 0; min-width: 0; overflow: hidden; padding: 0; border: none; visibility: hidden; }
-    body.bg-img .wework-main .main-head, body.bg-img .wework-main .main-foot { height: 0; overflow: hidden; padding: 0; visibility: hidden; }
-    body.bg-img .wework-main { background: transparent; }
-    body.bg-img .wework-main .main-body { background: transparent; padding: 0; overflow: visible; }
-    body.bg-img .wework-main .main-body .sys { display: none; }
-    body.bg-img .wework-main .main-body .bubble { position: fixed; right: 22%; top: 36%; max-width: 400px; }
-    body.bg-img .wework-main .main-body .bubble .sender { color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-    body.bg-img .wework-main .main-body .bubble .sender .n { color: #E8F4FF; }
-    .wework-main .main-body .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 8px rgba(0,0,0,0.08); overflow: hidden; max-width: 400px; }
-    .card-tag { display: inline-block; padding: 4px 10px; font-size: 12px; color: #fff; background: #4A90E2; border-radius: 0 0 8px 0; }
-    .card-body { display: flex; padding: 16px; gap: 14px; align-items: flex-start; }
-    .card-main { flex: 1; min-width: 0; }
-    .card-title { font-size: 17px; font-weight: 600; color: #1a1a1a; line-height: 1.4; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .card-meta { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #8c8c8c; }
-    .card-meta .card-meta-row { display: flex; align-items: center; }
-    .card-meta .card-meta-tags { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 12px; color: #999; }
-    .card-meta span { display: inline-flex; align-items: center; gap: 4px; }
-    .card-thumb { width: 80px; height: 80px; flex-shrink: 0; border-radius: 8px; background: linear-gradient(135deg, #4A90E2 0%, #67B8E3 100%); display: flex; align-items: center; justify-content: center; font-size: 32px; color: rgba(255,255,255,0.9); }
-    .card-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-    .card-desc { padding: 0 16px 12px; font-size: 13px; color: #8c8c8c; line-height: 1.5; border-top: 1px solid #f0f0f0; margin: 0 16px; padding-top: 12px; }
-    .card-desc.clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .card-actions { padding: 14px 16px; border-top: 1px solid #f0f0f0; }
-    .btn-primary { display: block; width: 100%; padding: 12px 16px; font-size: 16px; font-weight: 500; color: #fff; background: #4A90E2; border: none; border-radius: 8px; text-align: center; cursor: pointer; }
-    .btn-primary:active { opacity: 0.9; }
-    
+    #view-task-h5 .wework {
+      display: flex;
+      height: 100%;
+      width: 100%;
+    }
+
+    .wework-side {
+      width: 60px;
+      background: #2E2E2E;
+      flex-shrink: 0;
+      border-right: 1px solid #3D3D3D;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 12px;
+    }
+
+    .wework-side .search {
+      width: 36px;
+      height: 36px;
+      background: #3D3D3D;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      color: #8C8C8C;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wework-side .nav-item {
+      width: 44px;
+      color: #8C8C8C;
+      font-size: 10px;
+      margin-bottom: 2px;
+      padding: 8px 0;
+      text-align: center;
+      border-radius: 6px;
+    }
+
+    .wework-side .nav-item.act {
+      color: #07C160;
+      background: rgba(7, 193, 96, 0.12);
+    }
+
+    .wework-list {
+      width: 260px;
+      background: #EDEDED;
+      flex-shrink: 0;
+      border-right: 1px solid #E0E0E0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wework-list .list-top {
+      padding: 12px 14px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #1A1A1A;
+      border-bottom: 1px solid #E0E0E0;
+      background: #fff;
+    }
+
+    .wework-list .list-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid #F0F0F0;
+      cursor: pointer;
+      background: #fff;
+    }
+
+    .wework-list .list-item.act {
+      background: #E8F4FF;
+    }
+
+    .wework-list .list-item .name {
+      font-size: 14px;
+      color: #1A1A1A;
+      margin-bottom: 4px;
+    }
+
+    .wework-list .list-item .preview {
+      font-size: 12px;
+      color: #8C8C8C;
+    }
+
+    .wework-list .list-item .preview .t {
+      float: right;
+      color: #BFBFBF;
+    }
+
+    .wework-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: #F5F5F5;
+    }
+
+    .wework-main .main-head {
+      height: 56px;
+      background: #fff;
+      border-bottom: 1px solid #E8E8E8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1A1A1A;
+    }
+
+    .wework-main .main-head .more {
+      width: 28px;
+      height: 28px;
+      background: #F0F0F0;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #8C8C8C;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wework-main .main-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px 100px;
+      background: #F5F5F5;
+    }
+
+    .wework-main .main-body .sys {
+      text-align: center;
+      font-size: 12px;
+      color: #BFBFBF;
+      margin: 16px 0;
+    }
+
+    .wework-main .main-body .bubble {
+      margin-bottom: 16px;
+      max-width: 420px;
+    }
+
+    .wework-main .main-body .bubble .sender {
+      font-size: 12px;
+      color: #8C8C8C;
+      margin-bottom: 6px;
+    }
+
+    .wework-main .main-body .bubble .sender .n {
+      color: #4A90E2;
+    }
+
+    .wework-main .main-foot {
+      padding: 12px 16px;
+      background: #fff;
+      border-top: 1px solid #E8E8E8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wework-main .main-foot .ico {
+      width: 32px;
+      height: 32px;
+      background: #F5F5F5;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .wework-main .main-foot .input {
+      flex: 1;
+      height: 36px;
+      background: #F5F5F5;
+      border-radius: 6px;
+      min-width: 0;
+    }
+
+    .wework-main .main-foot .send {
+      padding: 0 16px;
+      height: 36px;
+      line-height: 36px;
+      font-size: 14px;
+      color: #07C160;
+      flex-shrink: 0;
+    }
+
+    .wework-info {
+      width: 280px;
+      background: #fff;
+      flex-shrink: 0;
+      border-left: 1px solid #E8E8E8;
+      padding: 16px;
+      font-size: 13px;
+      color: #8C8C8C;
+    }
+
+    .wework-info .info-t {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1A1A1A;
+      margin-bottom: 12px;
+    }
+
+    .wework-info .info-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+
+    .wework-info .info-tabs span.act {
+      color: #4A90E2;
+    }
+
+    .wework-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: url('base_info/企微页面.jpg') no-repeat center;
+      background-size: cover;
+      z-index: 0;
+    }
+
+    body.bg-img .wework-bg {
+      display: block;
+    }
+
+    body.bg-img .wework {
+      position: relative;
+      z-index: 1;
+    }
+
+    body.bg-img .wework-side,
+    body.bg-img .wework-list,
+    body.bg-img .wework-info {
+      width: 0;
+      min-width: 0;
+      overflow: hidden;
+      padding: 0;
+      border: none;
+      visibility: hidden;
+    }
+
+    body.bg-img .wework-main .main-head,
+    body.bg-img .wework-main .main-foot {
+      height: 0;
+      overflow: hidden;
+      padding: 0;
+      visibility: hidden;
+    }
+
+    body.bg-img .wework-main {
+      background: transparent;
+    }
+
+    body.bg-img .wework-main .main-body {
+      background: transparent;
+      padding: 0;
+      overflow: visible;
+    }
+
+    body.bg-img .wework-main .main-body .sys {
+      display: none;
+    }
+
+    body.bg-img .wework-main .main-body .bubble {
+      position: fixed;
+      right: 22%;
+      top: 36%;
+      max-width: 400px;
+    }
+
+    body.bg-img .wework-main .main-body .bubble .sender {
+      color: rgba(255, 255, 255, 0.9);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    body.bg-img .wework-main .main-body .bubble .sender .n {
+      color: #E8F4FF;
+    }
+
+    .wework-main .main-body .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      max-width: 400px;
+    }
+
+    .card-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #fff;
+      background: #4A90E2;
+      border-radius: 0 0 8px 0;
+    }
+
+    .card-body {
+      display: flex;
+      padding: 16px;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .card-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.4;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+      color: #8c8c8c;
+    }
+
+    .card-meta .card-meta-row {
+      display: flex;
+      align-items: center;
+    }
+
+    .card-meta .card-meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      font-size: 12px;
+      color: #999;
+    }
+
+    .card-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-thumb {
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #4A90E2 0%, #67B8E3 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .card-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .card-desc {
+      padding: 0 16px 12px;
+      font-size: 13px;
+      color: #8c8c8c;
+      line-height: 1.5;
+      border-top: 1px solid #f0f0f0;
+      margin: 0 16px;
+      padding-top: 12px;
+    }
+
+    .card-desc.clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-actions {
+      padding: 14px 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+      background: #4A90E2;
+      border: none;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .btn-primary:active {
+      opacity: 0.9;
+    }
+
     /* ========== 做任务-试卷 ========== */
-    .status-bar { height: 44px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #333; background: #fff; }
-    .status-bar .l { display: flex; align-items: center; gap: 8px; }
-    .status-bar .r { display: flex; align-items: center; gap: 6px; }
-    .header { height: 48px; background: #fff; border-bottom: 1px solid #eee; display: flex; align-items: center; padding: 0 16px; position: relative; }
-    .header .back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #333; cursor: pointer; }
-    .header .title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 17px; font-weight: 600; color: #1a1a1a; }
-    .summary { background: #f0f0f0; padding: 14px 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .summary .info { flex: 1; min-width: 0; }
-    .summary .info .name { font-size: 16px; font-weight: 500; color: #1a1a1a; margin-bottom: 4px; }
-    .summary .info .sub { font-size: 13px; color: #8c8c8c; }
-    .summary .due { flex-shrink: 0; font-size: 13px; color: #8c8c8c; display: flex; align-items: center; gap: 4px; }
-    .summary .due .arrow { font-size: 10px; color: #999; }
-    .card-wrap { padding: 16px; }
-    #view-do-quiz .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
-    #view-do-quiz .card .tag { padding: 8px 16px 0; font-size: 13px; color: #8c8c8c; }
-    #view-do-quiz .card .banner { height: 72px; background: linear-gradient(135deg, #34C759 0%, #30B350 100%); margin: 12px 16px 0; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
-    #view-do-quiz .card .banner .mascot { width: 56px; height: 56px; background: rgba(255,255,255,0.25); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
-    #view-do-quiz .card .banner .word { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.95); letter-spacing: 2px; }
-    #view-do-quiz .card .quiz-title { padding: 16px 16px 8px; font-size: 16px; font-weight: 600; color: #1a1a1a; line-height: 1.4; }
-    #view-do-quiz .card .count-row { padding: 12px 16px 20px; display: flex; align-items: center; gap: 10px; }
-    #view-do-quiz .card .count-row .bar { width: 4px; height: 20px; background: #34C759; border-radius: 2px; }
-    #view-do-quiz .card .count-row .label { font-size: 13px; color: #8c8c8c; }
-    #view-do-quiz .card .count-row .num { font-size: 28px; font-weight: 700; color: #34C759; }
-    .foot-btn { position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 16px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #eee; }
-    .foot-btn .btn { display: block; width: 100%; height: 48px; line-height: 48px; font-size: 17px; font-weight: 500; color: #fff; background: #34C759; border: none; border-radius: 24px; text-align: center; cursor: pointer; }
-    .foot-btn .btn:active { opacity: 0.9; }
+    .status-bar {
+      height: 44px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #333;
+      background: #fff;
+    }
+
+    .status-bar .l {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-bar .r {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header {
+      height: 48px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      position: relative;
+    }
+
+    .header .back {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .header .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 17px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .summary {
+      background: #f0f0f0;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .summary .info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .summary .info .name {
+      font-size: 16px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .summary .info .sub {
+      font-size: 13px;
+      color: #8c8c8c;
+    }
+
+    .summary .due {
+      flex-shrink: 0;
+      font-size: 13px;
+      color: #8c8c8c;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .summary .due .arrow {
+      font-size: 10px;
+      color: #999;
+    }
+
+    .card-wrap {
+      padding: 16px;
+    }
+
+    #view-do-quiz .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    #view-do-quiz .card .tag {
+      padding: 8px 16px 0;
+      font-size: 13px;
+      color: #8c8c8c;
+    }
+
+    #view-do-quiz .card .banner {
+      height: 72px;
+      background: linear-gradient(135deg, #34C759 0%, #30B350 100%);
+      margin: 12px 16px 0;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+
+    #view-do-quiz .card .banner .mascot {
+      width: 56px;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    #view-do-quiz .card .banner .word {
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.95);
+      letter-spacing: 2px;
+    }
+
+    #view-do-quiz .card .quiz-title {
+      padding: 16px 16px 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.4;
+    }
+
+    #view-do-quiz .card .count-row {
+      padding: 12px 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #view-do-quiz .card .count-row .bar {
+      width: 4px;
+      height: 20px;
+      background: #34C759;
+      border-radius: 2px;
+    }
+
+    #view-do-quiz .card .count-row .label {
+      font-size: 13px;
+      color: #8c8c8c;
+    }
+
+    #view-do-quiz .card .count-row .num {
+      font-size: 28px;
+      font-weight: 700;
+      color: #34C759;
+    }
+
+    .foot-btn {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      background: #fff;
+      border-top: 1px solid #eee;
+    }
+
+    .foot-btn .btn {
+      display: block;
+      width: 100%;
+      height: 48px;
+      line-height: 48px;
+      font-size: 17px;
+      font-weight: 500;
+      color: #fff;
+      background: #34C759;
+      border: none;
+      border-radius: 24px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .foot-btn .btn:active {
+      opacity: 0.9;
+    }
+
+    /* ========== 移动端响应式优化 ========== */
+    @media screen and (max-width: 768px) {
+
+      /* 隐藏左侧导航栏，全屏显示内容 */
+      body>.sidebar {
+        display: none;
+      }
+
+      body {
+        overflow: auto;
+      }
+
+      .main {
+        width: 100%;
+      }
+
+      /* 做任务-试卷 页面优化 */
+      #view-do-quiz {
+        min-height: 100vh;
+        padding-bottom: 80px;
+      }
+
+      /* 状态栏优化 */
+      #view-do-quiz .status-bar {
+        padding: 8px 16px;
+        font-size: 13px;
+        background: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      /* 头部优化 */
+      #view-do-quiz .header {
+        position: sticky;
+        top: 44px;
+        z-index: 10;
+        background: #fff;
+        padding: 0 12px;
+      }
+
+      #view-do-quiz .header .title {
+        font-size: 16px;
+      }
+
+      #view-do-quiz .header .back {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
+      }
+
+      /* 摘要区域优化 */
+      #view-do-quiz .summary {
+        padding: 12px 14px;
+        background: #f0f0f0;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      #view-do-quiz .summary .info .name {
+        font-size: 15px;
+        line-height: 1.4;
+        word-break: break-all;
+      }
+
+      #view-do-quiz .summary .info .sub {
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      #view-do-quiz .summary .due {
+        font-size: 12px;
+        color: #ff6b6b;
+      }
+
+      /* 卡片区域优化 */
+      #view-do-quiz .card-wrap {
+        padding: 12px;
+      }
+
+      #view-do-quiz .card {
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+
+      #view-do-quiz .card .tag {
+        padding: 10px 14px 0;
+        font-size: 12px;
+        color: #666;
+      }
+
+      #view-do-quiz .card .banner {
+        height: 68px;
+        margin: 10px 14px 0;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #34C759 0%, #28a745 100%);
+      }
+
+      #view-do-quiz .card .banner .mascot {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        font-size: 24px;
+      }
+
+      #view-do-quiz .card .banner .word {
+        font-size: 16px;
+        letter-spacing: 1.5px;
+      }
+
+      #view-do-quiz .card .quiz-title {
+        padding: 14px 14px 6px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      #view-do-quiz .card .count-row {
+        padding: 10px 14px 16px;
+        gap: 8px;
+      }
+
+      #view-do-quiz .card .count-row .bar {
+        width: 3px;
+        height: 18px;
+      }
+
+      #view-do-quiz .card .count-row .label {
+        font-size: 12px;
+      }
+
+      #view-do-quiz .card .count-row .num {
+        font-size: 26px;
+      }
+
+      /* 底部按钮优化 */
+      #view-do-quiz .foot-btn {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 10px 14px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        background: linear-gradient(135deg, #34C759 0%, #28a745 100%);
+        border-top: none;
+        box-shadow: 0 -4px 16px rgba(52, 199, 89, 0.3);
+      }
+
+      #view-do-quiz .foot-btn .btn {
+        height: 46px;
+        line-height: 46px;
+        font-size: 16px;
+        border-radius: 23px;
+        background: #fff;
+        color: #34C759;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      #view-do-quiz .foot-btn .btn:active {
+        transform: scale(0.98);
+        opacity: 0.95;
+      }
+
+      /* 隐藏群发配置的底部工具栏 */
+      .bottom-bar {
+        display: none;
+      }
+    }
+
+    /* 超小屏幕优化 (iPhone SE 等) */
+    @media screen and (max-width: 375px) {
+      #view-do-quiz .summary .info .name {
+        font-size: 14px;
+      }
+
+      #view-do-quiz .card .banner {
+        height: 60px;
+      }
+
+      #view-do-quiz .card .banner .mascot {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+      }
+
+      #view-do-quiz .card .banner .word {
+        font-size: 14px;
+      }
+
+      #view-do-quiz .card .quiz-title {
+        font-size: 14px;
+      }
+
+      #view-do-quiz .card .count-row .num {
+        font-size: 24px;
+      }
+    }
   </style>
 </head>
+
 <body>
   <aside class="sidebar">
     <div class="logo">群发与学习任务</div>
@@ -369,142 +1975,151 @@
           <svg class="flowchart-svg" width="1600" height="2000" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="dashPattern" x="0" y="0" width="4" height="8" patternUnits="userSpaceOnUse">
-                <line x1="0" y1="0" x2="0" y2="4" stroke="#d9d9d9" stroke-width="2"/>
+                <line x1="0" y1="0" x2="0" y2="4" stroke="#d9d9d9" stroke-width="2" />
               </pattern>
               <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-                <polygon points="0 0, 10 3, 0 6" fill="#52c41a"/>
+                <polygon points="0 0, 10 3, 0 6" fill="#52c41a" />
               </marker>
               <marker id="arrowheadReturn" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-                <polygon points="0 0, 10 3, 0 6" fill="#ff7875"/>
+                <polygon points="0 0, 10 3, 0 6" fill="#ff7875" />
               </marker>
               <marker id="arrowheadDown" markerWidth="10" markerHeight="10" refX="3" refY="9" orient="auto">
-                <polygon points="0 0, 6 10, 3 10" fill="#52c41a"/>
+                <polygon points="0 0, 6 10, 3 10" fill="#52c41a" />
               </marker>
               <marker id="arrowheadLeft" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto">
-                <polygon points="10 0, 0 3, 10 6" fill="#52c41a"/>
+                <polygon points="10 0, 0 3, 10 6" fill="#52c41a" />
               </marker>
             </defs>
-            
+
             <!-- 参与者框和生命线 -->
             <g id="participants">
               <!-- 91系统 -->
-              <rect x="50" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2"/>
+              <rect x="50" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2" />
               <text x="120" y="90" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">91系统</text>
-              <line x1="120" y1="110" x2="120" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4"/>
-              
+              <line x1="120" y1="110" x2="120" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4" />
+
               <!-- ERP系统 -->
-              <rect x="250" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2"/>
+              <rect x="250" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2" />
               <text x="320" y="90" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">ERP系统</text>
-              <line x1="320" y1="110" x2="320" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4"/>
-              
+              <line x1="320" y1="110" x2="320" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4" />
+
               <!-- omo-自定义任务 -->
-              <rect x="450" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2"/>
+              <rect x="450" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2" />
               <text x="520" y="90" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">omo-自定义任务</text>
-              <line x1="520" y1="110" x2="520" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4"/>
-              
+              <line x1="520" y1="110" x2="520" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4" />
+
               <!-- 教师精灵 -->
-              <rect x="650" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2"/>
+              <rect x="650" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2" />
               <text x="720" y="90" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">教师精灵</text>
-              <line x1="720" y1="110" x2="720" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4"/>
-              
+              <line x1="720" y1="110" x2="720" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4" />
+
               <!-- 教师端 -->
-              <rect x="850" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2"/>
+              <rect x="850" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2" />
               <text x="920" y="90" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">教师端</text>
-              <line x1="920" y1="110" x2="920" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4"/>
-              
+              <line x1="920" y1="110" x2="920" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4" />
+
               <!-- 企微聊天框/群 -->
-              <rect x="1050" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2"/>
+              <rect x="1050" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2" />
               <text x="1120" y="90" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">企微聊天框/群</text>
-              <line x1="1120" y1="110" x2="1120" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4"/>
-              
+              <line x1="1120" y1="110" x2="1120" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4" />
+
               <!-- 新东方大学考试 -->
-              <rect x="1250" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2"/>
+              <rect x="1250" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2" />
               <text x="1320" y="90" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">新东方大学考试</text>
-              <line x1="1320" y1="110" x2="1320" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4"/>
-              
+              <line x1="1320" y1="110" x2="1320" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4" />
+
               <!-- 学生端(作答/上传) -->
-              <rect x="1450" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2"/>
+              <rect x="1450" y="60" width="140" height="50" rx="6" fill="#fff" stroke="#1890ff" stroke-width="2" />
               <text x="1520" y="85" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">学生端</text>
               <text x="1520" y="100" text-anchor="middle" font-size="13" font-weight="500" fill="#1890ff">(作答/上传)</text>
-              <line x1="1520" y1="110" x2="1520" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4"/>
+              <line x1="1520" y1="110" x2="1520" y2="1900" stroke="#d9d9d9" stroke-width="2" stroke-dasharray="4,4" />
             </g>
-            
+
             <!-- 阶段1: 数据初始化与任务定义 -->
             <g id="stage1">
-              <rect x="20" y="180" width="1560" height="200" fill="#e6f7ff" rx="4" opacity="0.3"/>
+              <rect x="20" y="180" width="1560" height="200" fill="#e6f7ff" rx="4" opacity="0.3" />
               <text x="30" y="210" font-size="16" font-weight="600" fill="#1890ff">1. 数据初始化与任务定义</text>
-              
+
               <!-- ERP系统 → 教师精灵: 同步学员/学管/班级/家长关系 -->
-              <line x1="320" y1="250" x2="720" y2="250" stroke="#52c41a" stroke-width="2" marker-end="url(#arrowhead)"/>
-              <rect x="450" y="235" width="200" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1"/>
+              <line x1="320" y1="250" x2="720" y2="250" stroke="#52c41a" stroke-width="2"
+                marker-end="url(#arrowhead)" />
+              <rect x="450" y="235" width="200" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1" />
               <text x="550" y="253" text-anchor="middle" font-size="12" fill="#333">同步学员/学管/班级/家长关系</text>
-              
+
               <!-- ERP系统 → 教师精灵: 同步学员/教师/班级关系 -->
-              <line x1="320" y1="300" x2="720" y2="300" stroke="#52c41a" stroke-width="2" marker-end="url(#arrowhead)"/>
-              <rect x="450" y="285" width="200" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1"/>
+              <line x1="320" y1="300" x2="720" y2="300" stroke="#52c41a" stroke-width="2"
+                marker-end="url(#arrowhead)" />
+              <rect x="450" y="285" width="200" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1" />
               <text x="550" y="303" text-anchor="middle" font-size="12" fill="#333">同步学员/教师/班级关系</text>
-              
+
               <!-- omo-自定义任务 → 教师精灵: 传输任务信息 -->
-              <line x1="520" y1="350" x2="720" y2="350" stroke="#52c41a" stroke-width="2" marker-end="url(#arrowhead)"/>
-              <rect x="570" y="335" width="120" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1"/>
+              <line x1="520" y1="350" x2="720" y2="350" stroke="#52c41a" stroke-width="2"
+                marker-end="url(#arrowhead)" />
+              <rect x="570" y="335" width="120" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1" />
               <text x="630" y="353" text-anchor="middle" font-size="12" fill="#333">传输任务信息</text>
             </g>
-            
+
             <!-- 阶段2: 任务同步与教师确认 -->
             <g id="stage2">
-              <rect x="20" y="420" width="1560" height="150" fill="#e6f7ff" rx="4" opacity="0.3"/>
+              <rect x="20" y="420" width="1560" height="150" fill="#e6f7ff" rx="4" opacity="0.3" />
               <text x="30" y="450" font-size="16" font-weight="600" fill="#1890ff">2. 任务同步与教师确认</text>
-              
+
               <!-- 教师精灵 → 教师端: 创建任务信息同步 -->
-              <line x1="720" y1="500" x2="920" y2="500" stroke="#52c41a" stroke-width="2" marker-end="url(#arrowhead)"/>
-              <rect x="750" y="485" width="140" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1"/>
+              <line x1="720" y1="500" x2="920" y2="500" stroke="#52c41a" stroke-width="2"
+                marker-end="url(#arrowhead)" />
+              <rect x="750" y="485" width="140" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1" />
               <text x="820" y="503" text-anchor="middle" font-size="12" fill="#333">创建任务信息同步</text>
-              
+
               <!-- 教师端 → 教师精灵: 返回任务信息 -->
-              <line x1="920" y1="550" x2="720" y2="550" stroke="#ff7875" stroke-width="2" marker-end="url(#arrowheadReturn)"/>
-              <rect x="750" y="535" width="140" height="30" rx="4" fill="#fff" stroke="#ff7875" stroke-width="1"/>
+              <line x1="920" y1="550" x2="720" y2="550" stroke="#ff7875" stroke-width="2"
+                marker-end="url(#arrowheadReturn)" />
+              <rect x="750" y="535" width="140" height="30" rx="4" fill="#fff" stroke="#ff7875" stroke-width="1" />
               <text x="820" y="553" text-anchor="middle" font-size="12" fill="#333">返回任务信息</text>
             </g>
-            
+
             <!-- 阶段3: 任务下发 -->
             <g id="stage3">
-              <rect x="20" y="610" width="1560" height="150" fill="#e6f7ff" rx="4" opacity="0.3"/>
+              <rect x="20" y="610" width="1560" height="150" fill="#e6f7ff" rx="4" opacity="0.3" />
               <text x="30" y="640" font-size="16" font-weight="600" fill="#1890ff">3. 任务下发</text>
-              
+
               <!-- 教师精灵 → 企微聊天框/群: 推送任务H5链接 -->
-              <line x1="720" y1="690" x2="1120" y2="690" stroke="#52c41a" stroke-width="2" marker-end="url(#arrowhead)"/>
-              <rect x="850" y="675" width="140" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1"/>
+              <line x1="720" y1="690" x2="1120" y2="690" stroke="#52c41a" stroke-width="2"
+                marker-end="url(#arrowhead)" />
+              <rect x="850" y="675" width="140" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1" />
               <text x="920" y="693" text-anchor="middle" font-size="12" fill="#333">推送任务H5链接</text>
-              
+
               <!-- 企微聊天框/群 → 新东方大学考试: 生成任务 -->
-              <line x1="1120" y1="740" x2="1320" y2="740" stroke="#52c41a" stroke-width="2" marker-end="url(#arrowhead)"/>
-              <rect x="1180" y="725" width="100" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1"/>
+              <line x1="1120" y1="740" x2="1320" y2="740" stroke="#52c41a" stroke-width="2"
+                marker-end="url(#arrowhead)" />
+              <rect x="1180" y="725" width="100" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1" />
               <text x="1230" y="743" text-anchor="middle" font-size="12" fill="#333">生成任务</text>
             </g>
-            
+
             <!-- 阶段4: 双端访问一致性 -->
             <g id="stage4">
-              <rect x="20" y="800" width="1560" height="200" fill="#e6f7ff" rx="4" opacity="0.3"/>
+              <rect x="20" y="800" width="1560" height="200" fill="#e6f7ff" rx="4" opacity="0.3" />
               <text x="30" y="830" font-size="16" font-weight="600" fill="#1890ff">4. 双端访问一致性</text>
-              
+
               <!-- 企微聊天框/群 → 新东方大学考试: 企微点击H5进入 -->
-              <line x1="1120" y1="880" x2="1320" y2="880" stroke="#52c41a" stroke-width="2" marker-end="url(#arrowhead)"/>
-              <rect x="1180" y="865" width="120" height="30" rx="4" fill="#f6ffed" stroke="#52c41a" stroke-width="1"/>
+              <line x1="1120" y1="880" x2="1320" y2="880" stroke="#52c41a" stroke-width="2"
+                marker-end="url(#arrowhead)" />
+              <rect x="1180" y="865" width="120" height="30" rx="4" fill="#f6ffed" stroke="#52c41a" stroke-width="1" />
               <text x="1240" y="883" text-anchor="middle" font-size="12" fill="#333">企微点击H5进入</text>
-              
+
               <!-- 确保两边内容/进度一致（在新东方大学考试生命线上，企微点击H5进入下方） -->
-              <rect x="1230" y="920" width="160" height="30" rx="4" fill="#f6ffed" stroke="#52c41a" stroke-width="1"/>
+              <rect x="1230" y="920" width="160" height="30" rx="4" fill="#f6ffed" stroke="#52c41a" stroke-width="1" />
               <text x="1310" y="938" text-anchor="middle" font-size="12" fill="#333">确保两边内容/进度一致</text>
             </g>
-            
+
             <!-- 阶段5: 任务执行与后续 -->
             <g id="stage5">
-              <rect x="20" y="1040" width="1560" height="100" fill="#e6f7ff" rx="4" opacity="0.3"/>
+              <rect x="20" y="1040" width="1560" height="100" fill="#e6f7ff" rx="4" opacity="0.3" />
               <text x="30" y="1070" font-size="16" font-weight="600" fill="#1890ff">5. 任务执行与后续</text>
-              
+
               <!-- 新东方大学考试 → 学生端: 提供在线作答/拍照上传入口 -->
-              <line x1="1320" y1="1110" x2="1520" y2="1110" stroke="#52c41a" stroke-width="2" marker-end="url(#arrowhead)"/>
-              <rect x="1350" y="1095" width="140" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1"/>
+              <line x1="1320" y1="1110" x2="1520" y2="1110" stroke="#52c41a" stroke-width="2"
+                marker-end="url(#arrowhead)" />
+              <rect x="1350" y="1095" width="140" height="30" rx="4" fill="#fff" stroke="#52c41a" stroke-width="1" />
               <text x="1420" y="1113" text-anchor="middle" font-size="12" fill="#333">提供在线作答/拍照上传入口</text>
             </g>
           </svg>
@@ -528,20 +2143,29 @@
               <div class="form-block">
                 <label class="label">群发场景</label>
                 <div class="radio-group">
-                  <label class="radio-item"><input type="radio" name="scene" checked /><span class="dot"></span><span>课后服务</span></label>
-                  <label class="radio-item"><input type="radio" name="scene" /><span class="dot"></span><span>课前提醒</span></label>
-                  <label class="radio-item"><input type="radio" name="scene" /><span class="dot"></span><span>开班提醒</span></label>
-                  <label class="radio-item"><input type="radio" name="scene" /><span class="dot"></span><span>首课回访</span></label>
-                  <label class="radio-item"><input type="radio" name="scene" /><span class="dot"></span><span>续费沟通</span></label>
-                  <label class="radio-item"><input type="radio" name="scene" /><span class="dot"></span><span>自定义</span></label>
+                  <label class="radio-item"><input type="radio" name="scene" checked /><span
+                      class="dot"></span><span>课后服务</span></label>
+                  <label class="radio-item"><input type="radio" name="scene" /><span
+                      class="dot"></span><span>课前提醒</span></label>
+                  <label class="radio-item"><input type="radio" name="scene" /><span
+                      class="dot"></span><span>开班提醒</span></label>
+                  <label class="radio-item"><input type="radio" name="scene" /><span
+                      class="dot"></span><span>首课回访</span></label>
+                  <label class="radio-item"><input type="radio" name="scene" /><span
+                      class="dot"></span><span>续费沟通</span></label>
+                  <label class="radio-item"><input type="radio" name="scene" /><span
+                      class="dot"></span><span>自定义</span></label>
                 </div>
               </div>
               <div class="form-block">
                 <label class="label">发送对象</label>
                 <div class="radio-group">
-                  <label class="radio-item"><input type="radio" name="target" checked /><span class="dot"></span><span>学员家长</span></label>
-                  <label class="radio-item"><input type="radio" name="target" /><span class="dot"></span><span>学员本人</span></label>
-                  <label class="radio-item"><input type="radio" name="target" /><span class="dot"></span><span>学员群</span></label>
+                  <label class="radio-item"><input type="radio" name="target" checked /><span
+                      class="dot"></span><span>学员家长</span></label>
+                  <label class="radio-item"><input type="radio" name="target" /><span
+                      class="dot"></span><span>学员本人</span></label>
+                  <label class="radio-item"><input type="radio" name="target" /><span
+                      class="dot"></span><span>学员群</span></label>
                 </div>
               </div>
               <div class="form-block">
@@ -560,7 +2184,8 @@
                   <button type="button" class="content-type-tab tab-send-task" id="btnSendTask">📤 发送学习任务</button>
                 </div>
                 <div class="text-editor-card">
-                  <div class="text-editor-tab"><span class="tab-name">文本</span><span class="tab-actions">× ＋</span></div>
+                  <div class="text-editor-tab"><span class="tab-name">文本</span><span class="tab-actions">× ＋</span>
+                  </div>
                   <div class="vars-row">
                     <span class="var-tag">沟通称呼语</span>
                     <span class="var-tag">学员昵称</span>
@@ -586,7 +2211,8 @@
                 <div class="header">请选择学员</div>
                 <div class="body"></div>
                 <div class="footer">
-                  <span class="ico"></span><span class="input"></span><span class="ico"></span><span class="ico"></span><span class="ico"></span>
+                  <span class="ico"></span><span class="input"></span><span class="ico"></span><span
+                    class="ico"></span><span class="ico"></span>
                 </div>
               </div>
             </div>
@@ -596,7 +2222,8 @@
       <footer class="bottom-bar">
         <div class="left"><button class="btn-bar">返回</button><button class="btn-bar">取消</button></div>
         <div class="center">共发送0个学员, 0条消息</div>
-        <div class="right"><button class="btn-bar">保存</button><button class="btn-bar">预览</button><button class="btn-bar btn-send">发送</button></div>
+        <div class="right"><button class="btn-bar">保存</button><button class="btn-bar">预览</button><button
+            class="btn-bar btn-send">发送</button></div>
       </footer>
     </div>
 
@@ -618,10 +2245,22 @@
         </aside>
         <div class="wework-list">
           <div class="list-top">学员家长群 @微信</div>
-          <div class="list-item act"><div class="name">学员家长群</div><div class="preview">[学习任务] 概率论周测<span class="t">1分钟前</span></div></div>
-          <div class="list-item"><div class="name">TAPD</div><div class="preview">需求更新提醒<span class="t">14:54</span></div></div>
-          <div class="list-item"><div class="name">VIP客户沟通群</div><div class="preview">Diane: 可以啦老师...<span class="t">昨天</span></div></div>
-          <div class="list-item"><div class="name">企业微信团队</div><div class="preview">授权登录通知<span class="t">1/5</span></div></div>
+          <div class="list-item act">
+            <div class="name">学员家长群</div>
+            <div class="preview">[学习任务] 概率论周测<span class="t">1分钟前</span></div>
+          </div>
+          <div class="list-item">
+            <div class="name">TAPD</div>
+            <div class="preview">需求更新提醒<span class="t">14:54</span></div>
+          </div>
+          <div class="list-item">
+            <div class="name">VIP客户沟通群</div>
+            <div class="preview">Diane: 可以啦老师...<span class="t">昨天</span></div>
+          </div>
+          <div class="list-item">
+            <div class="name">企业微信团队</div>
+            <div class="preview">授权登录通知<span class="t">1/5</span></div>
+          </div>
         </div>
         <main class="wework-main">
           <div class="main-head">学员家长群 @微信 <span class="more">2+</span></div>
@@ -649,7 +2288,8 @@
             </div>
           </div>
           <div class="main-foot">
-            <span class="ico"></span><span class="input"></span><span class="ico"></span><span class="ico"></span><span class="ico"></span><span class="send">发送</span>
+            <span class="ico"></span><span class="input"></span><span class="ico"></span><span class="ico"></span><span
+              class="ico"></span><span class="send">发送</span>
           </div>
         </main>
         <div class="wework-info">
@@ -657,40 +2297,51 @@
           <div class="info-tabs"><span class="act">智能服务总结</span><span>学员详情</span><span>快捷回复</span></div>
           <p style="line-height:1.6; color:#8C8C8C;">根据成员与微信客户的服务记录，每周自动生成服务总结，企业也可自定义总结要求。</p>
           <p style="margin-top:12px; font-size:12px; color:#BFBFBF;">你的客户不在总结范围内</p>
-          <button style="margin-top:16px; padding:8px 20px; font-size:14px; color:#fff; background:#4A90E2; border:none; border-radius:6px; cursor:pointer;">申请使用</button>
+          <button
+            style="margin-top:16px; padding:8px 20px; font-size:14px; color:#fff; background:#4A90E2; border:none; border-radius:6px; cursor:pointer;">申请使用</button>
         </div>
       </div>
     </div>
-    
+
     <!-- 做任务-试卷 -->
     <div id="view-do-quiz" class="view">
-      <div class="status-bar">
-        <span class="l"><span id="clock">16:35</span> <span>🔔</span></span>
-        <span class="r">📶 📡 80%</span>
-      </div>
-      <header class="header">
-        <span class="back" id="btnBack">&#60;</span>
-        <h1 class="title">做任务</h1>
-      </header>
-      <section class="summary">
-        <div class="info">
-          <div class="name" id="taskName">01月07日 词测 26在职研英语(二) 词测List8</div>
-          <div class="sub" id="taskSub">词测测试</div>
-        </div>
-        <div class="due"><span id="dueText">2026.01.14 11:41截止</span><span class="arrow">&#9660;</span></div>
-      </section>
-      <div class="card-wrap">
-        <div class="card">
-          <div class="tag">试卷</div>
-          <div class="banner"><div class="mascot">📚</div><div class="word">EXAMINATION</div></div>
-          <div class="quiz-title" id="quizTitle">26在职研英语(二) 词测 List8</div>
-          <div class="count-row">
-            <div class="bar"></div>
-            <div><div class="label">练习题数</div><div class="num" id="quizCount">50</div></div>
+      <div class="mobile-wrapper">
+        <div class="mobile-content">
+          <div class="status-bar">
+            <span class="l"><span id="clock">16:35</span> <span>🔔</span></span>
+            <span class="r">📶 📡 80%</span>
           </div>
+          <header class="header">
+            <span class="back" id="btnBack">&#60;</span>
+            <h1 class="title">做任务</h1>
+          </header>
+          <section class="summary">
+            <div class="info">
+              <div class="name" id="taskName">01月07日 词测 26在职研英语(二) 词测List8</div>
+              <div class="sub" id="taskSub">词测测试</div>
+            </div>
+            <div class="due"><span id="dueText">2026.01.14 11:41截止</span><span class="arrow">&#9660;</span></div>
+          </section>
+          <div class="card-wrap">
+            <div class="card">
+              <div class="tag">试卷</div>
+              <div class="banner">
+                <div class="mascot">📚</div>
+                <div class="word">EXAMINATION</div>
+              </div>
+              <div class="quiz-title" id="quizTitle">26在职研英语(二) 词测 List8</div>
+              <div class="count-row">
+                <div class="bar"></div>
+                <div>
+                  <div class="label">练习题数</div>
+                  <div class="num" id="quizCount">50</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="foot-btn"><button type="button" class="btn" id="btnStart">开始作答</button></div>
         </div>
       </div>
-      <div class="foot-btn"><button type="button" class="btn" id="btnStart">开始作答</button></div>
     </div>
   </main>
 
@@ -710,15 +2361,26 @@
   <div class="modal-mask" id="maskNewTaskPaper" data-layer="2"></div>
   <div class="modal-wrap" id="wrapNewTaskPaper" data-layer="2">
     <div class="modal modal-new-task">
-      <div class="modal-header"><span class="back" id="backFromNewTaskPaper">&#60;</span><span class="title">新建学习任务</span><div class="actions"><button type="button" class="btn-publish" id="btnPublishPaper">发布</button></div></div>
+      <div class="modal-header"><span class="back" id="backFromNewTaskPaper">&#60;</span><span
+          class="title">新建学习任务</span>
+        <div class="actions"><button type="button" class="btn-publish" id="btnPublishPaper">发布</button></div>
+      </div>
       <div class="modal-body">
-        <div class="field"><div class="l">输入任务说明</div><textarea placeholder="请输入任务说明" maxlength="200"></textarea><div class="count">0/200</div></div>
+        <div class="field">
+          <div class="l">输入任务说明</div><textarea placeholder="请输入任务说明" maxlength="200"></textarea>
+          <div class="count">0/200</div>
+        </div>
         <div class="section-title">设置</div>
-        <div class="set-row"><span class="left"><span class="rq">*</span> 任务类型</span><span class="right">请选择 <span class="arrow">&#62;</span></span></div>
-        <div class="set-row"><span class="left"><span class="rq">*</span> 科目</span><span class="right">请选择 <span class="arrow">&#62;</span></span></div>
-        
-        <div class="set-row"><span class="left"><span class="rq">*</span> 任务是否需要学生提交结果</span><span class="right"><div class="switch on" tabindex="0"></div></span></div>
-        <div class="set-row"><span class="left"><span class="rq">*</span> 任务截止时间</span><span class="right">2026.01.20 16:02 (发布后7天) <span class="arrow">&#62;</span></span></div>
+        <div class="set-row"><span class="left"><span class="rq">*</span> 任务类型</span><span class="right">请选择 <span
+              class="arrow">&#62;</span></span></div>
+        <div class="set-row"><span class="left"><span class="rq">*</span> 科目</span><span class="right">请选择 <span
+              class="arrow">&#62;</span></span></div>
+
+        <div class="set-row"><span class="left"><span class="rq">*</span> 任务是否需要学生提交结果</span><span class="right">
+            <div class="switch on" tabindex="0"></div>
+          </span></div>
+        <div class="set-row"><span class="left"><span class="rq">*</span> 任务截止时间</span><span class="right">2026.01.20
+            16:02 (发布后7天) <span class="arrow">&#62;</span></span></div>
         <button type="button" class="btn-add-content" id="btnAddPaper">+ 添加试卷</button>
       </div>
     </div>
@@ -726,10 +2388,18 @@
   <div class="modal-mask" id="maskPaperLib" data-layer="3"></div>
   <div class="modal-wrap" id="wrapPaperLib" data-layer="3">
     <div class="modal modal-paper-lib">
-      <div class="modal-header"><span class="back" id="backFromPaperLib">&#60;</span><span class="title">试卷库</span><div class="actions"></div></div>
+      <div class="modal-header"><span class="back" id="backFromPaperLib">&#60;</span><span class="title">试卷库</span>
+        <div class="actions"></div>
+      </div>
       <div class="modal-body">
-        <div class="search-row"><div class="search-wrap"><input type="text" placeholder="请输入试卷名称" /></div></div>
-        <div class="filter-row"><select><option>考研全部科目</option></select><select><option>试卷用途-历年真题</option></select></div>
+        <div class="search-row">
+          <div class="search-wrap"><input type="text" placeholder="请输入试卷名称" /></div>
+        </div>
+        <div class="filter-row"><select>
+            <option>考研全部科目</option>
+          </select><select>
+            <option>试卷用途-历年真题</option>
+          </select></div>
         <div class="paper-list">
           <div class="paper-item"><span class="icon">📄</span> 2011年考研英语一真题及答案</div>
           <div class="paper-item"><span class="icon">📄</span> 2016年考研英语一真题</div>
@@ -743,14 +2413,25 @@
   <div class="modal-mask" id="maskNewTaskFree" data-layer="2"></div>
   <div class="modal-wrap" id="wrapNewTaskFree" data-layer="2">
     <div class="modal modal-new-task">
-      <div class="modal-header"><span class="back" id="backFromNewTaskFree">&#60;</span><span class="title">新建学习任务</span><div class="actions"><button type="button" class="btn-publish" id="btnPublishFree">发布</button></div></div>
+      <div class="modal-header"><span class="back" id="backFromNewTaskFree">&#60;</span><span
+          class="title">新建学习任务</span>
+        <div class="actions"><button type="button" class="btn-publish" id="btnPublishFree">发布</button></div>
+      </div>
       <div class="modal-body">
-        <div class="field"><div class="l">输入任务说明</div><textarea placeholder="请输入任务说明" maxlength="200"></textarea><div class="count">0/200</div></div>
+        <div class="field">
+          <div class="l">输入任务说明</div><textarea placeholder="请输入任务说明" maxlength="200"></textarea>
+          <div class="count">0/200</div>
+        </div>
         <div class="section-title">设置</div>
-        <div class="set-row"><span class="left"><span class="rq">*</span> 任务类型</span><span class="right">请选择 <span class="arrow">&#62;</span></span></div>
-        <div class="set-row"><span class="left"><span class="rq">*</span> 科目</span><span class="right">请选择 <span class="arrow">&#62;</span></span></div>
-        <div class="set-row"><span class="left"><span class="rq">*</span> 任务是否需要学生提交结果</span><span class="right"><div class="switch on" tabindex="0"></div></span></div>
-        <div class="set-row"><span class="left"><span class="rq">*</span> 任务截止时间</span><span class="right">2026.01.20 16:02 (发布后7天) <span class="arrow">&#62;</span></span></div>
+        <div class="set-row"><span class="left"><span class="rq">*</span> 任务类型</span><span class="right">请选择 <span
+              class="arrow">&#62;</span></span></div>
+        <div class="set-row"><span class="left"><span class="rq">*</span> 科目</span><span class="right">请选择 <span
+              class="arrow">&#62;</span></span></div>
+        <div class="set-row"><span class="left"><span class="rq">*</span> 任务是否需要学生提交结果</span><span class="right">
+            <div class="switch on" tabindex="0"></div>
+          </span></div>
+        <div class="set-row"><span class="left"><span class="rq">*</span> 任务截止时间</span><span class="right">2026.01.20
+            16:02 (发布后7天) <span class="arrow">&#62;</span></span></div>
         <div class="section-title">题目</div>
         <button type="button" class="btn-add-content" id="btnAddQuestion">+ 添加题目</button>
       </div>
@@ -759,19 +2440,22 @@
   <div class="modal-mask" id="maskAddQuestion" data-layer="3"></div>
   <div class="modal-wrap" id="wrapAddQuestion" data-layer="3">
     <div class="modal modal-add-question">
-      <div class="modal-header"><span class="back" id="backFromAddQuestion">&#60;</span><span class="title">添加题目</span><div class="actions"><button type="button" class="btn-save">保存</button></div></div>
+      <div class="modal-header"><span class="back" id="backFromAddQuestion">&#60;</span><span class="title">添加题目</span>
+        <div class="actions"><button type="button" class="btn-save">保存</button></div>
+      </div>
       <div class="modal-body">
         <div class="editor-area"><textarea placeholder="输入作业内容"></textarea></div>
-        <div class="toolbar"><span class="ico" title="图片">🖼</span><span class="ico" title="麦克风">🎤</span><span class="ico" title="摄像机">📹</span><span class="ico" title="文件">📁</span></div>
+        <div class="toolbar"><span class="ico" title="图片">🖼</span><span class="ico" title="麦克风">🎤</span><span
+            class="ico" title="摄像机">📹</span><span class="ico" title="文件">📁</span></div>
       </div>
     </div>
   </div>
 
   <script>
-    (function() {
+    (function () {
       function getSearchParams() {
         var o = {};
-        (location.search || '?').slice(1).split('&').forEach(function(s) {
+        (location.search || '?').slice(1).split('&').forEach(function (s) {
           var p = s.split('=');
           if (p[0]) o[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || ''));
         });
@@ -780,13 +2464,13 @@
       function showModal(el) { el = typeof el === 'string' ? document.getElementById(el) : el; if (el) el.classList.add('show'); }
       function hideModal(el) { el = typeof el === 'string' ? document.getElementById(el) : el; if (el) el.classList.remove('show'); }
       function hideAllModals() {
-        ['maskTypeSelect','wrapTypeSelect','maskNewTaskPaper','wrapNewTaskPaper','maskPaperLib','wrapPaperLib','maskNewTaskFree','wrapNewTaskFree','maskAddQuestion','wrapAddQuestion'].forEach(hideModal);
+        ['maskTypeSelect', 'wrapTypeSelect', 'maskNewTaskPaper', 'wrapNewTaskPaper', 'maskPaperLib', 'wrapPaperLib', 'maskNewTaskFree', 'wrapNewTaskFree', 'maskAddQuestion', 'wrapAddQuestion'].forEach(hideModal);
       }
       function applyDoQuizParams() {
         var p = window.__doQuizParams || {};
         if (!p.title && location.search) {
           var q = getSearchParams();
-          ['taskId','title','sub','due','quizTitle','count'].forEach(function(k) { if (q[k] !== undefined && p[k] === undefined) p[k] = q[k]; });
+          ['taskId', 'title', 'sub', 'due', 'quizTitle', 'count'].forEach(function (k) { if (q[k] !== undefined && p[k] === undefined) p[k] = q[k]; });
         }
         if (p.title) { document.getElementById('taskName').textContent = p.title; if (!p.quizTitle) document.getElementById('quizTitle').textContent = p.title; }
         if (p.sub) document.getElementById('taskSub').textContent = p.sub;
@@ -796,8 +2480,8 @@
       }
       function showView(key) {
         hideAllModals();
-        document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
-        document.querySelectorAll('.sidebar .nav-item').forEach(function(n) { n.classList.toggle('active', n.getAttribute('data-key') === key); });
+        document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+        document.querySelectorAll('.sidebar .nav-item').forEach(function (n) { n.classList.toggle('active', n.getAttribute('data-key') === key); });
         var viewId = key === 'flowchart' ? 'flowchart' : key === 'config' ? 'config' : key === 'task' ? 'task-h5' : 'do-quiz';
         var v = document.getElementById('view-' + viewId);
         if (v) v.classList.add('active');
@@ -819,20 +2503,20 @@
         showView(k);
       }
 
-      document.querySelectorAll('.sidebar .nav-item').forEach(function(it) {
-        it.addEventListener('click', function() { var k = it.getAttribute('data-key'); if (k) showView(k); });
+      document.querySelectorAll('.sidebar .nav-item').forEach(function (it) {
+        it.addEventListener('click', function () { var k = it.getAttribute('data-key'); if (k) showView(k); });
       });
       window.addEventListener('hashchange', onHash);
       onHash();
-    
+
       // ---------- 群发：发送学习任务、弹窗流程、开关 ----------
-      document.getElementById('btnSendTask').addEventListener('click', function() {
-        document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.getElementById('btnSendTask').addEventListener('click', function () {
+        document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function (t) { t.classList.remove('active'); });
         showModal('maskTypeSelect'); showModal('wrapTypeSelect');
       });
-      document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function(tab) {
-        tab.addEventListener('click', function() {
-          document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function (t) { t.classList.remove('active'); });
           this.classList.add('active');
           var type = this.getAttribute('data-type');
           hideModal('maskTypeSelect'); hideModal('wrapTypeSelect');
@@ -840,25 +2524,25 @@
           else { showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); }
         });
       });
-      document.getElementById('btnCancelType').addEventListener('click', function() { hideModal('maskTypeSelect'); hideModal('wrapTypeSelect'); });
-      document.getElementById('maskTypeSelect').addEventListener('click', function() { hideModal('maskTypeSelect'); hideModal('wrapTypeSelect'); });
-      document.getElementById('backFromNewTaskPaper').addEventListener('click', function() { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
-      document.getElementById('maskNewTaskPaper').addEventListener('click', function() { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
-      document.getElementById('btnAddPaper').addEventListener('click', function() { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskPaperLib'); showModal('wrapPaperLib'); });
-      document.getElementById('backFromPaperLib').addEventListener('click', function() { hideModal('maskPaperLib'); hideModal('wrapPaperLib'); showModal('maskNewTaskPaper'); showModal('wrapNewTaskPaper'); });
-      document.getElementById('maskPaperLib').addEventListener('click', function() { hideModal('maskPaperLib'); hideModal('wrapPaperLib'); showModal('maskNewTaskPaper'); showModal('wrapNewTaskPaper'); });
-      document.getElementById('backFromNewTaskFree').addEventListener('click', function() { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
-      document.getElementById('maskNewTaskFree').addEventListener('click', function() { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
-      document.getElementById('btnAddQuestion').addEventListener('click', function() { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskAddQuestion'); showModal('wrapAddQuestion'); });
-      document.getElementById('backFromAddQuestion').addEventListener('click', function() { hideModal('maskAddQuestion'); hideModal('wrapAddQuestion'); showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); });
-      document.getElementById('maskAddQuestion').addEventListener('click', function() { hideModal('maskAddQuestion'); hideModal('wrapAddQuestion'); showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); });
-      document.querySelectorAll('.switch').forEach(function(s) { s.addEventListener('click', function() { this.classList.toggle('on'); }); });
+      document.getElementById('btnCancelType').addEventListener('click', function () { hideModal('maskTypeSelect'); hideModal('wrapTypeSelect'); });
+      document.getElementById('maskTypeSelect').addEventListener('click', function () { hideModal('maskTypeSelect'); hideModal('wrapTypeSelect'); });
+      document.getElementById('backFromNewTaskPaper').addEventListener('click', function () { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
+      document.getElementById('maskNewTaskPaper').addEventListener('click', function () { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
+      document.getElementById('btnAddPaper').addEventListener('click', function () { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskPaperLib'); showModal('wrapPaperLib'); });
+      document.getElementById('backFromPaperLib').addEventListener('click', function () { hideModal('maskPaperLib'); hideModal('wrapPaperLib'); showModal('maskNewTaskPaper'); showModal('wrapNewTaskPaper'); });
+      document.getElementById('maskPaperLib').addEventListener('click', function () { hideModal('maskPaperLib'); hideModal('wrapPaperLib'); showModal('maskNewTaskPaper'); showModal('wrapNewTaskPaper'); });
+      document.getElementById('backFromNewTaskFree').addEventListener('click', function () { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
+      document.getElementById('maskNewTaskFree').addEventListener('click', function () { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
+      document.getElementById('btnAddQuestion').addEventListener('click', function () { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskAddQuestion'); showModal('wrapAddQuestion'); });
+      document.getElementById('backFromAddQuestion').addEventListener('click', function () { hideModal('maskAddQuestion'); hideModal('wrapAddQuestion'); showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); });
+      document.getElementById('maskAddQuestion').addEventListener('click', function () { hideModal('maskAddQuestion'); hideModal('wrapAddQuestion'); showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); });
+      document.querySelectorAll('.switch').forEach(function (s) { s.addEventListener('click', function () { this.classList.toggle('on'); }); });
       // 弹窗内「发布」：关闭弹窗并进入学习任务 H5 页面
-      document.getElementById('btnPublishPaper').addEventListener('click', function() { showView('task'); });
-      document.getElementById('btnPublishFree').addEventListener('click', function() { showView('task'); });
-    
+      document.getElementById('btnPublishPaper').addEventListener('click', function () { showView('task'); });
+      document.getElementById('btnPublishFree').addEventListener('click', function () { showView('task'); });
+
       // ---------- 学习任务 去完成：单页内切到做任务-试卷 ----------
-      document.getElementById('btnDo').addEventListener('click', function() {
+      document.getElementById('btnDo').addEventListener('click', function () {
         var params = getSearchParams();
         var type = (params.type || 'paper').toLowerCase();
         var taskId = params.taskId || '';
@@ -870,10 +2554,10 @@
         window.__doQuizParams = { taskId: taskId, title: title, due: due, quizTitle: title, count: '' };
         location.hash = '#do-quiz';
       });
-    
+
       // ---------- 做任务：返回、开始作答、时钟 ----------
-      document.getElementById('btnBack').addEventListener('click', function() { history.back(); });
-      document.getElementById('btnStart').addEventListener('click', function() {
+      document.getElementById('btnBack').addEventListener('click', function () { history.back(); });
+      document.getElementById('btnStart').addEventListener('click', function () {
         var p = window.__doQuizParams || getSearchParams();
         alert('开始作答（实际跳转做题页，taskId=' + (p.taskId || '未传') + '）');
       });
@@ -882,4 +2566,5 @@
     })();
   </script>
 </body>
+
 </html>

@@ -35,7 +35,7 @@ class RedBookContentGenerator:
     def _load_config(self, config_path: str) -> dict:
         """加载配置文件"""
         default_config = {
-            "input_file": "input_content.txt",
+            "input_file": "input/input_content.txt",
             "output_excel": "output/redbook_content.xlsx",
             "output_image_dir": "output/images",
             "openai_api_key": "",
@@ -640,8 +640,8 @@ def main():
     parser = argparse.ArgumentParser(description="老北京文化·小红书内容生成器")
     parser.add_argument(
         "-c", "--config",
-        default="config.json",
-        help="配置文件路径 (默认: config.json)"
+        default="config/config.json",
+        help="配置文件路径 (默认: config/config.json)"
     )
     
     args = parser.parse_args()

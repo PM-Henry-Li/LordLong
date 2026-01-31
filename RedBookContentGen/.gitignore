@@ -24,14 +24,14 @@ wheels/
 *.egg
 
 # 配置文件（包含敏感信息）
-config.json
+config/config.json
 
 # 输出文件
 output/
 *.xlsx
 
 # 输入文件（可能包含个人内容）
-input_content.txt
+input/
 
 # IDE
 .vscode/

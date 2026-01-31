@@ -9,16 +9,16 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 
 # 添加项目路径
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from image_generator import ImageGenerator
+from src.image_generator import ImageGenerator
 
 
 def test_wrap_text_simple():
     """测试简化的文字换行功能"""
     print("测试文字换行功能...")
     
-    gen = ImageGenerator()
+    gen = ImageGenerator(config_path="config/config.json")
     
     # 创建测试图片和字体
     img = Image.new('RGB', (1024, 1365), color='white')
@@ -70,7 +70,7 @@ def test_smart_truncate_simple():
     """测试简化的智能截断功能"""
     print("\n测试智能截断功能...")
     
-    gen = ImageGenerator()
+    gen = ImageGenerator(config_path="config/config.json")
     
     # 创建测试图片和字体
     img = Image.new('RGB', (1024, 1365), color='white')
@@ -118,7 +118,7 @@ def test_content_safety():
     """测试内容安全检查功能"""
     print("\n测试内容安全检查功能...")
     
-    gen = ImageGenerator()
+    gen = ImageGenerator(config_path="config/config.json")
     
     # 测试用例
     test_cases = [

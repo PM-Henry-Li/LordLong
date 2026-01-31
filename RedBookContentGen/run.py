@@ -16,8 +16,8 @@ def main():
     )
     parser.add_argument(
         "-c", "--config",
-        default="config.json",
-        help="配置文件路径 (默认: config.json)"
+        default="config/config.json",
+        help="配置文件路径 (默认: config/config.json)"
     )
     parser.add_argument(
         "--skip-images",
@@ -36,7 +36,7 @@ def main():
     print("=" * 60 + "\n")
 
     # Step 1: 内容生成
-    from redbook_content_generator import RedBookContentGenerator
+    from src.content_generator import RedBookContentGenerator
 
     content_gen = RedBookContentGenerator(config_path=config_path)
     content_gen.run()
@@ -56,7 +56,7 @@ def main():
 
     print("\n" + "-" * 60 + "\n")
 
-    from image_generator import ImageGenerator
+    from src.image_generator import ImageGenerator
 
     image_gen = ImageGenerator(config_path=config_path)
     image_gen.generate_all_images(prompts_file)

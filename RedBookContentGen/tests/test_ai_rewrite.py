@@ -4,7 +4,11 @@
 测试AI改写功能
 """
 
-from image_generator import ImageGenerator
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.image_generator import ImageGenerator
 
 def test_ai_rewrite():
     """测试AI改写功能"""
@@ -13,7 +17,7 @@ def test_ai_rewrite():
     print("=" * 60)
     
     # 初始化生成器
-    gen = ImageGenerator()
+    gen = ImageGenerator(config_path="config/config.json")
     
     # 测试用例1: 超长文案
     long_text = "穿过红墙绿瓦,走进故宫的那一刻,仿佛穿越回了明清两代。耳边似乎还能听到皇帝登基时的钟鼓齐鸣。太和殿,俗称金銮殿,是故宫三大殿中南面的第一座,也是明清两代京城内最高的建筑。"

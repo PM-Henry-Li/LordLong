@@ -1,7 +1,17 @@
-from image_generator import ImageGenerator
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+验证文字清理功能
+"""
+
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.image_generator import ImageGenerator
 
 def test_clean_text():
-    gen = ImageGenerator()
+    gen = ImageGenerator(config_path="config/config.json")
     
     test_cases = [
         ("n皇帝登基即位", "皇帝登基即位"),

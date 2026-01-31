@@ -19,11 +19,11 @@ pip install -r requirements.txt
 
 ## 配置说明
 
-### 1. 配置文件 (`config.json`)
+### 1. 配置文件 (`config/config.json`)
 
 ```json
 {
-  "input_file": "input_content.txt",
+  "input_file": "input/input_content.txt",
   "output_excel": "output/redbook_content.xlsx",
   "output_image_dir": "output/images",
   "openai_api_key": "",
@@ -43,7 +43,7 @@ export OPENAI_API_KEY="your-api-key-here"
 ```
 
 **方式2：配置文件**
-在 `config.json` 中直接填写 `openai_api_key` 字段。
+在 `config/config.json` 中直接填写 `openai_api_key` 字段。
 
 ### 3. 使用阿里云通义千问 (Qwen / DashScope)
 
@@ -56,7 +56,7 @@ export OPENAI_API_KEY="your-api-key-here"
 
 ### 1. 准备输入文档
 
-创建或编辑 `input_content.txt` 文件，输入您想分享的老北京故事片段：
+创建或编辑 `input/input_content.txt` 文件，输入您想分享的老北京故事片段：
 
 ```
 记得小时候，胡同口那棵大槐树，每到夏天就开满了白花。
@@ -68,25 +68,25 @@ export OPENAI_API_KEY="your-api-key-here"
 
 **一键执行（推荐）**：内容生成 + 图片生成
 ```bash
-python run_all.py
+python run.py
 ```
 
 **分步执行**：
 ```bash
 # 仅内容生成
-python redbook_content_generator.py
+python -m src.content_generator
 
 # 仅图片生成（需先有 image_prompts.txt）
-python image_generator.py
+python -m src.image_generator
 ```
 
 **其他选项**：
 ```bash
 # 指定配置文件
-python run_all.py -c my_config.json
+python run.py -c config/my_config.json
 
 # 仅内容生成，跳过图片
-python run_all.py --skip-images
+python run.py --skip-images
 ```
 
 ### 3. 查看输出结果
@@ -110,14 +110,13 @@ python run_all.py --skip-images
 
 ```bash
 # 自动使用最新日期文件夹下的 image_prompts.txt
-python image_generator.py
+python -m src.image_generator
 
 # 或指定提示词文件
-python image_generator.py -p output/images/20260119/image_prompts.txt
+python -m src.image_generator -p output/images/20260119/image_prompts.txt
 ```
 
-配置项：在 `config.json` 中增加 `"image_model": "wan2.2-t2i-flash"`（通义万相文生图模型）。  
-详细说明见 **图片生成使用说明.md**。
+配置项：在 `config/config.json` 中增加 `"image_model": "wan2.2-t2i-flash"`（通义万相文生图模型）。
 
 ## 输出格式说明
 
@@ -144,7 +143,7 @@ python image_generator.py -p output/images/20260119/image_prompts.txt
 
 ## 工作流程
 
-1. 📖 **读取文档** → 从 `input_content.txt` 读取原始内容
+1. 📖 **读取文档** → 从 `input/input_content.txt` 读取原始内容
 2. 🤖 **AI生成** → 调用OpenAI API生成：
    - 5个吸引人的标题
    - 带京味儿的小红书正文
@@ -156,7 +155,7 @@ python image_generator.py -p output/images/20260119/image_prompts.txt
 
 ## 示例
 
-### 输入 (`input_content.txt`)
+### 输入 (`input/input_content.txt`)
 ```
 记得小时候，胡同口那棵大槐树，每到夏天就开满了白花。
 傍晚时分，鸽哨声从头顶掠过，那是老北京最熟悉的声音。
@@ -191,17 +190,17 @@ A nostalgic scene of a Beijing hutong entrance with a large locust tree in full 
 ## 注意事项
 
 1. **API费用**：使用OpenAI API会产生费用，请注意使用量
-2. **输入文档**：确保 `input_content.txt` 文件存在且不为空
+2. **输入文档**：确保 `input/input_content.txt` 文件存在且不为空
 3. **网络连接**：需要能够访问OpenAI API
 4. **Excel文件**：如果文件不存在会自动创建，如果存在会追加新行
 
 ## 故障排除
 
 ### 问题：找不到OpenAI API Key
-**解决**：设置环境变量 `OPENAI_API_KEY` 或在 `config.json` 中配置
+**解决**：设置环境变量 `OPENAI_API_KEY` 或在 `config/config.json` 中配置
 
 ### 问题：输入文件不存在
-**解决**：创建 `input_content.txt` 文件并填入内容
+**解决**：创建 `input/input_content.txt` 文件并填入内容
 
 ### 问题：Excel文件无法写入
 **解决**：确保输出目录有写入权限，关闭已打开的Excel文件
@@ -210,23 +209,32 @@ A nostalgic scene of a Beijing hutong entrance with a large locust tree in full 
 
 ```
 RedBookContentGen/
-├── run_all.py                    # 一键执行（内容+图片）
-├── redbook_content_generator.py  # 内容生成脚本
-├── image_generator.py            # 图片生成脚本
-├── config.json                   # 配置文件
-├── requirements.txt              # 依赖文件
-├── README.md                     # 使用说明
-├── 图片生成使用说明.md            # 图片生成详细说明
-├── input_content.txt             # 输入文档（需创建）
-└── output/                       # 输出目录（自动创建）
-    ├── redbook_content.xlsx      # Excel文件
-    └── images/                   # 图片文件夹
-        └── YYYYMMDD/             # 日期文件夹
-            ├── image_prompts.txt
-            ├── content.md
-            ├── image_01.png～image_04.png   # 故事图
-            ├── cover.png                    # 带短标题的封面
-            └── ...
+├── run.py                          # 一键执行入口
+├── config/                         # 配置文件夹
+│   ├── config.json                 # 用户配置
+│   └── config.example.json         # 配置模板
+├── src/                            # 源代码
+│   ├── __init__.py
+│   ├── content_generator.py        # 内容生成器
+│   └── image_generator.py          # 图片生成器
+├── tests/                          # 测试脚本
+│   ├── test_ai_rewrite.py
+│   ├── test_text_overlay.py
+│   └── verify_fix.py
+├── input/                          # 输入目录
+│   └── input_content.txt           # 输入文档（需创建）
+├── output/                         # 输出目录（自动创建）
+│   ├── redbook_content.xlsx        # Excel文件
+│   └── images/                     # 图片文件夹
+│       └── YYYYMMDD/               # 日期文件夹
+│           ├── image_prompts.txt
+│           ├── content.md
+│           ├── image_01.png～image_04.png   # 故事图
+│           ├── cover.png                    # 带短标题的封面
+│           └── ...
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
 ## 许可证
