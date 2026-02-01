@@ -155,8 +155,13 @@ const Main = {
 
     /**
      * 检查模式是否锁定
+     * TODO: 暂时注释解锁逻辑，让所有关卡都可以玩
      */
     isMOdeLocked(mode) {
+        // 暂时禁用关卡解锁逻辑
+        return false;
+
+        /* 原解锁逻辑：
         if (mode === 'letters') return false;
 
         const user = this.currentUser || Storage.getCurrentUser();
@@ -168,6 +173,7 @@ const Main = {
         if (mode === 'words') return totalScore < 1500;
 
         return false;
+        */
     },
 
     /**

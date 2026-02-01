@@ -177,7 +177,8 @@ const Storage = {
         return data ? JSON.parse(data) : {
             soundEnabled: true,
             musicEnabled: true,
-            volume: 0.7
+            volume: 0.7,
+            letterLanguage: 'en'  // 'en' = 英文读音, 'zh' = 中文读音
         };
     }
 };

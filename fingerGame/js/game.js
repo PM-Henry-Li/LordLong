@@ -81,6 +81,38 @@ const Game = {
         document.getElementById('btn-speed-down').addEventListener('click', () => {
             this.changeSpeed(-0.1);
         });
+
+        // 语言切换按钮
+        document.getElementById('btn-lang-toggle').addEventListener('click', () => {
+            this.toggleLetterLanguage();
+        });
+    },
+
+    /**
+     * 切换字母读音语言
+     */
+    toggleLetterLanguage() {
+        const newLang = Audio.toggleLetterLanguage();
+        this.updateLanguageDisplay(newLang);
+
+        // 播放示例音效，让用户听到变化
+        Audio.speakLetter('A');
+    },
+
+    /**
+     * 更新语言显示
+     */
+    updateLanguageDisplay(lang) {
+        const btn = document.getElementById('btn-lang-toggle');
+        const langText = document.getElementById('lang-text');
+
+        if (lang === 'zh') {
+            btn.classList.add('zh-mode');
+            langText.textContent = '中';
+        } else {
+            btn.classList.remove('zh-mode');
+            langText.textContent = 'EN';
+        }
     },
 
     /**
@@ -102,6 +134,7 @@ const Game = {
         this.updateScoreDisplay();
         this.updateTimerDisplay();
         this.updateSpeedDisplay();
+        this.updateLanguageDisplay(Audio.getLetterLanguage());
 
         // 显示游戏界面
         this.showScreen('game-screen');
@@ -140,6 +173,9 @@ const Game = {
         document.getElementById('pinyin-display').style.display = 'none';
         document.getElementById('word-display').style.display = 'none';
 
+        // 显示语言切换按钮（只在字母森林模式显示）
+        document.getElementById('btn-lang-toggle').style.display = 'flex';
+
         // 设置回调
         LettersGame.setCallbacks({
             onCorrect: (letter, x, y) => {
@@ -176,6 +212,9 @@ const Game = {
         document.getElementById('pinyin-display').style.display = 'flex';
         document.getElementById('word-display').style.display = 'none';
 
+        // 隐藏语言切换按钮（拼音模式只用中文拼音发音）
+        document.getElementById('btn-lang-toggle').style.display = 'none';
+
         PinyinGame.setCallbacks({
             onCorrect: () => {
                 this.addScore(15);
@@ -199,6 +238,9 @@ const Game = {
         document.getElementById('game-canvas').style.display = 'none';
         document.getElementById('pinyin-display').style.display = 'none';
         document.getElementById('word-display').style.display = 'block';
+
+        // 隐藏语言切换按钮（词语模式只用中文朗读）
+        document.getElementById('btn-lang-toggle').style.display = 'none';
 
         WordsGame.setCallbacks({
             onCorrect: () => {

@@ -46,7 +46,7 @@ const Utils = {
      */
     throttle(func, limit) {
         let inThrottle;
-        return function(...args) {
+        return function (...args) {
             if (!inThrottle) {
                 func.apply(this, args);
                 inThrottle = true;
@@ -144,13 +144,30 @@ const Utils = {
      */
     getResultMessage(score, correct, wrong) {
         const accuracy = correct + wrong > 0 ? correct / (correct + wrong) : 0;
-        
+
         if (score >= 400) return { title: '🎉 太棒了！', message: '你真是太厉害了！' };
         if (score >= 300) return { title: '🌟 非常好！', message: '继续加油！' };
         if (score >= 200) return { title: '👍 不错哦！', message: '再努力一点点！' };
         if (score >= 100) return { title: '😊 还可以！', message: '多练习会更好！' };
         if (accuracy < 0.3) return { title: '💪 别灰心！', message: '慢慢来，你可以的！' };
         return { title: '🎮 完成了！', message: '休息一下再来吧！' };
+    },
+
+    /**
+     * 去除拼音中的声调符号，只保留基本字母
+     * 例如：'bà' -> 'ba', 'xiǎo' -> 'xiao'
+     */
+    removePinyinTones(pinyin) {
+        const toneMap = {
+            'ā': 'a', 'á': 'a', 'ǎ': 'a', 'à': 'a',
+            'ē': 'e', 'é': 'e', 'ě': 'e', 'è': 'e',
+            'ī': 'i', 'í': 'i', 'ǐ': 'i', 'ì': 'i',
+            'ō': 'o', 'ó': 'o', 'ǒ': 'o', 'ò': 'o',
+            'ū': 'u', 'ú': 'u', 'ǔ': 'u', 'ù': 'u',
+            'ǖ': 'v', 'ǘ': 'v', 'ǚ': 'v', 'ǜ': 'v', 'ü': 'v'
+        };
+
+        return pinyin.split('').map(char => toneMap[char] || char).join('');
     }
 };
 

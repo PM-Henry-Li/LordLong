@@ -841,6 +841,10 @@ body {
     font-size: var(--font-size-xl);
     color: var(--text-secondary);
     margin-bottom: 30px;
+    /* 使用支持拼音声调的字体 */
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    line-height: 1.5;
+    letter-spacing: 2px;
 }
 
 .input-display {
@@ -928,6 +932,7 @@ body {
         font-size: var(--font-size-sm);
     }
 }
+
 /* ===============================================
    速度控制
    =============================================== */
@@ -993,4 +998,56 @@ body {
     cursor: not-allowed;
     background: #EEEEEE;
     color: #9E9E9E;
+}
+
+/* ===============================================
+   语言切换按钮
+   =============================================== */
+
+.btn-lang-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    border: 2px solid #64B5F6;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 15px;
+}
+
+.btn-lang-toggle:hover {
+    background: linear-gradient(135deg, #BBDEFB 0%, #90CAF9 100%);
+    transform: scale(1.05);
+}
+
+.btn-lang-toggle:active {
+    transform: scale(0.98);
+}
+
+.btn-lang-toggle .lang-icon {
+    font-size: 18px;
+}
+
+.btn-lang-toggle .lang-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1976D2;
+    min-width: 24px;
+    text-align: center;
+}
+
+/* 中文模式样式 */
+.btn-lang-toggle.zh-mode {
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    border-color: #FFB74D;
+}
+
+.btn-lang-toggle.zh-mode .lang-text {
+    color: #E65100;
+}
+
+.btn-lang-toggle.zh-mode:hover {
+    background: linear-gradient(135deg, #FFE0B2 0%, #FFCC80 100%);
 }

@@ -89,13 +89,16 @@ const LettersGame = {
         requestAnimationFrame(() => {
             this.resize();
 
-            // 开始生成字母
-            this.spawnLetter();
-            this.spawnTimer = setInterval(() => {
-                if (this.fallingLetters.length < this.config.maxLetters) {
-                    this.spawnLetter();
-                }
-            }, this.config.spawnInterval);
+            // 延迟生成第一个字母，让用户有准备时间
+            setTimeout(() => {
+                // 开始生成字母
+                this.spawnLetter();
+                this.spawnTimer = setInterval(() => {
+                    if (this.fallingLetters.length < this.config.maxLetters) {
+                        this.spawnLetter();
+                    }
+                }, this.config.spawnInterval);
+            }, 1500);
 
             // 开始动画循环
             this.animate();
@@ -186,6 +189,9 @@ const LettersGame = {
 
         // 高亮对应的键盘按键
         this.updateHighlight();
+
+        // 朗读字母，起引导作用
+        Audio.speakLetter(letter);
     },
 
     /**
@@ -232,7 +238,6 @@ const LettersGame = {
             // 视觉反馈
             Keyboard.showCorrect(key);
             Audio.playCorrect();
-            Audio.speakLetter(key);
 
             // 粒子效果
             const rect = this.canvas.getBoundingClientRect();

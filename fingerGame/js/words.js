@@ -94,7 +94,8 @@ const WordsGame = {
 
         const word = Utils.randomChoice(wordList);
         this.currentWord = word;
-        this.currentPinyin = word.pinyin.replace(/\s+/g, '').toUpperCase();
+        // 去除声调符号并转大写，用于与键盘输入匹配
+        this.currentPinyin = Utils.removePinyinTones(word.pinyin.replace(/\s+/g, '')).toUpperCase();
         this.inputBuffer = '';
         this.inputIndex = 0;
 
@@ -169,9 +170,35 @@ const WordsGame = {
         this.elements.inputDisplay.style.animation = 'scaleBounce 0.5s ease';
         this.elements.hanzi.style.animation = 'scaleBounce 0.5s ease';
 
-        // 朗读
+        // 拼读引导：先读拼音的各个部分，再读声调，最后读汉字
+        // 例如：r en 的二声 人
         setTimeout(() => {
-            Audio.speakPinyin(word.hanzi);
+            // 解析拼音，分成声母和韵母部分
+            const pinyinParts = this.parsePinyinParts(word.pinyin);
+            // 获取声调
+            const tone = this.getToneFromPinyin(word.pinyin);
+
+            let delay = 0;
+            // 依次朗读每个拼音部分
+            pinyinParts.forEach((part, index) => {
+                setTimeout(() => {
+                    Audio.speakPinyin(part);
+                }, delay);
+                delay += 500;
+            });
+
+            // 读声调（如果有的话）
+            if (tone) {
+                setTimeout(() => {
+                    Audio.speakPinyin(tone);
+                }, delay);
+                delay += 600;
+            }
+
+            // 最后朗读汉字
+            setTimeout(() => {
+                Audio.speakPinyin(word.hanzi);
+            }, delay + 300);
         }, 300);
 
         // 回调
@@ -187,14 +214,91 @@ const WordsGame = {
             document.body
         );
 
-        // 下一个词语
+        // 下一个词语（增加延迟以便完成拼读）
         setTimeout(() => {
             if (this.isRunning) {
                 this.elements.inputDisplay.style.animation = '';
                 this.elements.hanzi.style.animation = '';
                 this.nextWord();
             }
-        }, 2000);
+        }, 4000);
+    },
+
+    /**
+     * 从拼音中提取声调
+     * 返回如 "的一声"、"的二声" 等
+     */
+    getToneFromPinyin(pinyin) {
+        // 声调符号映射
+        const toneMarks = {
+            // 一声（阴平）
+            'ā': 1, 'ē': 1, 'ī': 1, 'ō': 1, 'ū': 1, 'ǖ': 1,
+            // 二声（阳平）
+            'á': 2, 'é': 2, 'í': 2, 'ó': 2, 'ú': 2, 'ǘ': 2,
+            // 三声（上声）
+            'ǎ': 3, 'ě': 3, 'ǐ': 3, 'ǒ': 3, 'ǔ': 3, 'ǚ': 3,
+            // 四声（去声）
+            'à': 4, 'è': 4, 'ì': 4, 'ò': 4, 'ù': 4, 'ǜ': 4
+        };
+
+        const toneNames = {
+            1: '一声',
+            2: '二声',
+            3: '三声',
+            4: '四声'
+        };
+
+        // 查找拼音中的声调标记
+        for (const char of pinyin) {
+            if (toneMarks[char]) {
+                return toneNames[toneMarks[char]];
+            }
+        }
+
+        // 没有声调标记，可能是轻声
+        return null;
+    },
+
+    /**
+     * 解析拼音，分成声母和韵母部分
+     * 例如：'rén' -> ['r', 'en'], 'xué xiào' -> ['x', 'ue', 'x', 'iao']
+     */
+    parsePinyinParts(pinyin) {
+        // 去除声调
+        const cleanPinyin = Utils.removePinyinTones(pinyin.toLowerCase());
+
+        // 声母表
+        const shengmu = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l',
+            'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w'];
+
+        const parts = [];
+        const syllables = cleanPinyin.split(/\s+/);
+
+        syllables.forEach(syllable => {
+            if (!syllable) return;
+
+            // 尝试匹配声母
+            let foundShengmu = null;
+            for (const sm of shengmu) {
+                if (syllable.startsWith(sm)) {
+                    foundShengmu = sm;
+                    break;
+                }
+            }
+
+            if (foundShengmu) {
+                parts.push(foundShengmu);
+                const yunmu = syllable.slice(foundShengmu.length);
+                if (yunmu) {
+                    parts.push(yunmu);
+                }
+            } else {
+                // 没有声母，整个是韵母（如 a, o, e, ai 等）
+                parts.push(syllable);
+            }
+        });
+
+        return parts;
     },
 
     /**

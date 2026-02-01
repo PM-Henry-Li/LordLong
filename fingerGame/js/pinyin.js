@@ -36,11 +36,13 @@ const PinyinGame = {
         this.inputBuffer = '';
         this.inputIndex = 0;
 
-        // 生成第一个拼音
-        this.nextPinyin();
-
         // 设置键盘回调
         Keyboard.setKeyPressCallback((key) => this.handleKeyPress(key));
+
+        // 延迟生成第一个拼音，让用户有准备时间
+        setTimeout(() => {
+            this.nextPinyin();
+        }, 1500);
     },
 
     /**
@@ -87,9 +89,10 @@ const PinyinGame = {
             Keyboard.highlight(fullPinyin[0].toUpperCase());
         }
 
-        // 朗读提示
+        // 朗读完整拼音引导（中文拼音发音）
         setTimeout(() => {
-            Audio.speakPinyin(pinyin.shengmu);
+            // 朗读完整拼音组合
+            Audio.speakPinyin(fullPinyin);
         }, 300);
     },
 
@@ -134,19 +137,35 @@ const PinyinGame = {
      */
     completePinyin() {
         const pinyin = this.currentPinyin;
+        const fullPinyin = pinyin.shengmu + pinyin.yunmu;
 
         // 显示结果
-        this.elements.result.textContent = pinyin.shengmu + pinyin.yunmu;
+        this.elements.result.textContent = fullPinyin;
         this.elements.result.style.animation = 'scaleBounce 0.5s ease';
 
-        // 朗读完整拼音
+        // 朗读完整拼音（分步朗读：声母 -> 韵母 -> 完整拼音）
         setTimeout(() => {
-            Audio.speakPinyin(`${pinyin.shengmu}, ${pinyin.yunmu}, ${pinyin.shengmu}${pinyin.yunmu}`);
-            if (pinyin.example) {
-                setTimeout(() => {
-                    Audio.speakPinyin(pinyin.example);
-                }, 1500);
+            // 先读声母（如果有的话）
+            if (pinyin.shengmu) {
+                Audio.speakPinyin(pinyin.shengmu);
             }
+
+            // 再读韵母
+            setTimeout(() => {
+                Audio.speakPinyin(pinyin.yunmu);
+
+                // 最后读完整拼音
+                setTimeout(() => {
+                    Audio.speakPinyin(fullPinyin);
+
+                    // 如果有例字，朗读例字
+                    if (pinyin.example) {
+                        setTimeout(() => {
+                            Audio.speakPinyin(pinyin.example);
+                        }, 800);
+                    }
+                }, 600);
+            }, 600);
         }, 300);
 
         // 回调
@@ -168,7 +187,7 @@ const PinyinGame = {
                 this.elements.result.style.animation = '';
                 this.nextPinyin();
             }
-        }, 2500);
+        }, 3500);
     },
 
     /**
