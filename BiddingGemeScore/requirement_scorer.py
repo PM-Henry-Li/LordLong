@@ -124,28 +124,43 @@ class RequirementScorer:
                         category = 'B类'
                     elif 'C类' in related_targets_str:
                         category = 'C类'
-                # 1. 尝试从新字段 "需求分类" 获取
-                category = row.get('需求分类', '').strip()
+                    elif 'D类' in related_targets_str:
+                        category = 'D类'
+                    elif 'E类' in related_targets_str:
+                        category = 'E类'
+                    # 如果没有明确的分类标识，再检查关键词（向后兼容）
+                    elif '季度重点' in related_targets_str:
+                        category = 'E类'
+                    elif '数据需求' in related_targets_str:
+                        category = 'C类'
+                    elif '重点项目' in related_targets_str:
+                        category = 'B类'
+                    elif '考核' in related_targets_str and '落地' in related_targets_str and '落地结束' not in related_targets_str:
+                        category = 'A类'
                 
-                # 2. 如果新字段为空，尝试从旧字段 "关联目标及方向" 获取 (向后兼容)
-                # 注意：在新模板中，"关联目标及方向" 是描述字段，不应作为Category读取，除非它是旧模板
-                # 判断逻辑：如果内容包含 A类/B类/C类/D类/E类 字样，才认为是Category
+                # 如果从关联目标及方向没有提取到，使用业务需求优先级字段
                 if not category:
-                    potential_val = row.get('关联目标及方向', row.get('category', '')).strip()
-                    if any(c in potential_val for c in ['A类', 'B类', 'C类', 'D类', 'E类']):
-                         category = potential_val
+                    category = row.get('业务需求优先级', '').strip()
+                    
+                    # 处理P0/P1等优先级标记，映射到分类
+                    if category.startswith('P'):
+                        # P0/P1等优先级标记，根据关联目标及方向判断或使用默认
+                        if 'B类' in related_targets or '重点项目' in related_targets:
+                            category = 'B类'
+                        else:
+                            category = 'D类'  # 默认映射到D类
                 
-                # 3. 继承上一行
+                # 如果分类仍为空，尝试使用需求分类字段
+                if not category:
+                    category = row.get('需求分类', row.get('category', ''))
+                
+                # 如果分类仍为空，尝试继承上一行的值
                 if not category and last_category:
                     category = last_category
                 
-                # 4. 更新 last_category
+                # 更新last_category
                 if category:
                     last_category = category
-                    
-                # 5. 读取 "关联目标及方向" 作为描述字段 (Related Targets)
-                # 无论是否用作Category，都将其存为 related_targets 以便于展示
-                related_targets = row.get('关联目标及方向', row.get('related_targets', '')).strip()
                 
                 # 支持新字段名：关联目标及方向（可能对应关联重点项目数）
                 # 尝试从关联目标及方向提取数字
@@ -1386,6 +1401,59 @@ class RequirementScorer:
             color: rgba(0,0,0,0.65);
         }}
         
+        .help-icon {{
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: rgba(0,0,0,0.25);
+            color: #fff;
+            font-size: 10px;
+            margin-left: 4px;
+            cursor: pointer;
+            vertical-align: middle;
+        }}
+        .help-icon:hover {{ background-color: rgba(0,0,0,0.45); }}
+        .help-icon .tooltip-content {{
+            visibility: hidden;
+            width: 250px;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            text-align: left;
+            border-radius: 4px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%; /* Position above */
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-weight: normal;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Interpret newlines */
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }}
+        .help-icon .tooltip-content::after {{
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+        }}
+        .help-icon:hover .tooltip-content {{
+            visibility: visible;
+            opacity: 1;
+        }}
+        
         .ant-tag-blue {{ color: #1890ff; background: #e6f7ff; border-color: #91d5ff; }}
         .ant-tag-green {{ color: #52c41a; background: #f6ffed; border-color: #b7eb8f; }}
         .ant-tag-gold {{ color: #faad14; background: #fffbe6; border-color: #ffe58f; }}
@@ -1436,58 +1504,6 @@ class RequirementScorer:
         
         .decision-check {{ color: var(--success-color); font-size: 16px; font-weight: bold; }}
         .decision-start {{ color: #1890ff; font-size: 15px; font-weight: normal; }}
-        .help-icon {
-            position: relative;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background-color: rgba(0,0,0,0.25);
-            color: #fff;
-            font-size: 10px;
-            margin-left: 4px;
-            cursor: pointer;
-            vertical-align: middle;
-        }
-        .help-icon:hover { background-color: rgba(0,0,0,0.45); }
-        .help-icon .tooltip-content {
-            visibility: hidden;
-            width: 250px;
-            background-color: rgba(0, 0, 0, 0.85);
-            color: #fff;
-            text-align: left;
-            border-radius: 4px;
-            padding: 8px 12px;
-            position: absolute;
-            z-index: 100;
-            bottom: 125%; /* Position above */
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.2s;
-            font-weight: normal;
-            font-size: 12px;
-            line-height: 1.5;
-            white-space: pre-wrap; /* Interpret newlines */
-            pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .help-icon .tooltip-content::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
-        }
-        .help-icon:hover .tooltip-content {
-            visibility: visible;
-            opacity: 1;
-        }}
         
         .score-val {{ font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-weight: 600; color: #000; }}
         
@@ -1546,7 +1562,7 @@ class RequirementScorer:
                 <div class="stat-value" style="color: var(--success-color);">{len(selected)}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">启动需求</div>
+                <div class="stat-label">待办需求</div>
                 <div class="stat-value" style="color: var(--warning-color);">{len(backlog)}</div>
             </div>
             <div class="stat-card">
@@ -1649,13 +1665,13 @@ class RequirementScorer:
                                 <th>排名</th>
                                 <th>业务线</th>
                                 <th>需求名称</th>
-                                <th>需求分类得分 <span class="help-icon">?<span class="tooltip-content">评分规则：\nA类 (考核落地): 100分\nB类 (重点项目): 60分\nC类 (数据需求): 20分\nD类 (日常需求): 10分</span></span></th>
-                                <th>规划得分 <span class="help-icon">?<span class="tooltip-content">评分规则：\n规划内: 1.5倍权重\n规划外: 0.8倍权重</span></span></th>
-                                <th>紧迫度 <span class="help-icon">?<span class="tooltip-content">评分规则：\nP0 (紧急): 2.0倍\nP1 (重要): 1.5倍\nP2 (一般): 1.0倍\nP3 (暂缓): 0.5倍</span></span></th>
-                                <th>梁宁判定结果 <span class="help-icon">?<span class="tooltip-content">评分规则：\n💎 核心真需求: +50分\n🔧 基础型需求: +40分\n✨ 魅力型需求: +30分\n❌ 伪需求: -50分</span></span></th>
-                                <th>FY26战略 <span class="help-icon">?<span class="tooltip-content">评分规则：\n匹配年度战略目标获得额外加分\n(如 O1 +20分, O3 +15分 等)</span></span></th>
+                                <th title="来源于需求分类：A类(100), B类(60), C类(20), D类(10)">需求分类得分</th>
+                                <th>规划</th>
+                                <th>紧迫度</th>
+                                <th>梁宁判定结果</th>
+                                <th>FY26战略</th>
 
-                                <th>需求得分</th>
+                                <th>最终分</th>
                                 <th>bidding分</th>
                                 <th>决策</th>
                             </tr>
@@ -1708,7 +1724,7 @@ class RequirementScorer:
             
             # 决策结果
             if '✅' in decision:
-                decision_html = '<span class="decision-check">✓ 入选</span>'
+                decision_html = '<span class="decision-check">✓ 通过</span>'
                 row_bg = ''
             elif decision == '仅启动':
                 decision_html = '<span class="decision-start">仅启动</span>'
@@ -1805,7 +1821,7 @@ class RequirementScorer:
         if backlog:
             html_content += """
                 <div style="margin-top: 32px; padding-top: 24px; border-top: 1px dashed #f0f0f0;">
-                    <h4 style="margin-bottom: 16px; color: rgba(0,0,0,0.85);">✨ 高优启动需求建议</h4>
+                    <h4 style="margin-bottom: 16px; color: rgba(0,0,0,0.85);">✨ 高优待办需求建议</h4>
                     <ul style="padding-left: 20px; color: rgba(0,0,0,0.65);">"""
             high_priority_backlog = sorted(backlog, key=lambda x: -x.get('calculated_score', 0))[:3]
             for req in high_priority_backlog:

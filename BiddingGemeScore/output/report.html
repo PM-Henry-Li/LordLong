@@ -177,6 +177,59 @@
             color: rgba(0,0,0,0.65);
         }
         
+        .help-icon {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: rgba(0,0,0,0.25);
+            color: #fff;
+            font-size: 10px;
+            margin-left: 4px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .help-icon:hover { background-color: rgba(0,0,0,0.45); }
+        .help-icon .tooltip-content {
+            visibility: hidden;
+            width: 250px;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            text-align: left;
+            border-radius: 4px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%; /* Position above */
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-weight: normal;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Interpret newlines */
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .help-icon .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+        }
+        .help-icon:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        
         .ant-tag-blue { color: #1890ff; background: #e6f7ff; border-color: #91d5ff; }
         .ant-tag-green { color: #52c41a; background: #f6ffed; border-color: #b7eb8f; }
         .ant-tag-gold { color: #faad14; background: #fffbe6; border-color: #ffe58f; }
@@ -227,21 +280,6 @@
         
         .decision-check { color: var(--success-color); font-size: 16px; font-weight: bold; }
         .decision-start { color: #1890ff; font-size: 15px; font-weight: normal; }
-        .help-icon {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background-color: rgba(0,0,0,0.25);
-            color: #fff;
-            font-size: 10px;
-            margin-left: 4px;
-            cursor: help;
-            vertical-align: middle;
-        }
-        .help-icon:hover { background-color: rgba(0,0,0,0.45); }
         
         .score-val { font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-weight: 600; color: #000; }
         
@@ -283,9 +321,9 @@
         <div class="header">
             <h1>需求优先级打分与资源分配报告</h1>
             <div class="meta">
-                <span>生成时间: 2026-01-30 20:10:33</span>
+                <span>生成时间: 2026-02-02 19:22:52</span>
                 <span style="margin: 0 8px; color: #d9d9d9;">|</span>
-                <span>可用总分池: <span style="color:var(--primary-color);font-weight:600;">1500.0</span> 分</span>
+                <span>可用总分池: <span style="color:var(--primary-color);font-weight:600;">150.0</span> 分</span>
             </div>
         </div>
         
@@ -300,7 +338,7 @@
                 <div class="stat-value" style="color: var(--success-color);">9</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">启动需求</div>
+                <div class="stat-label">待办需求</div>
                 <div class="stat-value" style="color: var(--warning-color);">0</div>
             </div>
             <div class="stat-card">
@@ -331,19 +369,19 @@
                                 <td><span class="business-line-text">考研</span></td>
                                 <td>60%</td>
                                 <td><span class="ant-tag ant-tag-blue">是 (接收回流)</span></td>
-                                <td><span style="font-weight:600; font-size:16px;">1027.32</span></td>
+                                <td><span style="font-weight:600; font-size:16px;">102.73</span></td>
                             </tr>
                             <tr>
                                 <td><span class="business-line-text">四六级</span></td>
                                 <td>20%</td>
                                 <td><span class="ant-tag">否</span></td>
-                                <td><span style="font-weight:600; font-size:16px;">300.00</span></td>
+                                <td><span style="font-weight:600; font-size:16px;">30.00</span></td>
                             </tr>
                             <tr>
                                 <td><span class="business-line-text">专升本</span></td>
                                 <td>20%</td>
                                 <td><span class="ant-tag ant-tag-gold">是 (部分回流)</span></td>
-                                <td><span style="font-weight:600; font-size:16px;">172.68</span></td>
+                                <td><span style="font-weight:600; font-size:16px;">17.27</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -378,34 +416,14 @@
                                 <th>排名</th>
                                 <th>业务线</th>
                                 <th>需求名称</th>
-                                <th>需求分类得分 <span class="help-icon" title="评分规则：
-A类 (考核落地): 100分
-B类 (重点项目): 60分
-C类 (数据需求): 20分
-D类 (日常需求): 10分">?</span></th>
-                                <th>规划得分 <span class="help-icon" title="评分规则：
-规划内: 1.5倍权重
-规划外: 0.8倍权重">?</span></th>
-                                <th>紧迫度 <span class="help-icon" title="评分规则：
-P0 (紧急): 2.0倍
-P1 (重要): 1.5倍
-P2 (一般): 1.0倍
-P3 (暂缓): 0.5倍">?</span></th>
-                                <th>梁宁判定结果 <span class="help-icon" title="评分规则：
-💎 核心真需求: +50分
-🔧 基础型需求: +40分
-✨ 魅力型需求: +30分
-❌ 伪需求: -50分">?</span></th>
-                                <th>FY26战略 <span class="help-icon" title="评分规则：
-匹配年度战略目标获得额外加分
-(如 O1 +20分, O3 +15分 等)">?</span></th>
+                                <th title="来源于需求分类：A类(100), B类(60), C类(20), D类(10)">需求分类得分</th>
+                                <th>规划</th>
+                                <th>紧迫度</th>
+                                <th>梁宁判定结果</th>
+                                <th>FY26战略</th>
 
-                                <th>需求得分</th>
-                                <th>bidding分 <span class="help-icon" title="计算规则：
-= 需求得分 × 业务权重
-(轻学业务获1.2倍权重)
-
-最终分值受总资金池配额限制">?</span></th>
+                                <th>最终分</th>
+                                <th>bidding分</th>
                                 <th>决策</th>
                             </tr>
                         </thead>
@@ -414,141 +432,141 @@ P3 (暂缓): 0.5倍">?</span></th>
                                 <td style="color:#8c8c8c;">1</td>
                                 <td><span class="ant-tag ant-tag-purple">轻学</span></td>
                                 <td style="font-weight:500;">图片任务生成二维码功能</td>
-                                <td title="B类：【重点项目】">60</td>
+                                <td title="B类">60</td>
                                 <td>1.5</td>
                                 <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+30)</span></td>
                                 <td><span class="ant-tag ant-tag-purple" title="O1-KR5">+20</span></td>
 
                                 <td>222.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">230.93</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">23.09</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                             <tr style="">
                                 <td style="color:#8c8c8c;">2</td>
                                 <td><span class="ant-tag ant-tag-blue">考研</span></td>
                                 <td style="font-weight:500;">教师工作台搭建</td>
-                                <td title="E类：【Q4季度重点】-3月">60</td>
+                                <td title="E类">60</td>
                                 <td>1.5</td>
                                 <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
                                 <td><span class="ant-tag ant-tag-purple" title="O4-KR1">+15</span></td>
 
                                 <td>190.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">197.64</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">19.76</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                             <tr style="">
                                 <td style="color:#8c8c8c;">3</td>
                                 <td><span class="ant-tag ant-tag-blue">考研</span></td>
                                 <td style="font-weight:500;">【练测】集团标化阶段测-题库升级</td>
-                                <td title="B类：【重点项目】">60</td>
+                                <td title="B类">60</td>
                                 <td>1.5</td>
                                 <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
                                 <td><span class="ant-tag ant-tag-purple" title="O3-KR1">+15</span></td>
 
                                 <td>190.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">197.64</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">19.76</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                             <tr style="">
                                 <td style="color:#8c8c8c;">4</td>
                                 <td><span class="ant-tag ant-tag-cyan">四六级</span></td>
                                 <td style="font-weight:500;">自动收分新增院校字段</td>
-                                <td title="B类：【重点项目】">60</td>
+                                <td title="B类">60</td>
                                 <td>1.5</td>
                                 <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
                                 <td><span style="color:#d9d9d9;">-</span></td>
 
                                 <td>175.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">182.04</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">18.20</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                             <tr style="background-color: #fafafa;">
                                 <td style="color:#8c8c8c;">5</td>
                                 <td><span class="ant-tag ant-tag-cyan">四六级</span></td>
                                 <td style="font-weight:500;">课前规划四六级适配</td>
-                                <td title="B类：【重点项目】">60</td>
+                                <td title="B类">60</td>
                                 <td>1.5</td>
                                 <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
                                 <td><span style="color:#d9d9d9;">-</span></td>
 
                                 <td>175.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">182.04</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">18.20</span></td>
                                 <td><span class="decision-start">仅启动</span></td>
                             </tr>
                             <tr style="">
                                 <td style="color:#8c8c8c;">6</td>
                                 <td><span class="ant-tag ant-tag-green">专升本</span></td>
                                 <td style="font-weight:500;">专升本择校小程序上架杭州相关数据</td>
-                                <td title="B类：【重点项目】">60</td>
+                                <td title="B类">60</td>
                                 <td>0.8</td>
                                 <td>P0 <span style="font-size:12px;color:#8c8c8c;">(2.0)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+50)</span></td>
                                 <td><span class="ant-tag ant-tag-purple" title="O1-KR3">+20</span></td>
 
                                 <td>166.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">172.68</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">17.27</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                             <tr style="">
                                 <td style="color:#8c8c8c;">7</td>
                                 <td><span class="ant-tag ant-tag-blue">考研</span></td>
                                 <td style="font-weight:500;">保温课优化</td>
-                                <td title="E类：【Q4季度重点】-3月">60</td>
+                                <td title="E类">60</td>
                                 <td>1.5</td>
                                 <td>P1 <span style="font-size:12px;color:#8c8c8c;">(1.5)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+30)</span></td>
                                 <td><span style="color:#d9d9d9;">-</span></td>
 
                                 <td>165.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">171.64</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">17.16</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                             <tr style="">
                                 <td style="color:#8c8c8c;">8</td>
                                 <td><span class="ant-tag ant-tag-blue">考研</span></td>
                                 <td style="font-weight:500;">答疑优化</td>
-                                <td title="D类：【非考核类】 + 【考核类】落地结束">10</td>
+                                <td title="D类">10</td>
                                 <td>0.8</td>
                                 <td>P2 <span style="font-size:12px;color:#8c8c8c;">(1.0)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
                                 <td><span class="ant-tag ant-tag-purple" title="O4-KR3">+15</span></td>
 
                                 <td>63.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">65.53</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">6.55</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                             <tr style="">
                                 <td style="color:#8c8c8c;">9</td>
                                 <td><span class="ant-tag ant-tag-blue">考研</span></td>
                                 <td style="font-weight:500;">随堂测优化</td>
-                                <td title="D类：【非考核类】 + 【考核类】落地结束">10</td>
+                                <td title="D类">10</td>
                                 <td>0.8</td>
                                 <td>P2 <span style="font-size:12px;color:#8c8c8c;">(1.0)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
                                 <td><span style="color:#d9d9d9;">-</span></td>
 
                                 <td>48.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">49.93</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">4.99</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                             <tr style="">
                                 <td style="color:#8c8c8c;">10</td>
                                 <td><span class="ant-tag ant-tag-blue">考研</span></td>
                                 <td style="font-weight:500;">补充正确率及完成频次</td>
-                                <td title="C类：【数据需求】">20</td>
+                                <td title="C类">20</td>
                                 <td>0.8</td>
                                 <td>P3 <span style="font-size:12px;color:#8c8c8c;">(0.5)</span></td>
                                 <td><span class="ant-tag ant-tag-green" title="">真(+40)</span></td>
                                 <td><span style="color:#d9d9d9;">-</span></td>
 
                                 <td>48.0</td>
-                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">49.93</span></td>
-                                <td><span class="decision-check">✓ 入选</span></td>
+                                <td><span class="score-val" style="color:#1890ff; font-size:15px;">4.99</span></td>
+                                <td><span class="decision-check">✓ 通过</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -564,13 +582,13 @@ P3 (暂缓): 0.5倍">?</span></th>
                     <h4 style="margin-bottom: 16px; color: rgba(0,0,0,0.85);">各业务线资源使用情况</h4>
                     <div style="margin-bottom: 24px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span><strong>考研</strong> （含轻学 1 个，共 230.93 分）</span>
-                            <span>963.25 / 1027.32 (93.8%)</span>
+                            <span><strong>考研</strong> （含轻学 1 个，共 23.09 分）</span>
+                            <span>96.32 / 102.73 (93.8%)</span>
                         </div>
                         <div class="ant-progress">
                             <div class="ant-progress-outer">
                                 <div class="ant-progress-inner">
-                                    <div class="ant-progress-bg" style="width: 93.76265694613203%; background-color: var(--warning-color);"></div>
+                                    <div class="ant-progress-bg" style="width: 93.76265694613201%; background-color: var(--warning-color);"></div>
                                 </div>
                             </div>
                         </div>
@@ -578,7 +596,7 @@ P3 (暂缓): 0.5倍">?</span></th>
                     <div style="margin-bottom: 24px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <span><strong>四六级</strong> </span>
-                            <span>182.04 / 300.00 (60.7%)</span>
+                            <span>18.20 / 30.00 (60.7%)</span>
                         </div>
                         <div class="ant-progress">
                             <div class="ant-progress-outer">
@@ -591,7 +609,7 @@ P3 (暂缓): 0.5倍">?</span></th>
                     <div style="margin-bottom: 24px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <span><strong>专升本</strong> </span>
-                            <span>172.68 / 172.68 (100.0%)</span>
+                            <span>17.27 / 17.27 (100.0%)</span>
                         </div>
                         <div class="ant-progress">
                             <div class="ant-progress-outer">
