@@ -133,7 +133,667 @@
 
     #view-task-h5.active {
       overflow: hidden;
+      background: #F0F2F5;
     }
+
+    /* ========== 企业微信风格：三栏布局 (教师端专用) ========== */
+    .wework-layout {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      background: #f0f2f5;
+    }
+
+    .wework-mini-nav {
+      width: 54px;
+      background: #2E2E2E;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+      flex-shrink: 0;
+    }
+
+    .wework-mini-nav .ico {
+      width: 28px;
+      height: 28px;
+      margin-bottom: 24px;
+      color: #9B9B9B;
+      cursor: pointer;
+      text-align: center;
+      line-height: 28px;
+      font-size: 16px;
+    }
+
+    .wework-mini-nav .ico.active {
+      color: #07C160;
+    }
+
+    .wework-chat-list {
+      width: 250px;
+      background: #FFF;
+      border-right: 1px solid #E5E6EB;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .wework-chat-list .list-head {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 1px solid #F2F3F5;
+    }
+
+    .wework-chat-list .list-item {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid #F2F3F5;
+      cursor: pointer;
+    }
+
+    .wework-chat-list .list-item.active {
+      background: #E6F7FF;
+    }
+
+    .wework-chat-list .list-item .item-title {
+      font-size: 14px;
+      color: #1F2329;
+      margin-bottom: 4px;
+    }
+
+    .wework-chat-list .list-item .item-sub {
+      font-size: 12px;
+      color: #8F959E;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wework-chat-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #F2F3F5;
+    }
+
+    .wework-chat-header {
+      height: 64px;
+      background: #FFF;
+      border-bottom: 1px solid #E5E6EB;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-weight: 500;
+      font-size: 16px;
+    }
+
+    .wework-chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .wework-chat-footer {
+      height: 120px;
+      background: #FFF;
+      border-top: 1px solid #E5E6EB;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wework-chat-footer .toolbar {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 12px;
+      font-size: 18px;
+      color: #8F959E;
+    }
+
+    .wework-chat-footer .input-area {
+      flex: 1;
+      padding: 0 12px;
+    }
+
+    .wework-chat-footer .send-row {
+      height: 36px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding-right: 12px;
+      padding-bottom: 12px;
+    }
+
+    .wework-chat-footer .btn-send {
+      background: #E5E6EB;
+      color: #8F959E;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    /* 高保真聊天卡片 (Image 3) */
+    .msg-bubble-wrap {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 24px;
+    }
+
+    .msg-sender {
+      font-size: 12px;
+      color: #8F959E;
+      margin-bottom: 4px;
+      margin-left: 48px;
+    }
+
+    .msg-content-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .msg-avatar {
+      width: 40px;
+      height: 40px;
+      background: #CCC;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .msg-task-card {
+      width: 380px;
+      background: #FFF;
+      border-radius: 8px;
+      border: 1px solid #E5E6EB;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .msg-task-card .card-head {
+      background: #4C88FF;
+      color: #FFF;
+      padding: 4px 8px;
+      font-size: 12px;
+      display: inline-block;
+      border-bottom-right-radius: 8px;
+    }
+
+    .msg-task-card .card-main {
+      padding: 16px;
+    }
+
+    .msg-task-card .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .msg-task-card .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1F2329;
+      margin: 0;
+    }
+
+    .msg-task-card .card-icon {
+      width: 60px;
+      height: 60px;
+      background: #E1EFFF;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+    }
+
+    .msg-task-card .card-info {
+      margin-bottom: 16px;
+      border-bottom: 1px solid #F2F3F5;
+      padding-bottom: 12px;
+    }
+
+    .msg-task-card .info-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #4E5969;
+      margin-bottom: 8px;
+    }
+
+    .msg-task-card .card-msg {
+      font-size: 14px;
+      color: #4E5969;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .msg-task-card .card-btn {
+      width: 100%;
+      border-top: 1px solid #F2F3F5;
+      padding: 12px;
+      text-align: center;
+      color: #4C88FF;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .msg-task-card .card-btn:hover {
+      background: #F8F9FA;
+    }
+
+    /* ========== 学生端：高保真微信聊天 UI (Image 1 Refined) ========== */
+    .chat-view-container {
+      width: 100%;
+      height: 100%;
+      background: #EDEDED;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      height: 44px;
+      background: #EDEDED;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid #DDD;
+      flex-shrink: 0;
+    }
+
+    .chat-header .title {
+      font-size: 17px;
+      font-weight: 500;
+      color: #1A1A1A;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+    }
+
+    .chat-bubble-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .chat-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .chat-bubble {
+      background: #FFF;
+      padding: 12px;
+      border-radius: 6px;
+      position: relative;
+      max-width: 80%;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .chat-bubble::before {
+      content: "";
+      position: absolute;
+      left: -6px;
+      top: 12px;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-right: 6px solid #FFF;
+    }
+
+    .chat-task-card {
+      width: 240px;
+      cursor: pointer;
+    }
+
+    .chat-task-card .title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .chat-task-card .row {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .chat-task-card .divider {
+      border-top: 1px solid #EEE;
+      margin: 8px 0;
+    }
+
+    .chat-task-card .footer {
+      font-size: 11px;
+      color: #AAA;
+    }
+
+    .chat-footer {
+      height: 54px;
+      background: #F7F7F7;
+      border-top: 1px solid #DDD;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .chat-footer .input {
+      flex: 1;
+      height: 36px;
+      background: #FFF;
+      border-radius: 4px;
+    }
+
+    .chat-footer .btn {
+      font-size: 24px;
+      color: #333;
+    }
+
+    /* ========== 教师端：学习任务详情 (Image 2 PC 窗口感) ========== */
+    .pc-stats-wrapper {
+      width: 100%;
+      height: 100%;
+      background: #999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pc-window {
+      width: 375px;
+      height: 667px;
+      background: #F8F9FB;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ========== 学生端：做任务 (Image 2) 深度还原 ========== */
+    #view-do-quiz {
+      background: #FFF !important;
+    }
+
+    #view-do-quiz .header {
+      background: #FFF !important;
+      border-bottom: none !important;
+      height: 44px;
+      margin-bottom: 20px;
+    }
+
+    #view-do-quiz .header .title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1F2329;
+    }
+
+    #view-do-quiz .header .back {
+      color: #333;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .quiz-summary-section {
+      padding: 0 20px;
+      margin-bottom: 24px;
+    }
+
+    .quiz-summary-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .quiz-summary-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1F2329;
+      line-height: 1.4;
+      flex: 1;
+      margin: 0;
+    }
+
+    .quiz-summary-due {
+      font-size: 12px;
+      color: #8F959E;
+      white-space: nowrap;
+      margin-left: 12px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .quiz-summary-sub {
+      font-size: 14px;
+      color: #8F959E;
+      margin-top: 4px;
+    }
+
+    .quiz-card-container {
+      padding: 0 20px;
+    }
+
+    .quiz-main-card {
+      background: #FFF;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid #F2F3F5;
+    }
+
+    .quiz-card-banner {
+      height: 120px;
+      background: #3DD9A5;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .quiz-card-banner::after {
+      content: "EXAMINATION";
+      position: absolute;
+      left: 20px;
+      top: 40px;
+      font-size: 32px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.2);
+      font-style: italic;
+      font-family: sans-serif;
+    }
+
+    .quiz-card-mascot {
+      width: 80px;
+      height: 80px;
+      z-index: 1;
+      margin-bottom: -10px;
+    }
+
+    .quiz-card-content {
+      padding: 32px 20px;
+      text-align: center;
+    }
+
+    .quiz-card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1F2329;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .quiz-card-divider {
+      height: 1px;
+      border-top: 1px dashed #E5E6EB;
+      margin: 0 0 20px 0;
+    }
+
+    .quiz-card-count-label {
+      font-size: 14px;
+      color: #8F959E;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .quiz-card-count-label::before {
+      content: "";
+      width: 2px;
+      height: 12px;
+      background: #3DD9A5;
+      border-radius: 1px;
+    }
+
+    .quiz-card-count-num {
+      font-size: 48px;
+      font-weight: 600;
+      color: #3DD9A5;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    #view-do-quiz .bottom-btn-wrap {
+      padding: 20px;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #FFF;
+    }
+
+    #view-do-quiz .btn-start-quiz {
+      width: 100%;
+      height: 50px;
+      background: #3DD9A5;
+      color: #FFF;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ========== 学生端：拍照上传页面 (Image 3) 像素还原 ========== */
+    .photo-upload-view {
+      width: 100%;
+      height: 100%;
+      background: #BDE4D8 !important;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .photo-upload-header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 10;
+      background: transparent !important;
+    }
+
+    .photo-upload-header .back {
+      color: #FFF !important;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .photo-upload-header .history {
+      color: #FFF !important;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .photo-upload-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    .photo-upload-illust {
+      height: 260px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      margin-bottom: -20px;
+      position: relative;
+    }
+
+    .photo-upload-chara {
+      width: 100%;
+      height: 100%;
+      background: url('https://api.dicebear.com/7.x/notionists/svg?seed=Felix') center 20px / 280px no-repeat;
+    }
+
+    .photo-upload-card {
+      background: #FFF;
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      z-index: 5;
+    }
+
+    .photo-upload-card .title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1F2329;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    .photo-upload-card .label {
+      font-size: 14px;
+      color: #8F959E;
+      margin-bottom: 32px;
+      font-weight: 500;
+    }
+
+    .photo-upload-card .btn-orange {
+      background: #FF8E5E !important;
+      color: #FFF;
+      border: none;
+      padding: 14px 0;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .photo-upload-card .btn-orange:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 142, 94, 0.3);
+    }
+
 
     #view-do-quiz.active {
       overflow-y: auto;
@@ -565,6 +1225,77 @@
       height: 24px;
       background: #e0e0e0;
       border-radius: 4px;
+    }
+
+    /* ========== 群发配置手机预览增强 (High Fidelity Preview) ========== */
+    .phone-frame .body {
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .preview-bubble {
+      background: #95ec69;
+      padding: 10px 12px;
+      border-radius: 6px;
+      position: relative;
+      max-width: 85%;
+      align-self: flex-start;
+      font-size: 14px;
+      color: #000;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    .preview-bubble::after {
+      content: "";
+      position: absolute;
+      left: -6px;
+      top: 10px;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-right: 6px solid #95ec69;
+    }
+
+    .preview-task-card {
+      background: #FFF;
+      border-radius: 8px;
+      width: 100%;
+      padding: 12px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      border: 1px solid #EEE;
+      box-sizing: border-box;
+    }
+
+    .preview-task-card .p-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #1A1A1A;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-task-card .p-meta {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 2px;
+    }
+
+    .preview-task-card .p-divider {
+      border-top: 1px solid #F0F0F0;
+      margin: 8px 0;
+    }
+
+    .preview-task-card .p-footer {
+      font-size: 11px;
+      color: #BBB;
+      border: none;
+      padding: 0;
+      background: none;
     }
 
     .bottom-bar {
@@ -1963,8 +2694,8 @@
     <div class="logo">群发与学习任务</div>
     <div class="nav-item active" data-key="flowchart"><span class="icon">📊</span><span>系统流程图</span></div>
     <div class="nav-item" data-key="config"><span class="icon">📋</span><span>群发配置</span></div>
-    <div class="nav-item" data-key="task"><span class="icon">📤</span><span>学习任务 H5</span></div>
-    <div class="nav-item" data-key="do"><span class="icon">📝</span><span>做任务-试卷</span></div>
+    <div class="nav-item" data-key="task"><span class="icon">📤</span><span>教师发布学习任务</span></div>
+    <div class="nav-item" data-key="do"><span class="icon">📝</span><span>学生微信收到学习任务</span></div>
   </aside>
   <main class="main">
     <!-- 系统流程图 -->
@@ -2229,117 +2960,281 @@
 
     <!-- 学习任务 H5 -->
     <div id="view-task-h5" class="view">
-      <div class="wework-bg" aria-hidden="true"></div>
-      <div class="wework">
-        <aside class="wework-side">
-          <div class="search">Q</div>
-          <div class="nav-item act">消息</div>
-          <div class="nav-item">邮件</div>
-          <div class="nav-item">文档</div>
-          <div class="nav-item">日程</div>
-          <div class="nav-item">会议</div>
-          <div class="nav-item">工作台</div>
-          <div class="nav-item">通讯录</div>
-          <div class="nav-item">学习园地</div>
-          <div class="nav-item">文件</div>
+      <div class="wework-layout" id="teacherViewBody">
+        <!-- 1. 左侧微导航 -->
+        <aside class="wework-mini-nav">
+          <div class="ico active">💬</div>
+          <div class="ico">📧</div>
+          <div class="ico">📄</div>
+          <div class="ico">📅</div>
+          <div class="ico">👥</div>
+          <div class="ico">🛠️</div>
+          <div class="ico">🏠</div>
+          <div class="ico">📂</div>
         </aside>
-        <div class="wework-list">
-          <div class="list-top">学员家长群 @微信</div>
-          <div class="list-item act">
-            <div class="name">学员家长群</div>
-            <div class="preview">[学习任务] 概率论周测<span class="t">1分钟前</span></div>
+
+        <!-- 2. 中间聊天列表 -->
+        <div class="wework-chat-list">
+          <div class="list-head">学员家长群 @微信</div>
+          <div class="list-item active">
+            <div class="item-title">学员家长群</div>
+            <div class="item-sub">[学习任务] 概率论周测</div>
           </div>
           <div class="list-item">
-            <div class="name">TAPD</div>
-            <div class="preview">需求更新提醒<span class="t">14:54</span></div>
+            <div class="item-title">TAPD</div>
+            <div class="item-sub">需求更新提醒</div>
           </div>
           <div class="list-item">
-            <div class="name">VIP客户沟通群</div>
-            <div class="preview">Diane: 可以啦老师...<span class="t">昨天</span></div>
+            <div class="item-title">VIP客户沟通群</div>
+            <div class="item-sub">Diane: 可以啦老师...</div>
           </div>
           <div class="list-item">
-            <div class="name">企业微信团队</div>
-            <div class="preview">授权登录通知<span class="t">1/5</span></div>
+            <div class="item-title">企业微信团队</div>
+            <div class="item-sub">授权登录通知</div>
           </div>
         </div>
-        <main class="wework-main">
-          <div class="main-head">学员家长群 @微信 <span class="more">2+</span></div>
-          <div class="main-body">
-            <div class="sys">2025年1月21日 16:17</div>
-            <div class="sys">你已添加了张老师，现在可以开始聊天了。</div>
-            <div class="sys">16:18</div>
-            <div class="bubble">
-              <div class="sender"><span class="n">张老师@新东方在线</span> 0816</div>
-              <div class="card">
-                <div class="card-tag">学习任务</div>
-                <div class="card-body">
+
+        <!-- 3. 右侧聊天内容 -->
+        <main class="wework-chat-content">
+          <header class="wework-chat-header">
+            学员家长群 @微信
+          </header>
+          <div class="wework-chat-messages">
+            <!-- 消息流 -->
+            <div style="text-align: center; color: #8F959E; font-size: 12px; margin: 20px 0;">2025年1月21日 16:17</div>
+            <div style="text-align: center; color: #8F959E; font-size: 12px; margin: 10px 0;">你已添加了张老师，现在可以开始聊天了。</div>
+            <div style="text-align: center; color: #8F959E; font-size: 12px; margin: 20px 0;">16:18</div>
+
+            <!-- 张老师发出的任务卡片 -->
+            <div class="msg-bubble-wrap">
+              <div class="msg-sender">张老师@新东方 0816</div>
+              <div class="msg-content-row">
+                <div class="msg-avatar"
+                  style="background: url('https://api.dicebear.com/7.x/avataaars/svg?seed=teacher') center/cover;">
+                </div>
+                <div class="msg-task-card">
+                  <div class="card-head">学习任务</div>
                   <div class="card-main">
-                    <h1 class="card-title">概率论周测</h1>
-                    <div class="card-meta">
-                      <div class="card-meta-row"><span>📅 截止 01月27日 18:00</span></div>
-                      <div class="card-meta-tags"><span id="metaType">📋 试卷</span><span>✓ 需提交</span></div>
+                    <div class="card-top">
+                      <h1 class="card-title">概率论周测</h1>
+                      <div class="card-icon">📝</div>
+                    </div>
+                    <div class="card-info">
+                      <div class="info-line">📅 截止 01月27日 18:00</div>
+                      <div class="info-line">📋 试卷 &nbsp; ✓ 需提交</div>
+                    </div>
+                    <div class="card-msg">
+                      请按时完成本周概率论周测，提交后可查看答案解析。逾期将影响平时成绩。
                     </div>
                   </div>
-                  <div class="card-thumb">📝</div>
+                  <div class="card-btn" id="btnGoDetail">查看任务</div>
                 </div>
-                <div class="card-desc clamp">请按时完成本周概率论周测，提交后可查看答案解析。逾期将影响平时成绩。</div>
-                <div class="card-actions"><button type="button" class="btn-primary" id="btnDo">去完成</button></div>
               </div>
             </div>
           </div>
-          <div class="main-foot">
-            <span class="ico"></span><span class="input"></span><span class="ico"></span><span class="ico"></span><span
-              class="ico"></span><span class="send">发送</span>
-          </div>
+          <footer class="wework-chat-footer">
+            <div class="toolbar">😊 📁 ✂️ 🕒</div>
+            <div class="input-area"></div>
+            <div class="send-row">
+              <button class="btn-send">发送(S)</button>
+            </div>
+          </footer>
         </main>
-        <div class="wework-info">
-          <div class="info-t">智能服务总结</div>
-          <div class="info-tabs"><span class="act">智能服务总结</span><span>学员详情</span><span>快捷回复</span></div>
-          <p style="line-height:1.6; color:#8C8C8C;">根据成员与微信客户的服务记录，每周自动生成服务总结，企业也可自定义总结要求。</p>
-          <p style="margin-top:12px; font-size:12px; color:#BFBFBF;">你的客户不在总结范围内</p>
-          <button
-            style="margin-top:16px; padding:8px 20px; font-size:14px; color:#fff; background:#4A90E2; border:none; border-radius:6px; cursor:pointer;">申请使用</button>
+      </div>
+    </div>
+
+    <!-- 学生端：移动微信聊天预页面 -->
+    <div id="view-mobile-chat" class="view">
+      <div class="mobile-wrapper">
+        <div class="mobile-content">
+          <div class="chat-view-container">
+            <header class="chat-header">
+              <span style="font-size: 18px; cursor: pointer;" id="btnChatBack">‹</span>
+              <span class="title">张老师</span>
+              <span style="font-size: 18px;">⋯</span>
+            </header>
+            <div class="chat-messages">
+              <div style="text-align: center; color: #AAA; font-size: 12px; margin: 10px 0;">16:18</div>
+              <div class="chat-bubble-row">
+                <div class="chat-avatar"
+                  style="background: url('https://api.dicebear.com/7.x/avataaars/svg?seed=teacher') center/cover;">
+                </div>
+                <div class="chat-bubble">
+                  <div class="chat-task-card" id="chatTaskEntry">
+                    <div class="title">[学习任务] 英语词测测试</div>
+                    <div class="row">📅 截止时间：01月27日 18:00</div>
+                    <div class="row">📋 试卷 · 需提交</div>
+                    <div class="divider"></div>
+                    <div class="footer">学习任务</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <footer class="chat-footer">
+              <span class="btn">🎤</span>
+              <div class="input"></div>
+              <span class="btn">😊</span>
+              <span class="btn">⊕</span>
+            </footer>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 做任务-试卷 -->
-    <div id="view-do-quiz" class="view">
-      <div class="mobile-wrapper">
-        <div class="mobile-content">
-          <div class="status-bar">
-            <span class="l"><span id="clock">16:35</span> <span>🔔</span></span>
-            <span class="r">📶 📡 80%</span>
-          </div>
-          <header class="header">
-            <span class="back" id="btnBack">&#60;</span>
-            <h1 class="title">做任务</h1>
+    <!-- 教师端：学习任务统计详情 (PC 窗口风格) -->
+    <div id="view-task-detail" class="view">
+      <div class="pc-stats-wrapper">
+        <div class="pc-window">
+          <header
+            style="height: 48px; background: #FFF; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #EDEDED;">
+            <span id="btnDetailBack" style="cursor: pointer; font-size: 20px; color: #333; margin-right: 12px;">‹</span>
+            <h1
+              style="font-size: 16px; font-weight: 500; color: #1A1A1A; margin: 0; flex: 1; text-align: center; margin-right: 32px;">
+              学习任务详情</h1>
           </header>
-          <section class="summary">
-            <div class="info">
-              <div class="name" id="taskName">01月07日 词测 26在职研英语(二) 词测List8</div>
-              <div class="sub" id="taskSub">词测测试</div>
-            </div>
-            <div class="due"><span id="dueText">2026.01.14 11:41截止</span><span class="arrow">&#9660;</span></div>
-          </section>
-          <div class="card-wrap">
-            <div class="card">
-              <div class="tag">试卷</div>
-              <div class="banner">
-                <div class="mascot">📚</div>
-                <div class="word">EXAMINATION</div>
+          <div style="flex: 1; overflow-y: auto;">
+            <div style="background: #FFF; padding: 16px; margin-bottom: 8px;">
+              <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px;">
+                <span
+                  style="background: #4C6FAF; color: #FFF; font-size: 10px; padding: 2px 4px; border-radius: 2px;">英语</span>
+                <h2 style="font-size: 16px; line-height: 1.4; color: #1F2329; margin: 0;">02月02日 词测 26在职研英语（二）词测List1
+                </h2>
               </div>
-              <div class="quiz-title" id="quizTitle">26在职研英语(二) 词测 List8</div>
-              <div class="count-row">
-                <div class="bar"></div>
-                <div>
-                  <div class="label">练习题数</div>
-                  <div class="num" id="quizCount">50</div>
+              <div
+                style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #8F959E;">
+                <div>赵丙圯老师 2026.02.02 20:37 发布</div>
+                <button
+                  style="background: #07C160; color: #FFF; border: none; padding: 4px 12px; border-radius: 14px; cursor: pointer;">查看</button>
+              </div>
+            </div>
+            <div style="background: #FFF; padding: 16px;">
+              <h3 style="font-size: 18px; font-weight: 600; color: #1F2329; margin: 0 0 16px 0;">作业数据</h3>
+              <div style="display: flex; justify-content: space-between;">
+                <div style="width: 30%; text-align: center;">
+                  <div style="font-size: 12px; color: #4E5969; margin-bottom: 8px;">提交率</div>
+                  <div
+                    style="width: 80px; height: 80px; margin: 0 auto; border: 6px solid #F2F3F5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">
+                    0%</div>
+                  <div style="margin-top: 8px; font-size: 11px; color: #8F959E;">未交 - &nbsp; 已交 -</div>
+                </div>
+                <div style="width: 30%; text-align: center;">
+                  <div style="font-size: 12px; color: #4E5969; margin-bottom: 8px;">批改率</div>
+                  <div
+                    style="width: 80px; height: 80px; margin: 0 auto; border: 6px solid #F2F3F5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">
+                    0%</div>
+                  <div style="margin-top: 8px; font-size: 11px; color: #8F959E;">未批 - &nbsp; 已批 -</div>
+                </div>
+                <div style="width: 30%; text-align: center;">
+                  <div style="font-size: 12px; color: #4E5969; margin-bottom: 8px;">追问回复率</div>
+                  <div
+                    style="width: 80px; height: 80px; margin: 0 auto; border: 6px solid #F2F3F5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">
+                    0%</div>
+                  <div style="margin-top: 8px; font-size: 11px; color: #8F959E;">未回 - &nbsp; 已回 -</div>
                 </div>
               </div>
             </div>
+            <div style="margin-top: 20px; text-align: center; padding: 40px 0; background: #FFF;">
+              <span style="font-size: 64px; opacity: 0.1;">📔</span>
+              <div style="font-size: 14px; color: #AAA; margin-top: 10px;">暂无数据</div>
+            </div>
           </div>
-          <div class="foot-btn"><button type="button" class="btn" id="btnStart">开始作答</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 做任务-试卷 (Image 2) -->
+    <div id="view-do-quiz" class="view">
+      <div class="mobile-wrapper">
+        <div class="mobile-content">
+          <header class="header">
+            <span class="back" id="btnBack">‹</span>
+            <h1 class="title">做任务</h1>
+            <span style="width:24px"></span>
+          </header>
+
+          <div class="quiz-summary-section">
+            <div class="quiz-summary-title-row">
+              <h2 class="quiz-summary-title" id="taskName">01月07日 词测 26在职研英语(二) 词测List8</h2>
+              <div class="quiz-summary-due">
+                <span id="dueText">2026.01.14 11:41截止</span>
+                <span style="font-size: 10px;">▼</span>
+              </div>
+            </div>
+            <div class="quiz-summary-sub" id="taskSub">词测测试</div>
+          </div>
+
+          <div class="quiz-card-container">
+            <div class="quiz-main-card">
+              <div class="quiz-card-banner">
+                <div class="quiz-card-mascot">
+                  <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=exam"
+                    style="width: 100%; height: 100%;" />
+                </div>
+              </div>
+              <div class="quiz-card-content">
+                <h3 class="quiz-card-title" id="quizTitle">26在职研英语(二) 词测 List8</h3>
+                <div class="quiz-card-divider"></div>
+                <div class="quiz-card-count-label">练习题数</div>
+                <div class="quiz-card-count-num" id="quizCount">50</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-btn-wrap">
+            <button type="button" class="btn-start-quiz" id="btnStart">开始作答</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 学生端：拍照上传作答页面 (Image 3) -->
+    <div id="view-photo-upload" class="view">
+      <div class="mobile-wrapper">
+        <div class="mobile-content">
+          <div class="photo-upload-view">
+            <header class="photo-upload-header">
+              <span class="back" id="btnPhotoBack">‹</span>
+              <span class="history">历史成绩</span>
+            </header>
+            <div class="photo-upload-body">
+              <div class="photo-upload-illust">
+                <div class="photo-upload-chara"></div>
+              </div>
+              <div class="photo-upload-card">
+                <div class="title" id="photoTitle">26在职研英语（二）词测List8</div>
+                <div class="label">练习题数</div>
+                <button class="btn-orange" id="btnCapture">
+                  <span style="font-size: 24px;">📷</span> 拍照上传作答
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 学生端：拍照上传作答页面 -->
+    <div id="view-photo-upload" class="view">
+      <div class="mobile-wrapper">
+        <div class="mobile-content">
+          <div class="photo-upload-container">
+            <header class="photo-header">
+              <span class="back" id="btnPhotoBack">‹</span>
+              <span class="history">历史成绩</span>
+            </header>
+            <div class="photo-body">
+              <div class="photo-illust">
+                <div class="photo-illust-img"></div>
+              </div>
+              <div class="photo-main-card">
+                <div class="title" id="photoTitle">26在职研英语（二）词测List8</div>
+                <div class="label">练习题数</div>
+                <button class="btn-upload">
+                  <span>📷</span> 拍照上传作答
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2478,29 +3373,55 @@
         if (p.quizTitle) document.getElementById('quizTitle').textContent = p.quizTitle;
         if (p.count) document.getElementById('quizCount').textContent = p.count;
       }
+
       function showView(key) {
         hideAllModals();
         document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
-        document.querySelectorAll('.sidebar .nav-item').forEach(function (n) { n.classList.toggle('active', n.getAttribute('data-key') === key); });
-        var viewId = key === 'flowchart' ? 'flowchart' : key === 'config' ? 'config' : key === 'task' ? 'task-h5' : 'do-quiz';
+
+        // 侧边栏高亮逻辑
+        var sideKey = (key === 'task-detail') ? 'task' : (key === 'mobile-chat') ? 'do' : key;
+        document.querySelectorAll('.sidebar .nav-item').forEach(function (n) {
+          n.classList.toggle('active', n.getAttribute('data-key') === sideKey);
+        });
+
+        // 映射 View ID
+        var viewIdMap = {
+          'flowchart': 'flowchart',
+          'config': 'config',
+          'task': 'task-h5',
+          'task-detail': 'task-detail',
+          'photo-upload': 'photo-upload',
+          'do': 'mobile-chat',
+          'do-quiz': 'do-quiz'
+        };
+        var viewId = viewIdMap[key] || 'flowchart';
         var v = document.getElementById('view-' + viewId);
         if (v) v.classList.add('active');
-        var h = key === 'flowchart' ? '#flowchart' : key === 'config' ? '#config' : key === 'task' ? '#task-h5' : '#do-quiz';
-        if (location.hash !== h) location.hash = h;
+
+        // 更新 Hash
+        var hashId = (key === 'task') ? 'task-h5' : (key === 'do') ? 'mobile-chat' : key;
+        if (location.hash !== '#' + hashId) location.hash = '#' + hashId;
+
         if (key === 'task') {
           var params = getSearchParams();
           if (params.bg === 'img') document.body.classList.add('bg-img'); else document.body.classList.remove('bg-img');
-          var meta = document.getElementById('metaType');
-          if (meta) meta.textContent = (params.type || 'paper').toLowerCase() === 'free' ? '📋 自由任务' : '📋 试卷';
-        } else {
+        } else if (key !== 'task-detail') {
           document.body.classList.remove('bg-img');
         }
-        if (key === 'do') applyDoQuizParams();
+
+        if (key === 'do-quiz') applyDoQuizParams();
       }
+
       function onHash() {
         var h = (location.hash || '#flowchart').slice(1);
-        var k = h === 'flowchart' ? 'flowchart' : h === 'task-h5' ? 'task' : h === 'do-quiz' ? 'do' : h === 'config' ? 'config' : 'flowchart';
-        showView(k);
+        var key = 'flowchart';
+        if (h === 'config') key = 'config';
+        else if (h === 'task-h5') key = 'task';
+        else if (h === 'task-detail') key = 'task-detail';
+        else if (h === 'photo-upload') key = 'photo-upload';
+        else if (h === 'mobile-chat') key = 'do';
+        else if (h === 'do-quiz') key = 'do-quiz';
+        showView(key);
       }
 
       document.querySelectorAll('.sidebar .nav-item').forEach(function (it) {
@@ -2509,58 +3430,131 @@
       window.addEventListener('hashchange', onHash);
       onHash();
 
-      // ---------- 群发：发送学习任务、弹窗流程、开关 ----------
-      document.getElementById('btnSendTask').addEventListener('click', function () {
-        document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function (t) { t.classList.remove('active'); });
+      // ---------- 教师端流程 ----------
+      // 发布按钮逻辑
+      document.getElementById('btnPublishPaper').addEventListener('click', function () { showView('task'); });
+      document.getElementById('btnPublishFree').addEventListener('click', function () { showView('task'); });
+      // 三栏布局中的按钮 -> 统计详情
+      var btnGoDetail = document.getElementById('btnGoDetail');
+      if (btnGoDetail) {
+        btnGoDetail.addEventListener('click', function () { showView('task-detail'); });
+      }
+      // 详情页返回 -> 教师列表
+      var btnDetailBack = document.getElementById('btnDetailBack');
+      if (btnDetailBack) {
+        btnDetailBack.addEventListener('click', function () { showView('task'); });
+      }
+
+      // ---------- 学生端流程 ----------
+      // 点击企微卡片入口 -> 进入做题
+      var chatTaskEntry = document.getElementById('chatTaskEntry');
+      if (chatTaskEntry) {
+        chatTaskEntry.addEventListener('click', function () {
+          window.__doQuizParams = { taskId: 'T008', title: '英语词测测试', due: '01月27日 18:00', quizTitle: '英语词测测试', count: '50' };
+          showView('do-quiz');
+        });
+      }
+      // 这里的返回逻辑
+      var btnChatBack = document.getElementById('btnChatBack');
+      if (btnChatBack) {
+        btnChatBack.addEventListener('click', function () { history.back(); });
+      }
+      var btnBack = document.getElementById('btnBack');
+      if (btnBack) {
+        btnBack.addEventListener('click', function () { showView('do'); });
+      }
+
+      // 拍照页返回
+      var btnPhotoBack = document.getElementById('btnPhotoBack');
+      if (btnPhotoBack) {
+        btnPhotoBack.addEventListener('click', function () { showView('do-quiz'); });
+      }
+
+      // ---------- 做任务 -> 跳转拍照上传 ----------
+      var btnStart = document.getElementById('btnStart');
+      if (btnStart) {
+        btnStart.addEventListener('click', function () {
+          var p = window.__doQuizParams || {};
+          if (p.quizTitle) document.getElementById('photoTitle').textContent = p.quizTitle;
+          showView('photo-upload');
+        });
+      }
+
+      // ---------- 群发配置配置相关 ----------
+      document.getElementById('btnSendTask') && document.getElementById('btnSendTask').addEventListener('click', function () {
         showModal('maskTypeSelect'); showModal('wrapTypeSelect');
       });
       document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function (tab) {
         tab.addEventListener('click', function () {
-          document.querySelectorAll('#wrapTypeSelect .type-tab').forEach(function (t) { t.classList.remove('active'); });
-          this.classList.add('active');
           var type = this.getAttribute('data-type');
           hideModal('maskTypeSelect'); hideModal('wrapTypeSelect');
           if (type === 'paper') { showModal('maskNewTaskPaper'); showModal('wrapNewTaskPaper'); }
           else { showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); }
         });
       });
-      document.getElementById('btnCancelType').addEventListener('click', function () { hideModal('maskTypeSelect'); hideModal('wrapTypeSelect'); });
-      document.getElementById('maskTypeSelect').addEventListener('click', function () { hideModal('maskTypeSelect'); hideModal('wrapTypeSelect'); });
-      document.getElementById('backFromNewTaskPaper').addEventListener('click', function () { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
-      document.getElementById('maskNewTaskPaper').addEventListener('click', function () { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
-      document.getElementById('btnAddPaper').addEventListener('click', function () { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskPaperLib'); showModal('wrapPaperLib'); });
-      document.getElementById('backFromPaperLib').addEventListener('click', function () { hideModal('maskPaperLib'); hideModal('wrapPaperLib'); showModal('maskNewTaskPaper'); showModal('wrapNewTaskPaper'); });
-      document.getElementById('maskPaperLib').addEventListener('click', function () { hideModal('maskPaperLib'); hideModal('wrapPaperLib'); showModal('maskNewTaskPaper'); showModal('wrapNewTaskPaper'); });
-      document.getElementById('backFromNewTaskFree').addEventListener('click', function () { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
-      document.getElementById('maskNewTaskFree').addEventListener('click', function () { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
-      document.getElementById('btnAddQuestion').addEventListener('click', function () { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskAddQuestion'); showModal('wrapAddQuestion'); });
-      document.getElementById('backFromAddQuestion').addEventListener('click', function () { hideModal('maskAddQuestion'); hideModal('wrapAddQuestion'); showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); });
-      document.getElementById('maskAddQuestion').addEventListener('click', function () { hideModal('maskAddQuestion'); hideModal('wrapAddQuestion'); showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); });
+      ['btnCancelType', 'maskTypeSelect'].forEach(id => { document.getElementById(id) && document.getElementById(id).addEventListener('click', function () { hideModal('maskTypeSelect'); hideModal('wrapTypeSelect'); }); });
+
+      document.getElementById('backFromNewTaskPaper') && document.getElementById('backFromNewTaskPaper').addEventListener('click', function () { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
+      document.getElementById('btnAddPaper') && document.getElementById('btnAddPaper').addEventListener('click', function () { hideModal('maskNewTaskPaper'); hideModal('wrapNewTaskPaper'); showModal('maskPaperLib'); showModal('wrapPaperLib'); });
+      document.getElementById('backFromPaperLib') && document.getElementById('backFromPaperLib').addEventListener('click', function () { hideModal('maskPaperLib'); hideModal('wrapPaperLib'); showModal('maskNewTaskPaper'); showModal('wrapNewTaskPaper'); });
+      document.getElementById('backFromNewTaskFree') && document.getElementById('backFromNewTaskFree').addEventListener('click', function () { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskTypeSelect'); showModal('wrapTypeSelect'); });
+      document.getElementById('btnAddQuestion') && document.getElementById('btnAddQuestion').addEventListener('click', function () { hideModal('maskNewTaskFree'); hideModal('wrapNewTaskFree'); showModal('maskAddQuestion'); showModal('wrapAddQuestion'); });
+      document.getElementById('backFromAddQuestion') && document.getElementById('backFromAddQuestion').addEventListener('click', function () { hideModal('maskAddQuestion'); hideModal('wrapAddQuestion'); showModal('maskNewTaskFree'); showModal('wrapNewTaskFree'); });
       document.querySelectorAll('.switch').forEach(function (s) { s.addEventListener('click', function () { this.classList.toggle('on'); }); });
-      // 弹窗内「发布」：关闭弹窗并进入学习任务 H5 页面
-      document.getElementById('btnPublishPaper').addEventListener('click', function () { showView('task'); });
-      document.getElementById('btnPublishFree').addEventListener('click', function () { showView('task'); });
 
-      // ---------- 学习任务 去完成：单页内切到做任务-试卷 ----------
-      document.getElementById('btnDo').addEventListener('click', function () {
-        var params = getSearchParams();
-        var type = (params.type || 'paper').toLowerCase();
-        var taskId = params.taskId || '';
-        if (type === 'free') { alert('去完成（自由任务详情页待实现，taskId=' + (taskId || '未传') + '）'); return; }
-        var titleEl = document.querySelector('#view-task-h5 .card-title');
-        var dueEl = document.querySelector('#view-task-h5 .card-meta .card-meta-row span');
-        var title = (titleEl && titleEl.textContent) ? titleEl.textContent.trim() : '概率论周测';
-        var due = (dueEl && dueEl.textContent) ? dueEl.textContent.replace(/^[^\d]*/, '').trim() : '01月27日 18:00';
-        window.__doQuizParams = { taskId: taskId, title: title, due: due, quizTitle: title, count: '' };
-        location.hash = '#do-quiz';
-      });
+      // ---------- 群发配置实时预览逻辑 ----------
+      (function initConfigPreview() {
+        var taskNameInput = document.querySelector('#view-config input[type="text"]');
+        var contentTextarea = document.querySelector('#view-config textarea');
+        var previewHeader = document.querySelector('.preview-phone .header');
+        var previewBody = document.querySelector('.preview-phone .body');
+        var btnPublishPaper = document.getElementById('btnPublishPaper');
+        var btnPublishFree = document.getElementById('btnPublishFree');
 
-      // ---------- 做任务：返回、开始作答、时钟 ----------
-      document.getElementById('btnBack').addEventListener('click', function () { history.back(); });
-      document.getElementById('btnStart').addEventListener('click', function () {
-        var p = window.__doQuizParams || getSearchParams();
-        alert('开始作答（实际跳转做题页，taskId=' + (p.taskId || '未传') + '）');
-      });
+        if (!taskNameInput || !contentTextarea || !previewHeader || !previewBody) return;
+
+        // 1. 同步任务名称到头部
+        taskNameInput.addEventListener('input', function () {
+          previewHeader.textContent = this.value || '请选择学员';
+        });
+
+        // 2. 同步文本内容到预览气泡
+        contentTextarea.addEventListener('input', function () {
+          var val = this.value.trim();
+          var existingBubble = previewBody.querySelector('.preview-bubble');
+          if (val) {
+            if (!existingBubble) {
+              existingBubble = document.createElement('div');
+              existingBubble.className = 'preview-bubble';
+              previewBody.appendChild(existingBubble); // 后插入内容
+            }
+            existingBubble.textContent = val;
+          } else if (existingBubble) {
+            existingBubble.remove();
+          }
+          previewBody.scrollTop = previewBody.scrollHeight;
+        });
+
+        // 3. 模拟发布后生成任务预览卡片
+        function addPreviewTaskCard(title) {
+          var card = document.createElement('div');
+          card.className = 'preview-task-card';
+          card.innerHTML = `
+            <div class="p-title">[学习任务] ${title || '新学习任务'}</div>
+            <div class="p-meta">任务类型：试卷/题目</div>
+            <div class="p-meta">截止时间：2026.02.10 12:00</div>
+            <div class="p-divider"></div>
+            <div class="p-footer">教师精灵</div>
+          `;
+          previewBody.appendChild(card);
+          previewBody.scrollTop = previewBody.scrollHeight;
+        }
+
+        btnPublishPaper && btnPublishPaper.addEventListener('click', function () { addPreviewTaskCard(taskNameInput.value); });
+        btnPublishFree && btnPublishFree.addEventListener('click', function () { addPreviewTaskCard(taskNameInput.value); });
+      })();
+
+      // ---------- 公共工具 ----------
       function tick() { var el = document.getElementById('clock'); if (el) el.textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }); }
       tick(); setInterval(tick, 1000);
     })();
