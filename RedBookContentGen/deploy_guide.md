@@ -97,28 +97,6 @@ ls -l docker-compose.yml
 docker compose up -d --build
 ```
 
-#### (备选) 强制重新部署（最稳妥方案）
-如果遇到“文件缺失”或“目录结构混乱”的问题，建议备份配置后重新克隆：
-
-```bash
-# 1. 备份配置文件 (如果在这个目录下)
-cp /opt/LordLong/RedBookContentGen/.env ~/redbook.env.bak
-
-# 2. 删除旧项目目录
-cd /opt
-rm -rf LordLong
-
-# 3. 重新克隆
-git clone https://github.com/PM-Henry-Li/LordLong.git
-
-# 4. 恢复配置
-cp ~/redbook.env.bak LordLong/RedBookContentGen/.env
-
-# 5. 进入目录启动
-cd LordLong/RedBookContentGen
-docker compose up -d --build
-```
-
 ### 方式 B：本地上传
 在本地终端压缩项目文件，然后上传：
 ```bash
@@ -256,6 +234,29 @@ sudo firewall-cmd --reload
 # 赋予当前用户对项目目录的所有权
 sudo chown -R $USER:$USER /opt/redbook-gen
 ```
+
+### 3. Docker 拉取镜像超时 (dial tcp i/o timeout)
+如果您在中国大陆地区遇到无法拉取镜像的问题，需要配置 Docker 镜像加速。
+
+1.  **修改 Docker 配置**
+    ```bash
+    sudo mkdir -p /etc/docker
+    sudo tee /etc/docker/daemon.json <<-'EOF'
+    {
+      "registry-mirrors": [
+        "https://docker.m.daocloud.io",
+        "https://npm.taobao.org"
+      ]
+    }
+    EOF
+    ```
+    *(注：阿里云 ECS 用户建议使用自己的专属加速器地址，可在阿里云容器镜像服务控制台查看)*
+
+2.  **重启 Docker**
+    ```bash
+    sudo systemctl daemon-reload
+    sudo systemctl restart docker
+    ```
 
 ---
 
