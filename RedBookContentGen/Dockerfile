@@ -33,7 +33,7 @@ FROM python:3.10-slim
 # 设置环境变量
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH=/root/.local/bin:$PATH \
+    PATH=/home/appuser/.local/bin:$PATH \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8
 
@@ -55,14 +55,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/*
 
-# 从构建阶段复制已安装的 Python 包
-COPY --from=builder /root/.local /root/.local
-
-# 创建必要的目录
-RUN mkdir -p logs output input config
-
 # 创建非 root 用户（安全最佳实践）
-RUN useradd -m -u 1000 appuser && \
+# 必须先创建用户，才能在 COPY 时使用chown
+RUN useradd -m -u 1000 appuser
+
+# 从构建阶段复制已安装的 Python 包到 appuser 的目录
+COPY --from=builder --chown=appuser:appuser /root/.local /home/appuser/.local
+
+# 创建必要的目录并设置权限
+RUN mkdir -p logs output input config && \
     chown -R appuser:appuser /app
 
 # 复制应用代码（放在后面以利用 Docker 缓存）
