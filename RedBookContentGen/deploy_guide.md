@@ -238,7 +238,10 @@ sudo chown -R $USER:$USER /opt/redbook-gen
 ### 3. Docker 拉取镜像超时 (dial tcp i/o timeout)
 如果您在中国大陆地区遇到无法拉取镜像的问题，需要配置 Docker 镜像加速。
 
-1.  **修改 Docker 配置**
+1.  **修改 Docker 配置** (两种方式任选其一)
+
+    **方式一：一键命令（推荐）**
+    直接复制运行：
     ```bash
     sudo mkdir -p /etc/docker
     sudo tee /etc/docker/daemon.json <<-'EOF'
@@ -249,6 +252,23 @@ sudo chown -R $USER:$USER /opt/redbook-gen
       ]
     }
     EOF
+    ```
+
+    **方式二：手动编辑**
+    如果粘贴命令失败，可以使用 `vi` 编辑：
+    ```bash
+    # 1. 打开文件
+    sudo vi /etc/docker/daemon.json
+
+    # 2. 按 'i' 进入编辑模式，粘贴以下内容：
+    {
+      "registry-mirrors": [
+        "https://docker.m.daocloud.io",
+        "https://npm.taobao.org"
+      ]
+    }
+
+    # 3. 按 'Esc'，输入 ':wq' 保存并退出
     ```
     *(注：阿里云 ECS 用户建议使用自己的专属加速器地址，可在阿里云容器镜像服务控制台查看)*
 
