@@ -1426,7 +1426,6 @@ class ImageGenerator:
             # 检查提示词
             is_safe, modified_prompt = self.check_content_safety(prompt, "提示词")
             if not is_safe:
-                print(
                 target_name = '封面' if is_cover else f'图{prompt_data.get("index", 0)}'
                 print(f"  ⚠️  检测到可疑内容（{target_name}），已自动修改")
                 prompt_data["prompt"] = modified_prompt
