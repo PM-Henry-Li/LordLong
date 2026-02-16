@@ -10,6 +10,8 @@ FROM python:3.10-slim as builder
 WORKDIR /build
 
 # 安装构建依赖（仅在需要编译 Python 包时使用）
+# 换源（针对中国大陆网络优化）
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
@@ -41,6 +43,8 @@ WORKDIR /app
 # 安装运行时依赖（合并到单个 RUN 指令减少层数）
 # 使用 --no-install-recommends 避免安装推荐包
 # 清理 apt 缓存和临时文件以减小镜像大小
+# 换源（针对中国大陆网络优化）
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # 中文字体支持（只保留一个字体包以减小体积）
     fonts-wqy-microhei \
