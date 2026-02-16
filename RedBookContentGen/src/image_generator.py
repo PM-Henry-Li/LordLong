@@ -1435,7 +1435,7 @@ class ImageGenerator:
                     self.save_suspicious_content(
                         prompts_dir,
                         prompt,
-                        f"{'封面' if is_cover else f'图{prompt_data.get("index", 0)}'}提示词",
+                        f"{target_name}提示词",
                         "包含敏感词汇，自动修改后仍可能有问题",
                     )
 
