@@ -1,0 +1,108 @@
+# -*- coding: utf-8 -*-
+# Coverage.py 配置文件
+
+[run]
+# 源代码目录
+source = src
+
+# 分支覆盖率
+branch = True
+
+# 并行模式
+parallel = True
+
+# 忽略的文件和目录
+omit =
+    */tests/*
+    */test_*.py
+    */__pycache__/*
+    */venv/*
+    */env/*
+    */.venv/*
+    */site-packages/*
+    */dist-packages/*
+    setup.py
+
+# 数据文件
+data_file = .coverage
+
+[report]
+# 精度
+precision = 2
+
+# 显示缺失的行号
+show_missing = True
+
+# 跳过已完全覆盖的文件
+skip_covered = False
+
+# 跳过空文件
+skip_empty = True
+
+# 排除的行（正则表达式）
+exclude_lines =
+    # 标准排除
+    pragma: no cover
+    
+    # 不测试调试代码
+    def __repr__
+    def __str__
+    
+    # 不测试抽象方法
+    @abstractmethod
+    @abc.abstractmethod
+    
+    # 不测试异常处理
+    raise AssertionError
+    raise NotImplementedError
+    
+    # 不测试主程序入口
+    if __name__ == .__main__.:
+    
+    # 不测试类型检查代码
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+    
+    # 不测试防御性编程代码
+    except ImportError:
+    except ModuleNotFoundError:
+    
+    # 不测试日志语句
+    logger\.debug
+    logger\.info
+    
+    # 不测试 pass 语句
+    ^\s*pass\s*$
+    
+    # 不测试省略号
+    ^\s*\.\.\.\s*$
+
+# 忽略错误
+ignore_errors = False
+
+# 排序
+sort = Cover
+
+[html]
+# HTML 报告目录
+directory = htmlcov
+
+# 标题
+title = RedBookContentGen 测试覆盖率报告
+
+# 显示上下文
+show_contexts = True
+
+[xml]
+# XML 报告文件
+output = coverage.xml
+
+[json]
+# JSON 报告文件
+output = coverage.json
+
+# 美化输出
+pretty_print = True
+
+# 显示上下文
+show_contexts = True

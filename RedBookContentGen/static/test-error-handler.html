@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错误处理测试 - RedBookContentGen</title>
+    <link rel="stylesheet" href="css/error-handler.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 24px;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+        }
+        
+        .test-section h2 {
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button.error {
+            background: #f44336;
+            color: white;
+        }
+        
+        button.warning {
+            background: #ff9800;
+            color: white;
+        }
+        
+        button.info {
+            background: #2196f3;
+            color: white;
+        }
+        
+        button.success {
+            background: #4caf50;
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>错误处理测试页面</h1>
+        
+        <div class="test-section">
+            <h2>Toast 通知测试</h2>
+            <div class="button-group">
+                <button class="error" onclick="testErrorToast()">错误通知</button>
+                <button class="warning" onclick="testWarningToast()">警告通知</button>
+                <button class="info" onclick="testInfoToast()">信息通知</button>
+                <button class="success" onclick="testSuccessToast()">成功通知</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>错误对话框测试</h2>
+            <div class="button-group">
+                <button class="error" onclick="testErrorDialog()">显示错误对话框</button>
+                <button class="error" onclick="testErrorDialogWithDetails()">带详情的错误对话框</button>
+                <button class="error" onclick="testErrorDialogWithRetry()">带重试的错误对话框</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>API 错误测试</h2>
+            <div class="button-group">
+                <button class="error" onclick="testNetworkError()">网络错误</button>
+                <button class="error" onclick="testTimeoutError()">超时错误</button>
+                <button class="error" onclick="testValidationError()">验证错误</button>
+                <button class="error" onclick="testServerError()">服务器错误</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/error-handler.js"></script>
+    <script>
+        // Toast 通知测试
+        function testErrorToast() {
+            errorHandler.showToast('这是一个错误通知', 'error');
+        }
+        
+        function testWarningToast() {
+            errorHandler.showToast('这是一个警告通知', 'warning');
+        }
+        
+        function testInfoToast() {
+            errorHandler.showToast('这是一个信息通知', 'info');
+        }
+        
+        function testSuccessToast() {
+            errorHandler.showToast('这是一个成功通知', 'success');
+        }
+        
+        // 错误对话框测试
+        function testErrorDialog() {
+            errorHandler.showDialog({
+                title: '操作失败',
+                message: '无法完成您的请求，请稍后重试。',
+                type: 'error'
+            });
+        }
+        
+        function testErrorDialogWithDetails() {
+            errorHandler.showDialog({
+                title: 'API 调用失败',
+                message: '无法连接到服务器，请检查网络连接。',
+                type: 'error',
+                details: {
+                    error_code: 'NETWORK_ERROR',
+                    url: 'https://api.example.com/generate',
+                    status: 0
+                },
+                suggestions: [
+                    '检查网络连接是否正常',
+                    '确认服务器地址是否正确',
+                    '稍后重试'
+                ]
+            });
+        }
+        
+        function testErrorDialogWithRetry() {
+            errorHandler.showDialog({
+                title: '生成失败',
+                message: '内容生成过程中出现错误。',
+                type: 'error',
+                retryable: true,
+                onRetry: () => {
+                    errorHandler.showToast('正在重试...', 'info');
+                    setTimeout(() => {
+                        errorHandler.showToast('重试成功！', 'success');
+                    }, 1000);
+                }
+            });
+        }
+        
+        // API 错误测试
+        function testNetworkError() {
+            const error = new Error('Network request failed');
+            error.name = 'NetworkError';
+            errorHandler.handleNetworkError(error);
+        }
+        
+        function testTimeoutError() {
+            const error = new Error('Request timeout');
+            error.name = 'TimeoutError';
+            errorHandler.handleTimeoutError(error);
+        }
+        
+        function testValidationError() {
+            const error = {
+                message: '输入验证失败',
+                details: {
+                    validation_errors: [
+                        'input_text: 输入文本过短，至少需要10个字符',
+                        'count: 数量必须在1-10之间'
+                    ]
+                }
+            };
+            errorHandler.handleValidationError(error);
+        }
+        
+        function testServerError() {
+            const response = {
+                status: 500,
+                statusText: 'Internal Server Error',
+                json: async () => ({
+                    success: false,
+                    error: {
+                        code: 'INTERNAL_ERROR',
+                        message: '服务器内部错误',
+                        suggestions: [
+                            '稍后重试',
+                            '如果问题持续，请联系技术支持'
+                        ]
+                    }
+                })
+            };
+            errorHandler.handleApiError(response);
+        }
+    </script>
+</body>
+</html>

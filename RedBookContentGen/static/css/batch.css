@@ -1,0 +1,399 @@
+/**
+ * 批量处理样式
+ * 用于批量生成界面的特定样式
+ */
+
+/* 任务列表 */
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.task-item {
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s;
+}
+
+.task-item:hover {
+    background: #f0f0f0;
+}
+
+.task-index {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.task-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-text {
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.task-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.task-status-icon {
+    font-size: 16px;
+}
+
+/* 任务状态颜色 */
+.task-item.pending .task-index {
+    background: #e0e0e0;
+    color: #999;
+}
+
+.task-item.processing .task-index {
+    background: #e3f2fd;
+    color: #2196f3;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.task-item.success .task-index {
+    background: #e8f5e9;
+    color: #4caf50;
+}
+
+.task-item.success .task-status {
+    color: #4caf50;
+}
+
+.task-item.failed .task-index {
+    background: #ffebee;
+    color: #f44336;
+}
+
+.task-item.failed .task-status {
+    color: #f44336;
+}
+
+/* 任务操作按钮 */
+.task-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.task-action-btn {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    background: white;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.task-action-btn:hover {
+    background: #f0f0f0;
+    color: var(--primary-color);
+}
+
+.task-action-btn.retry {
+    color: #2196f3;
+}
+
+.task-action-btn.delete {
+    color: #f44336;
+}
+
+/* 批量进度 */
+.batch-progress-summary {
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.batch-progress-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.batch-stat {
+    text-align: center;
+}
+
+.batch-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.batch-stat-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.batch-stat.total .batch-stat-value {
+    color: #666;
+}
+
+.batch-stat.success .batch-stat-value {
+    color: #4caf50;
+}
+
+.batch-stat.failed .batch-stat-value {
+    color: #f44336;
+}
+
+.batch-stat.processing .batch-stat-value {
+    color: #2196f3;
+}
+
+/* 批量进度条 */
+.batch-progress-bar-wrapper {
+    position: relative;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.batch-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2196f3, #1976d2);
+    border-radius: 4px;
+    transition: width 0.3s ease-out;
+    position: relative;
+}
+
+.batch-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: shimmer 1.5s infinite;
+}
+
+.batch-progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #666;
+}
+
+.batch-progress-percentage {
+    font-weight: 600;
+    color: #2196f3;
+}
+
+/* 结果卡片 */
+.result-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.result-card {
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s;
+}
+
+.result-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.result-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.result-card-index {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.result-card.success .result-card-index {
+    background: #e8f5e9;
+    color: #4caf50;
+}
+
+.result-card.failed .result-card-index {
+    background: #ffebee;
+    color: #f44336;
+}
+
+.result-card-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.result-card-status {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.result-card-status.success {
+    background: #e8f5e9;
+    color: #4caf50;
+}
+
+.result-card-status.failed {
+    background: #ffebee;
+    color: #f44336;
+}
+
+.result-card-body {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+}
+
+.result-card-input {
+    margin-bottom: 8px;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.result-card-error {
+    color: #f44336;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.result-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.result-card-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: #e3f2fd;
+    color: #2196f3;
+    border-radius: 12px;
+}
+
+/* 文件上传状态 */
+.file-upload.active {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+.file-upload.error {
+    border-color: #f44336;
+    background: #ffebee;
+}
+
+/* 输入模式切换 */
+.btn-group .btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* 动画 */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* 滚动条样式 */
+.task-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.task-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.task-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.task-list::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .result-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .batch-progress-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .task-text {
+        font-size: 13px;
+    }
+
+    .task-actions {
+        display: none;
+    }
+}

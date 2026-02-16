@@ -1,0 +1,77 @@
+# -*- coding: utf-8 -*-
+# mypy 类型检查专用工作流
+
+name: Type Check
+
+# 触发条件
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**.py'
+      - 'mypy.ini'
+      - 'requirements.txt'
+      - '.github/workflows/type-check.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '**.py'
+      - 'mypy.ini'
+      - 'requirements.txt'
+      - '.github/workflows/type-check.yml'
+  workflow_dispatch:
+
+jobs:
+  mypy:
+    name: mypy 类型检查
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 🐍 设置 Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: 📦 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy
+          pip install -r requirements.txt
+      
+      - name: 🔍 运行 mypy 类型检查
+        run: |
+          echo "================================================"
+          echo "🔍 开始 mypy 类型检查..."
+          echo "================================================"
+          mypy src/ --config-file=mypy.ini --show-error-codes --pretty
+          exit_code=$?
+          echo "================================================"
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ mypy 类型检查通过！"
+            echo "================================================"
+            exit 0
+          else
+            echo "❌ mypy 类型检查失败！"
+            echo "================================================"
+            echo "请修复上述类型错误后再提交代码。"
+            echo "本地运行: mypy src/ --config-file=mypy.ini"
+            echo "================================================"
+            exit 1
+          fi
+      
+      - name: 📊 生成类型检查报告
+        if: always()
+        run: |
+          mypy src/ --config-file=mypy.ini --html-report mypy-report --no-error-summary || true
+      
+      - name: 📤 上传类型检查报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mypy-report
+          path: mypy-report/
+          retention-days: 30

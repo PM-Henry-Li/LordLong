@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量生成 - 小红书内容生成器 Pro</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ant-design-vue@4.2.6/dist/reset.css" />
+    <!-- 引入字体图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 错误处理样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error-handler.css') }}">
+    <!-- 进度条样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/progress.css') }}">
+    <!-- 批量处理样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/batch.css') }}">
+    <!-- 错误处理脚本 -->
+    <script src="{{ url_for('static', filename='js/error-handler.js') }}"></script>
+    <style>
+        :root {
+            --primary-color: #ff2442;
+            --primary-light: #fff0f2;
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --border-radius: 16px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 16px 24px;
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff2442, #ff6b81);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            -webkit-text-fill-color: #ff2442;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link:hover {
+            background: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-desc {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 36, 66, 0.1);
+        }
+
+        textarea.form-control {
+            min-height: 200px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .file-upload {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 12px;
+        }
+
+        .file-upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .file-upload-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff2442, #ff6b81);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(255, 36, 66, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            background: linear-gradient(135deg, #ccc, #ddd);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .results-section {
+            grid-column: 1 / -1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.15;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-section {
+                grid-column: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .nav-links {
+                gap: 8px;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-pen-nib"></i>
+            小红书内容生成器 Pro
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">
+                <i class="fa-solid fa-home"></i>
+                <span>单个生成</span>
+            </a>
+            <a href="/batch" class="nav-link active">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>批量生成</span>
+            </a>
+            <a href="/logs" class="nav-link">
+                <i class="fa-solid fa-file-lines"></i>
+                <span>日志查询</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fa-solid fa-layer-group"></i>
+                批量内容生成
+            </h1>
+            <p class="page-desc">一次性生成多条小红书内容，提高工作效率</p>
+        </div>
+
+        <div class="content-grid">
+            <!-- 左侧：批量输入 -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-file-import"></i>
+                    批量输入
+                </h2>
+
+                <!-- 输入方式选择 -->
+                <div class="form-group">
+                    <label class="form-label">输入方式</label>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" id="textInputBtn" onclick="switchInputMode('text')">
+                            <i class="fa-solid fa-keyboard"></i>
+                            文本输入
+                        </button>
+                        <button class="btn btn-secondary" id="fileInputBtn" onclick="switchInputMode('file')">
+                            <i class="fa-solid fa-file-upload"></i>
+                            文件上传
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 文本输入区域 -->
+                <div id="textInputArea">
+                    <div class="form-group">
+                        <label class="form-label">批量内容（每行一条）</label>
+                        <textarea id="batchInput" class="form-control" 
+                            placeholder="每行输入一条内容，例如：&#10;故宫雪景&#10;治愈系咖啡店&#10;日落海边&#10;京都和服体验&#10;春日樱花&#10;&#10;最多支持 50 条"></textarea>
+                    </div>
+                </div>
+
+                <!-- 文件上传区域 -->
+                <div id="fileInputArea" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">上传文件</label>
+                        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                            <input type="file" id="fileInput" accept=".txt,.xlsx,.xls" onchange="handleFileUpload(event)">
+                            <div class="file-upload-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <div class="file-upload-text">点击上传或拖拽文件到此处</div>
+                            <div class="file-upload-hint">支持 TXT、Excel 文件，最多 50 条</div>
+                        </div>
+                        <div id="fileInfo" style="margin-top: 12px; font-size: 13px; color: #666;"></div>
+                    </div>
+                </div>
+
+                <!-- 生成配置 -->
+                <div class="form-group">
+                    <label class="form-label">每条生成图片数量</label>
+                    <select id="imageCount" class="form-control">
+                        <option value="1">1 张 (仅封面)</option>
+                        <option value="3" selected>3 张 (封面 + 2张插图)</option>
+                        <option value="5">5 张 (封面 + 4张插图)</option>
+                    </select>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="generateBtn" onclick="startBatchGeneration()">
+                        <i class="fa-solid fa-bolt"></i>
+                        开始批量生成
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearInput()">
+                        <i class="fa-solid fa-eraser"></i>
+                        清空
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧：批量任务列表 -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-list-check"></i>
+                    任务列表
+                    <span id="taskCount" style="margin-left: auto; font-size: 14px; font-weight: normal; color: #999;">0 条任务</span>
+                </h2>
+
+                <div id="taskListContainer">
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fa-regular fa-clipboard"></i></div>
+                        <h3>暂无任务</h3>
+                        <p>请在左侧输入内容并开始生成</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 批量进度显示 -->
+            <div class="results-section" id="progressSection" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-chart-line"></i>
+                        批量进度
+                    </h2>
+                    <div id="batchProgress"></div>
+                </div>
+            </div>
+
+            <!-- 批量结果显示 -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-check-circle"></i>
+                        生成结果
+                        <div style="margin-left: auto; display: flex; gap: 12px;">
+                            <button class="btn btn-secondary" onclick="downloadExcel()">
+                                <i class="fa-solid fa-file-excel"></i>
+                                下载 Excel
+                            </button>
+                            <button class="btn btn-secondary" onclick="downloadZip()">
+                                <i class="fa-solid fa-file-zipper"></i>
+                                下载 ZIP
+                            </button>
+                        </div>
+                    </h2>
+                    <div id="resultsContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量处理脚本 -->
+    <script src="{{ url_for('static', filename='js/batch.js') }}"></script>
+
+</body>
+
+</html>

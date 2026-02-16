@@ -1,0 +1,951 @@
+openapi: 3.0.3
+info:
+  title: RedBookContentGen API
+  description: |
+    老北京文化主题的小红书内容生成工具 API
+    
+    ## 功能特性
+    - 🤖 AI 文案生成：基于通义千问大模型生成小红书风格内容
+    - 🎨 图片生成：支持 API 模式（通义万相）和模板模式（离线生成）
+    - 📦 批量处理：支持批量生成内容和图片
+    - 📊 日志查询：实时查询和统计应用日志
+    - 📥 导出功能：支持 Excel 和 ZIP 格式导出
+    
+    ## 认证说明
+    当前版本为单用户工具，暂不需要认证。
+    
+    ## 速率限制
+    - 内容生成：60 次/分钟
+    - 图片生成：10 次/分钟
+    
+    ## 错误处理
+    所有错误响应遵循统一格式，包含错误码、消息和修复建议。
+    
+  version: 1.0.0
+  contact:
+    name: RedBookContentGen 项目
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8080
+    description: 本地开发服务器
+  - url: http://localhost:8080/api
+    description: API 基础路径
+
+tags:
+  - name: 内容生成
+    description: 小红书内容生成相关接口
+  - name: 图片生成
+    description: 图片生成和下载相关接口
+  - name: 批量处理
+    description: 批量生成和导出相关接口
+  - name: 日志管理
+    description: 日志查询和统计相关接口
+  - name: 系统信息
+    description: 系统配置和模型信息
+
+paths:
+  /api/generate_content:
+    post:
+      tags:
+        - 内容生成
+      summary: 生成小红书内容
+      description: |
+        根据输入文本生成小红书风格的内容，包括标题、正文、标签和图片提示词。
+        
+        **功能说明**：
+        - 使用 AI 大模型生成符合小红书风格的内容
+        - 支持自定义生成数量（标题数量）
+        - 自动生成配套的图片提示词
+        - 支持缓存机制，相同输入返回缓存结果
+        
+        **注意事项**：
+        - 输入文本长度：10-5000 字符
+        - 生成数量：1-10 个标题
+        - 响应时间：通常 2-5 秒
+      operationId: generateContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentGenerationRequest'
+            examples:
+              basic:
+                summary: 基础示例
+                value:
+                  input_text: "记得小时候，老北京的胡同里总是充满了生活的气息。清晨的叫卖声，傍晚的炊烟，还有那些邻里间的温暖故事。"
+                  count: 3
+              detailed:
+                summary: 详细示例
+                value:
+                  input_text: "北京的四合院是传统建筑的代表，体现了中国人的居住智慧。院落布局讲究对称，体现了天人合一的哲学思想。"
+                  count: 5
+                  style: "retro_chinese"
+                  temperature: 0.8
+      responses:
+        '200':
+          description: 生成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentGenerationResponse'
+              examples:
+                success:
+                  summary: 成功响应
+                  value:
+                    success: true
+                    data:
+                      titles:
+                        - "🏮 老北京胡同里的温暖记忆"
+                        - "🌆 那些年，胡同里的烟火气"
+                        - "📖 胡同深处的老北京故事"
+                      content: "记得小时候，老北京的胡同里总是充满了生活的气息...\n\n清晨，胡同里的叫卖声此起彼伏..."
+                      tags:
+                        - "老北京"
+                        - "胡同文化"
+                        - "童年回忆"
+                        - "传统文化"
+                      image_prompts:
+                        - "老北京胡同，清晨阳光，复古色调，温暖氛围"
+                        - "传统四合院，红灯笼，青砖灰瓦，怀旧风格"
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_error:
+                  summary: 验证错误
+                  value:
+                    success: false
+                    error:
+                      code: "VALIDATION_ERROR"
+                      message: "输入数据验证失败"
+                      errors:
+                        - field: "input_text"
+                          field_name: "输入文本"
+                          message: "输入文本长度不能少于 10 个字符（当前：5 个字符）"
+                          suggestions:
+                            - "请提供更详细的内容描述"
+                            - "建议至少输入 10 个字符"
+                          error_type: "string_too_short"
+                      total_errors: 1
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/batch/generate_content:
+    post:
+      tags:
+        - 批量处理
+      summary: 批量生成小红书内容
+      description: |
+        批量生成多个小红书内容，支持一次性处理多个输入文本。
+        
+        **功能说明**：
+        - 支持批量输入多个文本（最多 50 条）
+        - 并行处理，提高生成效率
+        - 单个任务失败不影响其他任务
+        - 返回详细的批次统计信息
+        
+        **注意事项**：
+        - 批量数量：1-50 条
+        - 每条输入文本长度：10-5000 字符
+        - 响应时间：取决于批量数量，通常 10-60 秒
+      operationId: batchGenerateContent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchContentGenerationRequest'
+            examples:
+              basic:
+                summary: 基础示例
+                value:
+                  inputs:
+                    - "记得小时候，老北京的胡同里总是充满了生活的气息..."
+                    - "北京的四合院是传统建筑的代表，体现了中国人的居住智慧..."
+                    - "老北京的小吃文化源远流长，每一种小吃都有自己的故事..."
+                  count: 1
+      responses:
+        '200':
+          description: 批量生成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchContentGenerationResponse'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/generate_image:
+    post:
+      tags:
+        - 图片生成
+      summary: 生成单张图片
+      description: |
+        根据提示词生成图片，支持 API 模式和模板模式。
+        
+        **模式说明**：
+        - **API 模式**：使用通义万相 API 生成 AI 图片（需要 API Key）
+        - **模板模式**：使用预设模板离线生成图片（无需 API Key，推荐）
+        
+        **模板风格**：
+        - retro_chinese：复古中国风
+        - modern_minimal：现代简约
+        - vintage_film：怀旧胶片
+        - warm_memory：温暖记忆
+        - ink_wash：水墨风格
+        
+        **注意事项**：
+        - API 模式响应时间：30-120 秒
+        - 模板模式响应时间：< 1 秒
+        - 图片尺寸：vertical（竖版）、horizontal（横版）、square（方形）
+      operationId: generateImage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageGenerationRequest'
+            examples:
+              template_mode:
+                summary: 模板模式（推荐）
+                value:
+                  prompt: "老北京胡同，复古风格，温暖的阳光"
+                  image_mode: "template"
+                  template_style: "retro_chinese"
+                  image_size: "vertical"
+                  title: "老北京的记忆"
+                  scene: "夕阳下的胡同"
+                  content_text: "记得小时候..."
+                  task_id: "task_20260213_001"
+                  timestamp: "20260213_143000"
+                  task_index: 0
+                  image_type: "content"
+              api_mode:
+                summary: API 模式
+                value:
+                  prompt: "老北京胡同，复古风格，温暖的阳光"
+                  image_mode: "api"
+                  image_model: "wanx-v1"
+                  image_size: "vertical"
+                  task_id: "task_20260213_001"
+                  timestamp: "20260213_143000"
+                  task_index: 0
+      responses:
+        '200':
+          description: 生成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageGenerationResponse'
+              examples:
+                success:
+                  summary: 成功响应
+                  value:
+                    success: true
+                    data:
+                      image_url: "/api/download/images/20260213/image_001.png"
+                      task_id: "task_20260213_001"
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/download/{filename}:
+    get:
+      tags:
+        - 图片生成
+      summary: 下载生成的图片
+      description: 下载指定的图片文件
+      operationId: downloadImage
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          description: 图片文件路径（相对于输出目录）
+          schema:
+            type: string
+          example: "images/20260213/image_001.png"
+      responses:
+        '200':
+          description: 文件下载成功
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: 文件不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/models:
+    get:
+      tags:
+        - 系统信息
+      summary: 获取可用的模型列表
+      description: 获取系统支持的图片生成模型和尺寸配置
+      operationId: getModels
+      responses:
+        '200':
+          description: 成功获取模型列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  models:
+                    type: array
+                    items:
+                      type: string
+                    example: ["wanx-v1", "wanx2.2-t2i-flash"]
+                  image_sizes:
+                    type: object
+                    additionalProperties:
+                      type: string
+                    example:
+                      vertical: "1024*1365"
+                      horizontal: "1365*1024"
+                      square: "1024*1024"
+
+  /api/search:
+    get:
+      tags:
+        - 系统信息
+      summary: 通用搜索接口
+      description: |
+        通用搜索接口，支持关键词搜索、时间范围过滤和分页。
+        
+        **注意**：
+        - 当前返回空结果
+        - 实际搜索功能需要在实现历史记录、模板管理等功能后集成
+      operationId: search
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: 每页数量
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          schema:
+            type: string
+        - name: start_time
+          in: query
+          description: 开始时间（ISO 8601 格式）
+          schema:
+            type: string
+            format: date-time
+          example: "2026-02-13T00:00:00"
+        - name: end_time
+          in: query
+          description: 结束时间（ISO 8601 格式）
+          schema:
+            type: string
+            format: date-time
+          example: "2026-02-14T23:59:59"
+        - name: sort_by
+          in: query
+          description: 排序字段
+          schema:
+            type: string
+            default: "created_at"
+        - name: sort_order
+          in: query
+          description: 排序顺序
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: "desc"
+      responses:
+        '200':
+          description: 搜索成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /api/logs/search:
+    get:
+      tags:
+        - 日志管理
+      summary: 搜索日志
+      description: |
+        根据条件搜索应用日志，支持多种过滤条件。
+        
+        **过滤条件**：
+        - 日志级别：DEBUG、INFO、WARNING、ERROR、CRITICAL
+        - 日志来源：模块名称
+        - 时间范围：开始时间和结束时间
+        - 关键词：在日志消息中搜索
+      operationId: searchLogs
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: 每页数量
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: level
+          in: query
+          description: 日志级别
+          schema:
+            type: string
+            enum: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
+        - name: logger
+          in: query
+          description: 日志来源（模块名称）
+          schema:
+            type: string
+        - name: start_time
+          in: query
+          description: 开始时间（ISO 8601 格式）
+          schema:
+            type: string
+            format: date-time
+        - name: end_time
+          in: query
+          description: 结束时间（ISO 8601 格式）
+          schema:
+            type: string
+            format: date-time
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 搜索成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogSearchResponse'
+
+  /api/logs/stats:
+    get:
+      tags:
+        - 日志管理
+      summary: 获取日志统计信息
+      description: 获取日志的统计数据，包括总数、错误数、警告数等
+      operationId: getLogStats
+      responses:
+        '200':
+          description: 成功获取统计信息
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  stats:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        description: 总日志数
+                        example: 1234
+                      error:
+                        type: integer
+                        description: 错误日志数
+                        example: 12
+                      warning:
+                        type: integer
+                        description: 警告日志数
+                        example: 45
+                      today:
+                        type: integer
+                        description: 今日日志数
+                        example: 156
+
+  /api/logs/loggers:
+    get:
+      tags:
+        - 日志管理
+      summary: 获取所有日志来源列表
+      description: 获取系统中所有的日志来源（模块名称）列表
+      operationId: getLoggers
+      responses:
+        '200':
+          description: 成功获取日志来源列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  loggers:
+                    type: array
+                    items:
+                      type: string
+                    example: ["web_app", "content_generator", "image_generator"]
+
+  /api/batch/export/excel:
+    post:
+      tags:
+        - 批量处理
+      summary: 导出批量结果为 Excel
+      description: |
+        将批量生成结果导出为 Excel 文件。
+        
+        **文件内容**：
+        - 批次汇总信息
+        - 每个任务的详细结果
+        - 成功/失败统计
+        
+        **注意**：需要安装 openpyxl 库
+      operationId: exportBatchExcel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                batch_result:
+                  $ref: '#/components/schemas/BatchContentGenerationResponse'
+      responses:
+        '200':
+          description: 导出成功
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: 导出失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/batch/export/zip:
+    post:
+      tags:
+        - 批量处理
+      summary: 导出批量结果为 ZIP
+      description: |
+        将批量生成结果打包为 ZIP 文件。
+        
+        **包含内容**：
+        - Excel 汇总文件（如果 openpyxl 可用）
+        - 批次信息文本文件
+        - 所有生成的图片文件
+      operationId: exportBatchZip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                batch_result:
+                  $ref: '#/components/schemas/BatchContentGenerationResponse'
+      responses:
+        '200':
+          description: 导出成功
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ContentGenerationRequest:
+      type: object
+      required:
+        - input_text
+      properties:
+        input_text:
+          type: string
+          minLength: 10
+          maxLength: 5000
+          description: 输入文本，用于生成小红书内容
+          example: "记得小时候，老北京的胡同里总是充满了生活的气息。清晨的叫卖声，傍晚的炊烟，还有那些邻里间的温暖故事。"
+        count:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 3
+          description: 生成标题的数量
+          example: 3
+        style:
+          type: string
+          default: "retro_chinese"
+          description: 生成风格（保留字段，暂未使用）
+          example: "retro_chinese"
+        temperature:
+          type: number
+          minimum: 0.0
+          maximum: 2.0
+          default: 0.8
+          description: 生成温度（保留字段，暂未使用）
+          example: 0.8
+
+    ContentGenerationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            titles:
+              type: array
+              items:
+                type: string
+              description: 生成的标题列表
+              example:
+                - "🏮 老北京胡同里的温暖记忆"
+                - "🌆 那些年，胡同里的烟火气"
+            content:
+              type: string
+              description: 生成的正文内容
+              example: "记得小时候，老北京的胡同里总是充满了生活的气息..."
+            tags:
+              type: array
+              items:
+                type: string
+              description: 生成的标签列表
+              example: ["老北京", "胡同文化", "童年回忆"]
+            image_prompts:
+              type: array
+              items:
+                type: string
+              description: 图片提示词列表
+              example: ["老北京胡同，清晨阳光，复古色调"]
+
+    BatchContentGenerationRequest:
+      type: object
+      required:
+        - inputs
+      properties:
+        inputs:
+          type: array
+          items:
+            type: string
+            minLength: 10
+            maxLength: 5000
+          minItems: 1
+          maxItems: 50
+          description: 批量输入文本列表
+          example:
+            - "记得小时候，老北京的胡同里总是充满了生活的气息..."
+            - "北京的四合院是传统建筑的代表..."
+        count:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 1
+          description: 每个输入生成的标题数量
+          example: 1
+
+    BatchContentGenerationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            batch_id:
+              type: string
+              description: 批次 ID
+              example: "batch_20260213_143000"
+            total:
+              type: integer
+              description: 总任务数
+              example: 3
+            results:
+              type: array
+              items:
+                type: object
+                properties:
+                  index:
+                    type: integer
+                    description: 任务索引
+                  input_text:
+                    type: string
+                    description: 输入文本
+                  status:
+                    type: string
+                    enum: [success, failed]
+                    description: 任务状态
+                  data:
+                    type: object
+                    description: 生成结果（成功时）
+                  error:
+                    type: string
+                    description: 错误信息（失败时）
+            summary:
+              type: object
+              properties:
+                success:
+                  type: integer
+                  description: 成功数量
+                failed:
+                  type: integer
+                  description: 失败数量
+                total:
+                  type: integer
+                  description: 总数量
+
+    ImageGenerationRequest:
+      type: object
+      required:
+        - prompt
+        - task_id
+        - timestamp
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: 图片生成提示词
+          example: "老北京胡同，复古风格，温暖的阳光"
+        image_mode:
+          type: string
+          enum: [api, template]
+          default: "template"
+          description: 图片生成模式
+          example: "template"
+        image_model:
+          type: string
+          default: "wanx-v1"
+          description: 图片生成模型（API 模式）
+          example: "wanx-v1"
+        template_style:
+          type: string
+          enum: [retro_chinese, modern_minimal, vintage_film, warm_memory, ink_wash]
+          default: "retro_chinese"
+          description: 模板风格（模板模式）
+          example: "retro_chinese"
+        image_size:
+          type: string
+          enum: [vertical, horizontal, square]
+          default: "vertical"
+          description: 图片尺寸
+          example: "vertical"
+        title:
+          type: string
+          description: 图片标题（模板模式）
+          example: "老北京的记忆"
+        scene:
+          type: string
+          description: 场景描述（模板模式）
+          example: "夕阳下的胡同"
+        content_text:
+          type: string
+          description: 内容文本（模板模式）
+          example: "记得小时候..."
+        task_id:
+          type: string
+          description: 任务 ID
+          example: "task_20260213_001"
+        timestamp:
+          type: string
+          pattern: '^\d{8}_\d{6}$'
+          description: 时间戳（格式：YYYYMMDD_HHMMSS）
+          example: "20260213_143000"
+        task_index:
+          type: integer
+          minimum: 0
+          default: 0
+          description: 任务索引
+          example: 0
+        image_type:
+          type: string
+          enum: [content, cover]
+          default: "content"
+          description: 图片类型
+          example: "content"
+
+    ImageGenerationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            image_url:
+              type: string
+              description: 图片下载 URL
+              example: "/api/download/images/20260213/image_001.png"
+            task_id:
+              type: string
+              description: 任务 ID
+              example: "task_20260213_001"
+
+    SearchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+              description: 搜索结果列表
+            total:
+              type: integer
+              description: 总结果数
+            page:
+              type: integer
+              description: 当前页码
+            page_size:
+              type: integer
+              description: 每页数量
+            total_pages:
+              type: integer
+              description: 总页数
+        query:
+          type: object
+          description: 查询参数
+
+    LogSearchResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        logs:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+                description: 日志时间
+              level:
+                type: string
+                description: 日志级别
+              logger:
+                type: string
+                description: 日志来源
+              message:
+                type: string
+                description: 日志消息
+              context:
+                type: object
+                description: 日志上下文
+        total:
+          type: integer
+          description: 总日志数
+        page:
+          type: integer
+          description: 当前页码
+        page_size:
+          type: integer
+          description: 每页数量
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: 错误码
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              description: 错误消息
+              example: "输入数据验证失败"
+            errors:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                    description: 错误字段
+                  field_name:
+                    type: string
+                    description: 字段中文名称
+                  message:
+                    type: string
+                    description: 错误详情
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                    description: 修复建议
+                  error_type:
+                    type: string
+                    description: 错误类型
+            total_errors:
+              type: integer
+              description: 错误总数

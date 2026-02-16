@@ -1,0 +1,108 @@
+[MASTER]
+# 使用多进程加速检查
+jobs=4
+
+# Python 代码路径
+init-hook='import sys; sys.path.append(".")'
+
+[MESSAGES CONTROL]
+# 禁用的检查项
+disable=
+    # Pydantic 验证器使用 cls 而不是 self，这是正确的
+    no-self-argument,
+    # 嵌套函数导致的 no-member 误报（需要重构，但不是错误）
+    no-member,
+    # 异常处理相关（在某些情况下是合理的）
+    bare-except,
+    broad-exception-raised,
+    broad-exception-caught,
+    raise-missing-from,
+    # 未使用的变量和导入（低优先级，不影响功能）
+    unused-variable,
+    unused-argument,
+    unused-import,
+    # 代码风格相关（低优先级）
+    trailing-whitespace,
+    line-too-long,
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    # 设计相关（需要重构，但不是错误）
+    too-many-locals,
+    too-many-branches,
+    too-many-statements,
+    too-many-arguments,
+    too-many-positional-arguments,
+    too-many-instance-attributes,
+    too-few-public-methods,
+    too-many-lines,
+    too-many-nested-blocks,
+    too-many-return-statements,
+    # 代码重复（需要重构，但不是错误）
+    duplicate-code,
+    # 其他低优先级
+    f-string-without-interpolation,
+    no-else-return,
+    no-else-raise,
+    consider-using-max-builtin,
+    chained-comparison,
+    superfluous-parens,
+    unnecessary-pass,
+    # 日志相关（使用 f-string 是可以的）
+    logging-fstring-interpolation,
+    # 导入顺序（低优先级）
+    wrong-import-order,
+    ungrouped-imports,
+    import-outside-toplevel,
+    # 保护访问（有时是必要的）
+    protected-access,
+    # 其他合理的警告
+    redefined-builtin,
+    redefined-outer-name,
+    reimported,
+    inconsistent-return-statements,
+    unreachable,
+    try-except-raise,
+    implicit-str-concat,
+    missing-timeout,
+    global-statement
+
+[REPORTS]
+# 输出格式
+output-format=text
+
+# 显示报告
+reports=yes
+
+# 评分
+score=yes
+
+[FORMAT]
+# 最大行长度
+max-line-length=120
+
+# 缩进
+indent-string='    '
+
+[BASIC]
+# 变量命名规则（允许单字符变量名和下划线前缀的私有变量）
+variable-rgx=[a-z_][a-z0-9_]{0,30}$
+argument-rgx=[a-z_][a-z0-9_]{0,30}$
+attr-rgx=[a-z_][a-z0-9_]{0,30}$
+# 常量命名规则（允许下划线前缀的模块级私有变量）
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__)|(_[a-z_][a-z0-9_]*))$
+
+[DESIGN]
+# 设计限制（放宽一些）
+max-args=7
+max-locals=20
+max-branches=15
+max-statements=60
+
+[IMPORTS]
+# 允许循环导入（有时是必要的）
+allow-any-import-level=yes
+
+[EXCEPTIONS]
+# 允许的异常名称
+overgeneral-exceptions=builtins.BaseException,builtins.Exception

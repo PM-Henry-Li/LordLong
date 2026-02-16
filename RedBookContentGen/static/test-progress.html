@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进度条组件测试</title>
+    <link rel="stylesheet" href="css/progress.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+        }
+
+        .test-controls {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .test-controls h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .test-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #2196f3;
+            color: white;
+        }
+
+        .test-button:hover {
+            background: #1976d2;
+        }
+
+        .test-button.secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .test-button.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .test-button.danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .test-button.danger:hover {
+            background: #d32f2f;
+        }
+
+        .test-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 进度条组件测试</h1>
+
+        <div class="test-controls">
+            <h2>测试控制</h2>
+            <div class="button-group">
+                <button class="test-button" onclick="testSimpleProgress()">简单进度测试</button>
+                <button class="test-button" onclick="testStageProgress()">阶段进度测试</button>
+                <button class="test-button" onclick="testDetailProgress()">详细进度测试</button>
+                <button class="test-button secondary" onclick="testComplete()">模拟完成</button>
+                <button class="test-button secondary" onclick="testFail()">模拟失败</button>
+                <button class="test-button danger" onclick="testCancel()">模拟取消</button>
+                <button class="test-button secondary" onclick="resetProgress()">重置</button>
+            </div>
+            <div class="info-box">
+                💡 提示：点击按钮测试不同的进度条功能。进度条支持实时更新、阶段显示、剩余时间估算等功能。
+            </div>
+        </div>
+
+        <!-- 进度条容器 -->
+        <div id="progress-container"></div>
+    </div>
+
+    <script src="js/progress.js"></script>
+    <script>
+        // 创建进度条实例
+        let progressBar;
+
+        function initProgressBar() {
+            progressBar = new ProgressBar('progress-container', {
+                showStages: true,
+                showTime: true,
+                showDetails: true,
+                allowCancel: true,
+                autoHide: false
+            });
+
+            // 设置回调
+            progressBar.on('cancel', () => {
+                console.log('用户取消了操作');
+                alert('操作已取消');
+            });
+
+            progressBar.on('retry', () => {
+                console.log('用户点击了重试');
+                testSimpleProgress();
+            });
+
+            progressBar.on('complete', () => {
+                console.log('操作完成');
+            });
+        }
+
+        // 简单进度测试
+        function testSimpleProgress() {
+            progressBar.start();
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressBar.updateProgress(progress, {
+                    status: 'generating_content',
+                    statusText: `正在生成... ${progress}%`
+                });
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    progressBar.complete('生成完成！');
+                }
+            }, 200);
+        }
+
+        // 阶段进度测试
+        function testStageProgress() {
+            progressBar.start();
+            
+            // 阶段1：生成文案
+            setTimeout(() => {
+                progressBar.updateProgress(20, {
+                    status: 'generating_content',
+                    statusText: '正在生成文案...',
+                    stage: 'generating_content'
+                });
+            }, 500);
+
+            setTimeout(() => {
+                progressBar.updateProgress(40, {
+                    statusText: '文案生成完成'
+                });
+            }, 1500);
+
+            // 阶段2：生成图片
+            setTimeout(() => {
+                progressBar.updateProgress(60, {
+                    status: 'generating_image',
+                    statusText: '正在生成图片...',
+                    stage: 'generating_image'
+                });
+            }, 2000);
+
+            setTimeout(() => {
+                progressBar.updateProgress(80, {
+                    statusText: '图片生成中...'
+                });
+            }, 3000);
+
+            // 完成
+            setTimeout(() => {
+                progressBar.updateProgress(100, {
+                    stage: 'completed'
+                });
+                progressBar.complete('所有内容生成完成！');
+            }, 4000);
+        }
+
+        // 详细进度测试
+        function testDetailProgress() {
+            progressBar.start({
+                details: {
+                    current: '准备生成',
+                    completed: 0,
+                    total: 5
+                }
+            });
+
+            let completed = 0;
+            const total = 5;
+            const tasks = [
+                '生成标题',
+                '生成正文',
+                '生成标签',
+                '生成图片提示词',
+                '生成图片'
+            ];
+
+            const interval = setInterval(() => {
+                if (completed < total) {
+                    completed++;
+                    const progress = (completed / total) * 100;
+                    
+                    progressBar.updateProgress(progress, {
+                        status: completed <= 3 ? 'generating_content' : 'generating_image',
+                        statusText: `正在${tasks[completed - 1]}...`,
+                        stage: completed <= 3 ? 'generating_content' : 'generating_image',
+                        details: {
+                            current: tasks[completed - 1],
+                            completed: completed,
+                            total: total
+                        }
+                    });
+                } else {
+                    clearInterval(interval);
+                    progressBar.complete('所有任务完成！');
+                }
+            }, 1000);
+        }
+
+        // 模拟完成
+        function testComplete() {
+            progressBar.complete('测试完成！');
+        }
+
+        // 模拟失败
+        function testFail() {
+            progressBar.fail('生成失败：API 调用超时');
+        }
+
+        // 模拟取消
+        function testCancel() {
+            progressBar.cancel();
+        }
+
+        // 重置
+        function resetProgress() {
+            progressBar.reset();
+            progressBar.hide();
+        }
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            initProgressBar();
+        });
+    </script>
+</body>
+</html>

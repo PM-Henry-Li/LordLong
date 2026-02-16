@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书内容生成器 Pro</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ant-design-vue@4.2.6/dist/reset.css" />
+    <!-- 引入字体图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 错误处理样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/error-handler.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 错误处理脚本 -->
+    <script src="{{ url_for('static', filename='js/error-handler.js') }}"></script>
+    <style>
+        :root {
+            --primary-color: #ff2442;
+            --primary-light: #fff0f2;
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --border-radius: 16px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            animation: pageIn 0.6s ease;
+        }
+
+        @keyframes pageIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 16px 24px;
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff2442, #ff6b81);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            -webkit-text-fill-color: #ff2442;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link:hover {
+            background: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+
+        /* 左侧配置面板 */
+        .config-panel {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 36, 66, 0.1);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff2442, #ff6b81);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: none;
+            animation: btnShimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes btnShimmer {
+            0% {
+                left: -100%;
+            }
+
+            50%,
+            100% {
+                left: 150%;
+            }
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(255, 36, 66, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(255, 36, 66, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: linear-gradient(135deg, #ccc, #ddd);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-primary:disabled::after {
+            display: none;
+        }
+
+        /* 右侧预览区域 */
+        .preview-area {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* 仿小红书预览 */
+        .xhs-preview {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .xhs-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .xhs-content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+        }
+
+        .xhs-tags {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .xhs-tag {
+            color: #1c6dd0;
+            font-size: 13px;
+            cursor: pointer;
+            background: #edf4ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+
+        .xhs-tag:hover {
+            background: #d4e6ff;
+            color: #0d4ea6;
+        }
+
+        /* 图片网格 */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        /* 封面图独占一行 */
+        .image-grid.has-cover .image-card:first-child {
+            grid-column: 1 / -1;
+            aspect-ratio: 16/9;
+            /* 稍微扁一点展示封面，或者保持 3:4 */
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .image-card {
+            background: #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 3/4;
+            /* 默认竖版 */
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: zoom-in;
+            transition: transform 0.3s;
+        }
+
+        .image-card img:hover {
+            transform: scale(1.02);
+        }
+
+        .image-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 12px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+            color: white;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .image-status {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8f8f8;
+            color: #999;
+            font-size: 14px;
+            gap: 12px;
+            z-index: 5;
+        }
+
+        .retry-btn {
+            padding: 6px 16px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .retry-btn:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #eee;
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 模式选择 Radio Card */
+        .mode-selector {
+            display: flex;
+            gap: 12px;
+        }
+
+        .mode-option {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .mode-option input {
+            display: none;
+        }
+
+        .mode-card {
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .mode-option input:checked+.mode-card {
+            border-color: var(--primary-color);
+            background: #fff0f2;
+            color: var(--primary-color);
+        }
+
+        .mode-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .mode-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .mode-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* 步骤条样式 */
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #ccc;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+
+        .step-text {
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .step-item.active {
+            color: var(--text-primary);
+        }
+
+        .step-item.active .step-icon {
+            background: #fff;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 36, 66, 0.1);
+            transform: scale(1.1);
+        }
+
+        .step-item.completed {
+            color: var(--text-primary);
+        }
+
+        .step-item.completed .step-icon {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .step-line {
+            height: 2px;
+            background: #f0f0f0;
+            width: 80px;
+            margin-bottom: 24px;
+            /* 对齐图标中心 */
+            position: relative;
+        }
+
+        .step-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background: var(--primary-color);
+            transition: width 0.8s ease;
+        }
+
+        /* 当第一步完成时，线变红 */
+        .steps-container.step1-done .step-line::after {
+            width: 100%;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.15;
+            animation: emptyBreath 3s ease-in-out infinite;
+        }
+
+        @keyframes emptyBreath {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.15;
+            }
+
+            50% {
+                transform: scale(1.08);
+                opacity: 0.25;
+            }
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .quick-themes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .quick-theme-btn {
+            padding: 6px 14px;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .quick-theme-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 840px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+
+            .config-panel {
+                position: static;
+            }
+
+            .empty-state {
+                padding: 40px 16px;
+            }
+
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+            }
+        }
+
+        /* Lightbox 样式 */
+        .image-lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .image-lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .image-lightbox.active img {
+            transform: scale(1);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 10001;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .lightbox-close:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-pen-nib"></i>
+            小红书内容生成器 Pro
+        </div>
+        <a href="/logs" class="nav-link"
+            style="color: var(--text-secondary); text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: all 0.3s;">
+            <i class="fa-solid fa-file-lines"></i> 日志查询
+        </a>
+    </nav>
+
+    <div class="container">
+        <!-- 左侧配置 -->
+        <div class="config-panel">
+            <h2 class="panel-title"><i class="fa-solid fa-sliders"></i> 生成配置</h2>
+
+            <div class="form-group">
+                <label class="form-label">创意主题 / 原始文案</label>
+                <textarea id="inputText" class="form-control" placeholder="输入你想写的主题..."
+                    style="height: 150px;">{{ default_input_text }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">配图模式</label>
+                <div class="mode-selector">
+                    <label class="mode-option">
+                        <input type="radio" name="imageMode" value="template" checked>
+                        <div class="mode-card">
+                            <div class="mode-icon"><i class="fa-solid fa-palette"></i></div>
+                            <div class="mode-title">模板合成</div>
+                            <div class="mode-desc">快速 • 免费</div>
+                        </div>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="imageMode" value="api">
+                        <div class="mode-card">
+                            <div class="mode-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                            <div class="mode-title">AI绘画</div>
+                            <div class="mode-desc">真实 • 高质</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div id="aiSettings" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">AI 模型</label>
+                    <select id="imageModel" class="form-control">
+                        {% for key, model in models.items() %}
+                        <option value="{{ key }}">{{ model.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div id="templateSettings">
+                <div class="form-group">
+                    <label class="form-label">模板风格</label>
+                    <select id="templateStyle" class="form-control">
+                        <option value="retro_chinese">🇨🇳 复古中国风</option>
+                        <option value="modern_minimal">⬜ 现代简约</option>
+                        <option value="vintage_film">🎞️ 怀旧胶片</option>
+                        <option value="warm_memory">🌅 温暖记忆</option>
+                        <option value="ink_wash">🖌️ 水墨风格</option>
+                        <option value="info_chart">📊 信息图表</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">图片生成数量</label>
+                <select id="imageCount" class="form-control">
+                    <option value="1">1 张 (仅封面)</option>
+                    <option value="3">3 张 (封面 + 2张插图)</option>
+                    <option value="5" selected>5 张 (封面 + 4张插图)</option>
+                    <option value="9">9 张 (九宫格)</option>
+                </select>
+            </div>
+
+            <button id="generateBtn" class="btn-primary" onclick="startGeneration()">
+                <i class="fa-solid fa-bolt"></i> 立即生成
+            </button>
+        </div>
+
+        <!-- 右侧预览 -->
+        <div class="preview-area" id="previewArea">
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fa-regular fa-compass"></i></div>
+                <h3>准备开始你的创作</h3>
+                <p>输入主题，点击生成，AI 将为你完成剩下的工作</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- 图片放大灯箱 -->
+    <div id="imageLightbox" class="image-lightbox" onclick="closeLightbox()">
+        <div class="lightbox-close">&times;</div>
+        <img id="lightboxImg" src="" alt="Full size">
+    </div>
+
+    <!-- 模板：结果卡片 -->
+    <template id="resultCardTemplate">
+        <div class="result-card">
+            <div class="xhs-preview">
+                <h2 class="xhs-title"></h2>
+                <div class="xhs-content"></div>
+                <div class="xhs-tags"></div>
+            </div>
+
+            <div class="image-grid has-cover">
+                <!-- 图片卡片将插入这里 -->
+            </div>
+        </div>
+    </template>
+
+    <script>
+        // 状态管理
+        let currentConfig = {};
+
+        // 快速填入主题
+        function fillTheme(theme) {
+            document.getElementById('inputText').value = theme;
+            document.getElementById('inputText').focus();
+        }
+
+        // 模式切换联动
+        document.querySelectorAll('input[name="imageMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const isApi = e.target.value === 'api';
+                document.getElementById('aiSettings').style.display = isApi ? 'block' : 'none';
+                // 用户要求API模式也支持模板风格，因此不再隐藏模板设置
+            });
+        });
+
+        // 开始生成
+        async function startGeneration() {
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) return alert('请输入内容');
+
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 生成文案中...';
+
+            // 步骤指示器
+            const stepsHtml = `
+                <div class="steps-container" style="margin-bottom: 24px; display: flex; justify-content: center; gap: 40px;">
+                    <div class="step-item active" id="step1">
+                        <div class="step-icon"><i class="fa-solid fa-file-pen"></i></div>
+                        <div class="step-text">1. 生成文案</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item" id="step2">
+                        <div class="step-icon"><i class="fa-solid fa-image"></i></div>
+                        <div class="step-text">2. 绘制图片</div>
+                    </div>
+                </div>
+            `;
+
+            const previewArea = document.getElementById('previewArea');
+            previewArea.innerHTML = `
+                <div class="result-card" style="text-align: center; padding: 40px;">
+                    ${stepsHtml}
+                    <div class="loading-spinner" style="margin: 0 auto 20px;"></div>
+                    <h3 id="loadingText">正在构思创意文案...</h3>
+                    <p style="color: #666;">AI 正在分析主题并撰写笔记</p>
+                </div>
+            `;
+
+            // 收集配置
+            currentConfig = {
+                input_text: inputText,
+                image_mode: document.querySelector('input[name="imageMode"]:checked').value,
+                image_model: document.getElementById('imageModel').value,
+                template_style: document.getElementById('templateStyle').value,
+                image_size: 'vertical',
+                count: parseInt(document.getElementById('imageCount').value)
+            };
+
+            try {
+                // Step 1: 生成文案和任务
+                const response = await fetch('/api/generate_content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentConfig)
+                });
+
+                const res = await response.json();
+
+                if (res.success) {
+                    // 更新到第二步
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step1').classList.add('completed');
+                    document.getElementById('step1').querySelector('.step-icon').innerHTML = '<i class="fa-solid fa-check"></i>';
+                    document.querySelector('.steps-container').classList.add('step1-done');
+
+                    document.getElementById('step2').classList.add('active');
+                    document.getElementById('loadingText').textContent = '准备开始绘图...';
+
+                    // 短暂停留让用户看清步骤变化
+                    await new Promise(r => setTimeout(r, 800));
+
+                    renderResultCard(res.data);
+                } else {
+                    showError(typeof res.error === 'object' ? (res.error.message || JSON.stringify(res.error)) : (res.error || '生成失败'));
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-bolt"></i> 立即生成';
+                }
+
+            } catch (err) {
+                showError(err.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-bolt"></i> 立即生成';
+            }
+        }
+
+        function renderResultCard(data) {
+            const previewArea = document.getElementById('previewArea');
+            const template = document.getElementById('resultCardTemplate');
+            const clone = template.content.cloneNode(true);
+
+            // 填充文案
+            clone.querySelector('.xhs-title').textContent = data.title;
+            // 处理换行符：将 \n, \\n, \\\n 等统一转换为实际换行
+            const cleanContent = data.content ? data.content.replace(/(\\)+n/g, '\n') : '';
+            clone.querySelector('.xhs-content').textContent = cleanContent;
+
+            const tagsContainer = clone.querySelector('.xhs-tags');
+            data.tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'xhs-tag';
+                span.textContent = `#${tag}`;
+                tagsContainer.appendChild(span);
+            });
+
+            // 准备图片网格
+            const imageGrid = clone.querySelector('.image-grid');
+
+            // 处理任务列表 (客户端截取数量)
+            let tasks = [];
+            // 封面肯定要
+            const coverTask = data.image_tasks.find(t => t.type === 'cover');
+            if (coverTask) tasks.push(coverTask);
+
+            // 插图只要 (count - 1) 个（减去封面数量）
+            let contentTasks = data.image_tasks.filter(t => t.type === 'content');
+            const neededContentCount = Math.max(0, currentConfig.count - tasks.length);
+
+            if (contentTasks.length >= neededContentCount) {
+                tasks = tasks.concat(contentTasks.slice(0, neededContentCount));
+            } else {
+                tasks = tasks.concat(contentTasks);
+                const remaining = neededContentCount - contentTasks.length;
+                for (let i = 0; i < remaining; i++) {
+                    tasks.push({
+                        id: `auto_${Date.now()}_${i}`,
+                        type: 'content',
+                        title: `图${contentTasks.length + i + 1}`,
+                        prompt: currentConfig.input_text,
+                        scene: '细节展示',
+                        index: tasks.length
+                    });
+                }
+            }
+
+            // 先创建所有占位符卡片（只做DOM布局，不触发请求）
+            const cardPairs = []; // [{task, card}]
+            tasks.forEach(task => {
+                const card = createImagePlaceholder(task);
+                imageGrid.appendChild(card);
+                cardPairs.push({ task, card });
+            });
+
+            // ★ 关键修复：先挂载到DOM，再触发图片生成请求
+            previewArea.innerHTML = '';
+            previewArea.appendChild(clone);
+
+            // 顺序生成图片（避免API并发限流429）
+            // 每张图生成完后再发下一张，间隔3秒
+            (async function generateImagesSequentially() {
+                for (let i = 0; i < cardPairs.length; i++) {
+                    const { task, card } = cardPairs[i];
+                    // 更新状态为"生成中"
+                    const badge = card.querySelector('.status-badge');
+                    if (badge) badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 生成中';
+
+                    await generateSingleImage(task, card);
+
+                    // 如果还有下一张，等待3秒避免限流
+                    if (i < cardPairs.length - 1) {
+                        await new Promise(r => setTimeout(r, 3000));
+                    }
+                }
+            })();
+
+            // 恢复按钮状态
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> 立即生成';
+        }
+
+        function createImagePlaceholder(task) {
+            const div = document.createElement('div');
+            div.className = 'image-card';
+            div.id = `card-${task.id}`;
+            const displayTitle = task.type === 'cover'
+                ? `🎯 封面 | ${task.scene || task.title}`
+                : `${task.title} | ${task.scene}`;
+            div.innerHTML = `
+                <div class="image-header">
+                    <span>${displayTitle}</span>
+                    <span class="status-badge"><i class="fa-regular fa-clock"></i> 等待中</span>
+                </div>
+                <div class="image-status">
+                    <div class="loading-spinner"></div>
+                    <div>AI正在绘图...</div>
+                </div>
+            `;
+            return div;
+        }
+
+        async function generateSingleImage(task, cardElement, maxRetries = 5) {
+            const now = new Date();
+            const ts = now.getFullYear().toString() +
+                String(now.getMonth() + 1).padStart(2, '0') +
+                String(now.getDate()).padStart(2, '0') + '_' +
+                String(now.getHours()).padStart(2, '0') +
+                String(now.getMinutes()).padStart(2, '0') +
+                String(now.getSeconds()).padStart(2, '0');
+
+            const payload = {
+                ...currentConfig,
+                prompt: task.prompt,
+                title: task.title || task.scene,
+                scene: task.scene || '',
+                content: document.querySelector('.xhs-content').textContent,
+                task_id: task.id,
+                type: task.type,
+                index: task.index || 0,
+                timestamp: ts
+            };
+
+            // 封面图使用主题文字作为标题
+            if (task.type === 'cover') {
+                // 修复：截取标题长度，防止超过后端100字符限制导致生成失败
+                payload.title = currentConfig.input_text.substring(0, 90);
+            }
+
+            const displayTitle = task.type === 'cover'
+                ? `🎯 封面 | ${task.scene || task.title}`
+                : `${task.title} | ${task.scene}`;
+
+            let lastError = '';
+
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    // 更新卡片状态显示当前重试进度
+                    if (attempt > 1) {
+                        cardElement.innerHTML = `
+                            <div class="image-header">
+                                <span>${displayTitle}</span>
+                                <span>🔄 第${attempt}/${maxRetries}次重试</span>
+                            </div>
+                            <div class="image-status">
+                                <div class="loading-spinner"></div>
+                                <div>第 ${attempt} 次尝试生成中...</div>
+                            </div>
+                        `;
+                    }
+
+                    const response = await fetch('/api/generate_image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const res = await response.json();
+
+                    if (res.success) {
+                        // 替换为图片
+                        const img = new Image();
+                        img.src = res.data.data;
+                        const promptText = task.prompt || '';
+                        const shortPrompt = promptText.length > 60 ? promptText.substring(0, 60) + '...' : promptText;
+                        img.onload = () => {
+                            cardElement.innerHTML = `
+                                <div class="image-header">
+                                    <span>${displayTitle}</span>
+                                    <a href="${res.data.url}" download class="retry-btn">
+                                        <i class="fa-solid fa-download"></i> 下载
+                                    </a>
+                                </div>
+                                <img src="${res.data.data}" alt="${task.title}" 
+                                     onclick="openLightbox('${res.data.data}')" 
+                                     style="cursor: zoom-in;" 
+                                     title="点击放大">
+                                <div class="image-prompt-text" style="padding:8px 12px; background:#f9f9f9; border-top:1px solid #eee; font-size:12px; color:#666; line-height:1.6; word-break:break-all;" title="${promptText.replace(/"/g, '&quot;')}">
+                                    <i class="fa-solid fa-paintbrush" style="margin-right:4px; color:#999;"></i>${shortPrompt}
+                                </div>
+                            `;
+                        };
+                        return; // 成功，退出
+                    } else {
+                        lastError = typeof res.error === 'object' ? (res.error.message || JSON.stringify(res.error)) : (res.error || '未知错误');
+                        throw new Error(lastError);
+                    }
+
+                } catch (err) {
+                    lastError = err.message || '生成失败';
+                    console.warn(`图片 ${task.id} 第 ${attempt} 次尝试失败:`, lastError);
+
+                    // 如果还有重试机会，等待后继续
+                    if (attempt < maxRetries) {
+                        const waitSec = attempt * 2;
+                        cardElement.innerHTML = `
+                            <div class="image-header">
+                                <span>${displayTitle}</span>
+                                <span style="color:#fa8c16">⏳ 等待重试</span>
+                            </div>
+                            <div class="image-status" style="background:#fff7e6; color:#fa8c16;">
+                                <i class="fa-solid fa-clock-rotate-left" style="font-size:20px;"></i>
+                                <div>第 ${attempt} 次失败，${waitSec}秒后自动重试...</div>
+                                <div style="font-size:11px; opacity:0.7;">（共${maxRetries}次尝试）</div>
+                            </div>
+                        `;
+                        await new Promise(r => setTimeout(r, waitSec * 1000));
+                    }
+                }
+            }
+
+            // 所有重试都失败了，显示失败状态和操作按钮
+            const taskJson = JSON.stringify(task).replace(/'/g, '&#39;');
+            cardElement.innerHTML = `
+                <div class="image-header">
+                    <span>${displayTitle}</span>
+                    <span style="color:#ff4d4f"><i class="fa-solid fa-circle-exclamation"></i> 失败</span>
+                </div>
+                <div class="image-status" style="background:#fff1f0; color:#ff4d4f;">
+                    <i class="fa-solid fa-circle-xmark" style="font-size:24px;"></i>
+                    <div style="font-size:12px; padding:0 10px; text-align:center;">已重试${maxRetries}次仍失败<br>${lastError}</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+                        <button class="retry-btn" onclick='window.retryGeneration(${taskJson}, this.closest(".image-card"))'>
+                            <i class="fa-solid fa-rotate-right"></i> 重试
+                        </button>
+                        <button class="retry-btn" onclick='window.regenerateContent()' style="color:#1c6dd0; border-color:#1c6dd0;">
+                            <i class="fa-solid fa-pen-nib"></i> 重新生成文案
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.retryGeneration = function (task, cardElement) {
+            const displayTitle = task.type === 'cover'
+                ? `🎯 封面 | ${task.scene || task.title}`
+                : `${task.title} | ${task.scene}`;
+            // 重置为 Loading 状态
+            cardElement.innerHTML = `
+                <div class="image-header">
+                    <span>${displayTitle}</span>
+                    <span>🔄 重新生成中...</span>
+                </div>
+                <div class="image-status">
+                    <div class="loading-spinner"></div>
+                    <div>正在重新生成...</div>
+                </div>
+            `;
+            generateSingleImage(task, cardElement);
+        };
+
+        // 重新生成文案（重走整个流程）
+        window.regenerateContent = function () {
+            startGeneration();
+        };
+
+        function showError(msg) {
+            const previewArea = document.getElementById('previewArea');
+            previewArea.innerHTML = `
+                <div class="result-card" style="border: 2px solid #ff4d4f; text-align:center; padding: 40px;">
+                    <h3 style="color: #ff4d4f; font-size: 24px;"><i class="fa-solid fa-triangle-exclamation"></i> 出错了</h3>
+                    <p style="font-size: 16px; margin: 16px 0;">${msg}</p>
+                    <button class="retry-btn" onclick="startGeneration()" style="margin: 0 auto; font-size: 14px; padding: 8px 24px;">
+                        <i class="fa-solid fa-rotate-right"></i> 重新生成
+                    </button>
+                </div>
+            `;
+
+        }
+
+        // Lightbox functions
+        function openLightbox(src) {
+            const lightbox = document.getElementById('imageLightbox');
+            const img = document.getElementById('lightboxImg');
+            img.src = src;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('imageLightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                document.getElementById('lightboxImg').src = '';
+            }, 300);
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+
+</html>

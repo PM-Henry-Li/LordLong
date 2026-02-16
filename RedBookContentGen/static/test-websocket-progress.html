@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 进度条测试</title>
+    <link rel="stylesheet" href="css/progress.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+        }
+
+        .test-controls {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .test-controls h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .test-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #2196f3;
+            color: white;
+        }
+
+        .test-button:hover {
+            background: #1976d2;
+        }
+
+        .test-button.secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .test-button.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .test-button.danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .test-button.danger:hover {
+            background: #d32f2f;
+        }
+
+        .test-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-box {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 13px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+
+        .status-label {
+            color: #666;
+        }
+
+        .status-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .status-value.connected {
+            color: #4caf50;
+        }
+
+        .status-value.disconnected {
+            color: #f44336;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #1976d2;
+        }
+
+        .log-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-box h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .log-entry {
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: #999;
+            margin-right: 8px;
+        }
+
+        .log-message {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 WebSocket 进度条测试</h1>
+
+        <div class="test-controls">
+            <h2>测试控制</h2>
+            <div class="button-group">
+                <button class="test-button" onclick="testWebSocketProgress()">启动 WebSocket 测试</button>
+                <button class="test-button secondary" onclick="simulateProgress()">模拟进度更新</button>
+                <button class="test-button secondary" onclick="testReconnect()">测试重连</button>
+                <button class="test-button danger" onclick="disconnectWebSocket()">断开连接</button>
+                <button class="test-button secondary" onclick="resetProgress()">重置</button>
+            </div>
+
+            <div class="status-box">
+                <div class="status-item">
+                    <span class="status-label">连接状态：</span>
+                    <span class="status-value" id="connection-status">未连接</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">当前任务：</span>
+                    <span class="status-value" id="current-task">无</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">重连次数：</span>
+                    <span class="status-value" id="reconnect-count">0</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                💡 提示：此页面测试 WebSocket 实时进度推送功能。需要后端 WebSocket 服务运行才能正常工作。
+            </div>
+        </div>
+
+        <!-- 进度条容器 -->
+        <div id="progress-container"></div>
+
+        <!-- 日志输出 -->
+        <div class="log-box">
+            <h3>📋 事件日志</h3>
+            <div id="log-output"></div>
+        </div>
+    </div>
+
+    <!-- Socket.IO 客户端库 -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="js/progress.js"></script>
+    <script>
+        // 创建进度条实例
+        let progressBar;
+        let reconnectCount = 0;
+
+        function initProgressBar() {
+            progressBar = new ProgressBar('progress-container', {
+                showStages: true,
+                showTime: true,
+                showDetails: true,
+                allowCancel: true,
+                autoHide: false,
+                websocketUrl: '/progress',
+                autoReconnect: true,
+                reconnectDelay: 3000,
+                heartbeatInterval: 30000
+            });
+
+            // 设置回调
+            progressBar.on('connect', () => {
+                log('WebSocket 已连接');
+                updateConnectionStatus(true);
+            });
+
+            progressBar.on('disconnect', (reason) => {
+                log(`WebSocket 已断开: ${reason}`);
+                updateConnectionStatus(false);
+            });
+
+            progressBar.on('error', (error) => {
+                log(`WebSocket 错误: ${error.message || error}`);
+            });
+
+            progressBar.on('cancel', () => {
+                log('用户取消了操作');
+            });
+
+            progressBar.on('retry', () => {
+                log('用户点击了重试');
+                testWebSocketProgress();
+            });
+
+            progressBar.on('complete', () => {
+                log('操作完成');
+            });
+        }
+
+        // WebSocket 进度测试
+        function testWebSocketProgress() {
+            // 生成模拟任务ID
+            const taskId = 'test-' + Date.now();
+            
+            log(`启动测试任务: ${taskId}`);
+            updateCurrentTask(taskId);
+
+            // 启动进度条并加入任务房间
+            progressBar.start({
+                taskId: taskId,
+                details: {
+                    current: '准备生成',
+                    completed: 0,
+                    total: 5
+                }
+            });
+
+            log('已加入任务房间，等待进度更新...');
+        }
+
+        // 模拟进度更新（用于测试前端功能）
+        function simulateProgress() {
+            if (!progressBar.getTaskId()) {
+                alert('请先启动 WebSocket 测试');
+                return;
+            }
+
+            log('开始模拟进度更新');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                
+                progressBar.handleProgressUpdate({
+                    task_id: progressBar.getTaskId(),
+                    status: progress < 50 ? 'generating_content' : 'generating_image',
+                    progress: progress,
+                    message: `正在处理... ${progress}%`,
+                    details: {
+                        current: progress < 50 ? '生成文案' : '生成图片',
+                        completed: Math.floor(progress / 20),
+                        total: 5
+                    },
+                    timestamp: Date.now() / 1000
+                });
+
+                log(`进度更新: ${progress}%`);
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    log('模拟进度完成');
+                }
+            }, 500);
+        }
+
+        // 测试重连
+        function testReconnect() {
+            if (!progressBar.socket) {
+                alert('WebSocket 未初始化');
+                return;
+            }
+
+            log('断开连接以测试重连...');
+            progressBar.socket.disconnect();
+            reconnectCount++;
+            updateReconnectCount();
+
+            setTimeout(() => {
+                log('尝试重新连接...');
+                progressBar.socket.connect();
+            }, 2000);
+        }
+
+        // 断开连接
+        function disconnectWebSocket() {
+            log('手动断开 WebSocket 连接');
+            progressBar.disconnectWebSocket();
+            updateConnectionStatus(false);
+            updateCurrentTask('无');
+        }
+
+        // 重置
+        function resetProgress() {
+            log('重置进度条');
+            progressBar.reset();
+            progressBar.hide();
+            updateCurrentTask('无');
+        }
+
+        // 更新连接状态显示
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connection-status');
+            if (connected) {
+                statusEl.textContent = '已连接';
+                statusEl.className = 'status-value connected';
+            } else {
+                statusEl.textContent = '未连接';
+                statusEl.className = 'status-value disconnected';
+            }
+        }
+
+        // 更新当前任务显示
+        function updateCurrentTask(taskId) {
+            document.getElementById('current-task').textContent = taskId;
+        }
+
+        // 更新重连次数
+        function updateReconnectCount() {
+            document.getElementById('reconnect-count').textContent = reconnectCount;
+        }
+
+        // 日志输出
+        function log(message) {
+            const logOutput = document.getElementById('log-output');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-message">${message}</span>`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+
+            console.log(`[${time}] ${message}`);
+        }
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            initProgressBar();
+            log('页面加载完成');
+        });
+
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', () => {
+            if (progressBar) {
+                progressBar.destroy();
+            }
+        });
+    </script>
+</body>
+</html>

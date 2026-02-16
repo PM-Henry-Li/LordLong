@@ -1,0 +1,40 @@
+[tool.black]
+# 行长度设置为 120，遵循 AGENTS.md 中的代码风格
+line-length = 120
+# Python 版本
+target-version = ['py310']
+# 包含的文件模式
+include = '\.pyi?$'
+# 排除的文件和目录
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | env
+  | \.eggs
+  | \.tox
+  | build
+  | dist
+  | __pycache__
+  | \.pytest_cache
+  | \.mypy_cache
+  | output
+)/
+'''
+
+[tool.pytest.ini_options]
+# pytest 配置（保持现有配置）
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=src --cov-report=html --cov-report=term"
+
+[tool.mypy]
+# mypy 配置（为未来的类型检查做准备）
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true

@@ -1,0 +1,141 @@
+
+
+Report
+======
+5258 statements analysed.
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |31     |31         |=          |96.77       |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |98     |98         |=          |90.82       |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|method   |394    |394        |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|function |78     |78         |=          |100.00      |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+External dependencies
+---------------------
+::
+
+    PIL 
+      \-Image (src.image_generator,src.image_resource_manager,src.template_image_generator)
+      \-ImageDraw (src.image_generator,src.template_image_generator,src.text_processor)
+      \-ImageEnhance (src.template_image_generator)
+      \-ImageFilter (src.template_image_generator)
+      \-ImageFont (src.image_generator,src.template_image_generator,src.text_processor)
+      \-ImagePath (src.template_image_generator)
+    aiohttp (src.async_image_service)
+    flask (src.web.blueprints.api,src.web.blueprints.main,src.web.error_handlers,src.web.validators)
+    openai (src.content_generator,src.content_organizer,src.core.api_handler)
+    openpyxl (src.content_generator)
+      \-styles (src.content_generator)
+      | \-Alignment (src.content_generator)
+      \-utils (src.content_generator)
+    pydantic (src.core.config_schema,src.web.error_handlers,src.web.validators)
+    requests (src.core.log_alerting,src.core.log_collector,src.image_generator,src.image_pipeline,src.image_resource_manager,src.services.image_service)
+    selenium 
+      \-webdriver (src.xiaohongshu_scraper)
+        \-chrome 
+        | \-options (src.xiaohongshu_scraper)
+        | \-service (src.xiaohongshu_scraper)
+        \-common 
+        | \-by (src.xiaohongshu_scraper)
+        \-support 
+          \-expected_conditions (src.xiaohongshu_scraper)
+          \-ui (src.xiaohongshu_scraper)
+    src 
+      \-content_generator (src.services.content_service)
+      \-core 
+      | \-api_handler (src.content_generator)
+      | \-cache_manager (src.content_generator,src.image_generator)
+      | \-config_manager (src.async_image_service,src.content_generator,src.image_generator,src.services.content_service,src.services.image_service)
+      | \-errors (src.services.content_service,src.services.image_service,src.web.blueprints.api,src.web.error_handlers)
+      | \-exceptions (src.content_generator,src.core.api_handler,src.core.retry_handler)
+      | \-log_collector (src.core.logger)
+      | \-logger (src.async_image_service,src.content_generator,src.core.api_handler,src.core.retry_handler,src.image_generator,src.image_pipeline,src.services.content_service,src.services.image_service,src.template_image_generator,src.web.blueprints.api,src.web.error_handlers)
+      | \-rate_limiter (src.content_generator,src.image_generator)
+      | \-retry_handler (src.content_generator,src.core.api_handler)
+      \-image_generator (src.services.image_service)
+      \-image_pipeline (src.image_generator)
+      \-image_resource_manager (src.image_generator)
+      \-services (src.web.blueprints.main)
+      \-template_image_generator (src.services.image_service)
+      \-text_processor (src.image_generator)
+      \-web 
+        \-error_handlers (src.web.blueprints.api)
+        \-validators (src.web.blueprints.api)
+    webdriver_manager 
+      \-chrome (src.xiaohongshu_scraper)
+
+
+
+13995 lines have been analyzed
+
+Raw metrics
+-----------
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |7475   |53.41 |7475     |=          |
++----------+-------+------+---------+-----------+
+|docstring |3817   |27.27 |3817     |=          |
++----------+-------+------+---------+-----------+
+|comment   |736    |5.26  |736      |=          |
++----------+-------+------+---------+-----------+
+|empty     |1967   |14.06 |1967     |=          |
++----------+-------+------+---------+-----------+
+
+
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |0        |0          |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |0.000    |=          |
++-------------------------+------+---------+-----------+
+
+
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |0      |0        |0          |
++-----------+-------+---------+-----------+
+|refactor   |0      |0        |0          |
++-----------+-------+---------+-----------+
+|warning    |0      |0        |0          |
++-----------+-------+---------+-----------+
+|error      |0      |0        |0          |
++-----------+-------+---------+-----------+
+
+
+
+Messages
+--------
+
++-----------+------------+
+|message id |occurrences |
++===========+============+
+
+
+
+
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
