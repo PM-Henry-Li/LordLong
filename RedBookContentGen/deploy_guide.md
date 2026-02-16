@@ -63,10 +63,16 @@ docker compose version
 ## 📂 第二步：部署代码
 
 ### 方式 A：通过 Git（推荐）
+您的项目是 `LordLong` 仓库中的一个子目录，需要克隆整个仓库并进入相应目录。
+
 ```bash
 cd /opt  # 建议部署在 /opt 目录下
-git clone <您的仓库地址> redbook-gen
-cd redbook-gen
+
+# 克隆仓库
+git clone https://github.com/PM-Henry-Li/LordLong.git
+
+# 进入项目目录
+cd LordLong/RedBookContentGen
 ```
 
 ### 方式 B：本地上传
