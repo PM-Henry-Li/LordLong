@@ -86,10 +86,36 @@ cd /opt/LordLong
 # 拉取最新代码
 git pull origin main
 
-# 进入项目目录
+# 进入项目目录 (关键：必须进入包含 docker-compose.yml 的目录)
 cd RedBookContentGen
 
+# 确认文件存在
+ls -l docker-compose.yml
+# 如果显示 "No such file or directory"，请检查您是否在正确的目录下
+
 # (可选) 如果依赖有更新，重建镜像
+docker compose up -d --build
+```
+
+#### (备选) 强制重新部署（最稳妥方案）
+如果遇到“文件缺失”或“目录结构混乱”的问题，建议备份配置后重新克隆：
+
+```bash
+# 1. 备份配置文件 (如果在这个目录下)
+cp /opt/LordLong/RedBookContentGen/.env ~/redbook.env.bak
+
+# 2. 删除旧项目目录
+cd /opt
+rm -rf LordLong
+
+# 3. 重新克隆
+git clone https://github.com/PM-Henry-Li/LordLong.git
+
+# 4. 恢复配置
+cp ~/redbook.env.bak LordLong/RedBookContentGen/.env
+
+# 5. 进入目录启动
+cd LordLong/RedBookContentGen
 docker compose up -d --build
 ```
 
