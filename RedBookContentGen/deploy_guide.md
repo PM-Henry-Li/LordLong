@@ -63,8 +63,9 @@ docker compose version
 ## 📂 第二步：部署代码
 
 ### 方式 A：通过 Git（推荐）
-您的项目是 `LordLong` 仓库中的一个子目录，需要克隆整个仓库并进入相应目录。
+您的项目是 `LordLong` 仓库中的一个子目录。
 
+#### 情况 1：首次部署（目录不存在）
 ```bash
 cd /opt  # 建议部署在 /opt 目录下
 
@@ -73,6 +74,23 @@ git clone https://github.com/PM-Henry-Li/LordLong.git
 
 # 进入项目目录
 cd LordLong/RedBookContentGen
+```
+
+#### 情况 2：更新代码（目录已存在）
+如果提示 `destination path 'LordLong' already exists`，说明您之前已经克隆过。请执行以下命令更新：
+
+```bash
+# 进入仓库根目录
+cd /opt/LordLong
+
+# 拉取最新代码
+git pull origin main
+
+# 进入项目目录
+cd RedBookContentGen
+
+# (可选) 如果依赖有更新，重建镜像
+docker compose up -d --build
 ```
 
 ### 方式 B：本地上传
