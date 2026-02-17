@@ -18,10 +18,10 @@ chown -R 1000:1000 logs output
 ```
 
 #### 2. 前端 API 请求 404 (Unexpected token '<')
-如果您将项目部署在子目录（例如 `https://lordlong.cn/redbookgen/`），必须确保前端 JS 使用相对路径请求 API。
-*   **症状**：点击生成时报错 `Unexpected token '<'`。
-*   **原因**：代码中使用 `/api/...` 绝对路径，导致请求发往域名根目录而非子目录。
-*   **解决方法**：代码已更新为相对路径 `api/...`，请**强制刷新浏览器 (Ctrl+F5)** 清除缓存即可。
+如果您将项目部署在子目录（例如 `https://lordlong.cn/redbookgen/`），必须确保：
+1.  **Nginx 配置正确**：请参考本文档 **"第五步：配置 Nginx - 子目录部署"** 部分，`proxy_pass` 末尾必须带斜杠。
+2.  **前端代码更新**：前端 JS 必须使用相对路径请求 API（已修复）。
+3.  **清除缓存**：更新后请 **强制刷新浏览器 (Ctrl+F5)**。
 
 
 ## 📋 准备工作
@@ -209,19 +209,26 @@ CentOS 7 安装 Nginx 需要使用 EPEL 源。
         listen 80;
         server_name <您的域名或IP>;
 
+        # 根目录部署 (如果不需要，可注释掉)
         location / {
             proxy_pass http://127.0.0.1:8080;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
-        
-        # WebSocket 支持
-        location /socket.io {
-            proxy_pass http://127.0.0.1:8080/socket.io;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
+
+        # 子目录部署 (关键配置)
+        location /redbookgen/ {
+            # 注意：proxy_pass 结尾必须带斜杠 /，用于去除 /redbookgen/ 前缀
+            proxy_pass http://127.0.0.1:8080/;  
+            
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            
+            # 解决静态资源路径问题 (如果 Flask 返回绝对路径)
+            # sub_filter '/static/' '/redbookgen/static/';
+            # sub_filter_once off;
         }
     }
     ```
