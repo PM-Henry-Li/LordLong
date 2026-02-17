@@ -834,7 +834,7 @@
 
             try {
                 // Step 1: 生成文案和任务
-                const response = await fetch('/api/generate_content', {
+                const response = await fetch('api/generate_content', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(currentConfig)
@@ -1023,7 +1023,7 @@
                         `;
                     }
 
-                    const response = await fetch('/api/generate_image', {
+                    const response = await fetch('api/generate_image', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)

@@ -180,7 +180,7 @@ async function startBatchGeneration() {
         const count = parseInt(document.getElementById('imageCount').value);
         
         // 调用批量生成 API
-        const response = await fetch('/api/batch/generate_content', {
+        const response = await fetch('api/batch/generate_content', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -425,7 +425,7 @@ async function retryTask(index) {
     try {
         const count = parseInt(document.getElementById('imageCount').value);
         
-        const response = await fetch('/api/generate_content', {
+        const response = await fetch('api/generate_content', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -485,7 +485,7 @@ async function downloadExcel() {
     }
     
     try {
-        const response = await fetch('/api/batch/export/excel', {
+        const response = await fetch('api/batch/export/excel', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -529,7 +529,7 @@ async function downloadZip() {
     }
     
     try {
-        const response = await fetch('/api/batch/export/zip', {
+        const response = await fetch('api/batch/export/zip', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
