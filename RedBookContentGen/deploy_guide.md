@@ -2,6 +2,21 @@
 
 本指南针对您的 **CentOS 7** 系统环境，详细说明如何部署 **RedBookContentGen** 项目。
 
+### 常见问题排查
+
+#### 1. 权限错误 (Permission denied)
+如果启动时报错 `PermissionError: [Errno 13] Permission denied: '/app/logs/app.log'`，是因为主机上的 `logs` 目录权限导致容器内的 `appuser` (UID 1000) 无法写入。
+
+**解决方法**：
+在主机上执行以下命令修改目录权限：
+```bash
+# 简单粗暴的方式（推荐用于快速修复）
+chmod -R 777 logs output
+
+# 或者修改所有者为 UID 1000
+chown -R 1000:1000 logs output
+```
+
 ## 📋 准备工作
 
 ### 1. 确认系统环境

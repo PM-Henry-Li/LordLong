@@ -80,19 +80,7 @@ pip install -r requirements.txt
 |--------|---------|--------|------|
 | `volcengine.access_key_id` | `VOLCENGINE_ACCESS_KEY_ID` | - | 火山引擎 Access Key ID |
 | `volcengine.secret_access_key` | `VOLCENGINE_SECRET_ACCESS_KEY` | - | 火山引擎 Secret Access Key |
-| `volcengine.endpoint` | `VOLCENGINE_ENDPOINT` | `https://visual.volcengineapi.com` | 火山引擎 API 端点 |
-| `volcengine.model` | `VOLCENGINE_MODEL` | `general_v2` | 火山引擎图片生成模型 |
-
-**获取火山引擎 API 密钥**：
-1. 访问 [火山引擎控制台](https://console.volcengine.com/)
-2. 注册/登录账号
-3. 进入「视觉智能」-「即梦 AI」服务
-4. 创建 API 密钥
-5. 设置环境变量或配置文件
-
-**阿里云 vs 火山引擎选择建议**：
-- **阿里云通义万相**：成熟稳定，响应速度快，适合大批量生成
-- **火山引擎即梦 AI**：图片质量高，风格多样，适合追求画质的场景
+| `volcengine.endpoint` | `VOLCENGINE_ENDPOINT`
 
 #### 速率限制配置
 
@@ -162,12 +150,6 @@ python run.py --skip-images
 
 # 使用模板模式生成图片（无需API Key）
 python run.py --image-mode template --style retro_chinese
-
-# 使用火山引擎即梦 AI 生成图片
-python run.py --image-mode api --provider volcengine
-
-# 使用阿里云通义万相生成图片（默认）
-python run.py --image-mode api --provider aliyun
 ```
 
 ### 模式2: 主题搜索模式(新功能)
@@ -446,7 +428,7 @@ RedBookContentGen/
 python3 web_app.py
 ```
 
-访问地址: http://localhost:8080
+访问地址: http://localhost:5000
 
 ### 关闭 Web 应用
 
@@ -458,8 +440,8 @@ python3 web_app.py
 ps aux | grep web_app
 kill <PID>
 
-# 方法3：查找占用 8080 端口的进程并终止
-lsof -ti:8080 | xargs kill -9
+# 方法3：查找占用 5000 端口的进程并终止
+lsof -ti:5000 | xargs kill -9
 ```
 
 ### Web 功能
