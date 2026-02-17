@@ -228,7 +228,7 @@ CentOS 7 安装 Nginx 需要使用 EPEL 源。
             
             # 解决静态资源路径问题 (如果 Flask 返回绝对路径)
             # sub_filter '/static/' '/redbookgen/static/';
-            # sub_filter_once off;
+            <!-- # sub_filter_once off;i -->
         }
     }
     ```
