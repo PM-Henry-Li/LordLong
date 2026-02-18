@@ -22,6 +22,7 @@ from src.web.validators import (
 from src.web.error_handlers import handle_errors
 from src.core.errors import ResourceNotFoundError
 from src.utils.export_utils import ExportUtils
+from src.core.logger import Logger
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -334,6 +335,8 @@ def generate_image() -> Tuple[Response, int]:
         return jsonify({"success": True, "data": result})
         
     except ValidationError as e:
+        # 记录验证错误详情
+        Logger.error(f"图片生成验证失败: {str(e)}", logger_name="web_api", error_details=e.errors() if hasattr(e, 'errors') else str(e))
         # 使用 format_validation_error 处理验证错误
         error_response = format_validation_error(e)
         return jsonify(error_response), 400

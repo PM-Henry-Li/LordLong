@@ -199,63 +199,83 @@ class ContentService:
 
     def _build_image_tasks(self, raw_data: Dict, input_text: str, count: int) -> List[Dict]:
         """
-        构建图片任务列表
-
-        Args:
-            raw_data: 原始生成数据
-            input_text: 输入文本（用于兜底）
-            count: 图片数量
-
-        Returns:
-            图片任务列表
+        构建图片任务列表，并实现内容智能分段
         """
         tasks = []
-
+        content = raw_data.get("content", "")
+        
         # 1. 封面图
         cover_data = raw_data.get("cover", {})
-        if cover_data:
-            tasks.append(
-                {
-                    "id": "cover",
-                    "type": "cover",
-                    "title": cover_data.get("title", "封面"),
-                    "scene": cover_data.get("scene", "封面场景"),
-                    "prompt": cover_data.get("prompt", input_text),
-                    "index": 0,
-                }
-            )
-        else:
-            # 兜底封面
-            tasks.append(
-                {"id": "cover", "type": "cover", "title": "封面", "scene": "主视觉", "prompt": input_text, "index": 0}
-            )
+        tasks.append({
+            "id": "cover",
+            "type": "cover",
+            "title": cover_data.get("title", raw_data.get("titles", ["小红书"])[0]),
+            "scene": cover_data.get("scene", "封面大片"),
+            "prompt": cover_data.get("prompt", input_text),
+            "content_text": "", # 封面不显示正文摘要，防止重叠
+            "index": 0,
+        })
 
-        # 2. 插图
+        # 2. 插图内容预处理：智能分段
         image_prompts = raw_data.get("image_prompts", [])
+        content_images_count = len(image_prompts) if image_prompts else 3
+        
+        # 智能切分正文为 N 份
+        content_chunks = self._split_content_into_chunks(content, content_images_count)
+
         if not image_prompts:
-            # 如果没有插图，用输入文本补充3张
             for i in range(3):
-                tasks.append(
-                    {
-                        "id": f"content_{i + 1}",
-                        "type": "content",
-                        "title": f"图{i + 1}",
-                        "scene": "细节展示",
-                        "prompt": input_text,
-                        "index": i + 1,
-                    }
-                )
+                tasks.append({
+                    "id": f"content_{i + 1}",
+                    "type": "content",
+                    "title": f"图{i + 1}",
+                    "scene": "细节展示",
+                    "prompt": input_text,
+                    "content_text": content_chunks[i] if i < len(content_chunks) else "",
+                    "index": i + 1,
+                })
         else:
             for i, p in enumerate(image_prompts):
-                tasks.append(
-                    {
-                        "id": f"content_{i + 1}",
-                        "type": "content",
-                        "title": f"图{i + 1}",
-                        "scene": p.get("scene", f"细节{i + 1}"),
-                        "prompt": p.get("prompt", input_text),
-                        "index": i + 1,
-                    }
-                )
+                tasks.append({
+                    "id": f"content_{i + 1}",
+                    "type": "content",
+                    "title": f"图{i + 1}",
+                    "scene": p.get("scene", f"细节{i + 1}"),
+                    "prompt": p.get("prompt", input_text),
+                    "content_text": content_chunks[i] if i < len(content_chunks) else "",
+                    "index": i + 1,
+                })
 
         return tasks
+
+    def _split_content_into_chunks(self, text: str, n: int) -> List[str]:
+        """将长文本按语义边界切分为 n 份"""
+        if not text or n <= 0:
+            return [""] * n
+            
+        import re
+        # 按句子结束符切分
+        sentences = re.split(r'([。！？；\n])', text)
+        processed_sentences = []
+        for i in range(0, len(sentences)-1, 2):
+            processed_sentences.append(sentences[i] + sentences[i+1])
+        if len(sentences) % 2 == 1 and sentences[-1]:
+            processed_sentences.append(sentences[-1])
+            
+        if not processed_sentences:
+            return [text[:len(text)//n]] * n
+            
+        # 尽量均匀分配句子到 n 个块
+        chunks = []
+        avg = len(processed_sentences) / n
+        last = 0.0
+        while last < len(processed_sentences):
+            start = int(last)
+            end = int(last + avg)
+            chunks.append("".join(processed_sentences[start:end]))
+            last += avg
+            
+        # 确保返回的总数一致
+        while len(chunks) < n:
+            chunks.append("")
+        return chunks[:n]

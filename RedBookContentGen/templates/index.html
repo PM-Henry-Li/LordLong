@@ -679,19 +679,27 @@
                 <label class="form-label">配图模式</label>
                 <div class="mode-selector">
                     <label class="mode-option">
-                        <input type="radio" name="imageMode" value="template" checked>
+                        <input type="radio" name="imageMode" value="composite" checked>
                         <div class="mode-card">
-                            <div class="mode-icon"><i class="fa-solid fa-palette"></i></div>
-                            <div class="mode-title">模板合成</div>
-                            <div class="mode-desc">快速 • 免费</div>
+                            <div class="mode-icon"><i class="fa-solid fa-layer-group"></i></div>
+                            <div class="mode-title">复合模式</div>
+                            <div class="mode-desc">高点击 • 推荐</div>
                         </div>
                     </label>
                     <label class="mode-option">
                         <input type="radio" name="imageMode" value="api">
                         <div class="mode-card">
                             <div class="mode-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                            <div class="mode-title">AI绘画</div>
-                            <div class="mode-desc">真实 • 高质</div>
+                            <div class="mode-title">纯AI绘画</div>
+                            <div class="mode-desc">艺术感 • 随机</div>
+                        </div>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="imageMode" value="template">
+                        <div class="mode-card">
+                            <div class="mode-icon"><i class="fa-solid fa-palette"></i></div>
+                            <div class="mode-title">模板合成</div>
+                            <div class="mode-desc">快速 • 文案准</div>
                         </div>
                     </label>
                 </div>
@@ -702,7 +710,8 @@
                     <label class="form-label">AI 模型</label>
                     <select id="imageModel" class="form-control">
                         {% for key, model in models.items() %}
-                        <option value="{{ key }}">{{ model.name }}</option>
+                        <option value="{{ key }}" {% if key=='qwen-image-max' %}selected{% endif %}>{{ model.name }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -782,10 +791,18 @@
         // 模式切换联动
         document.querySelectorAll('input[name="imageMode"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
-                const isApi = e.target.value === 'api';
-                document.getElementById('aiSettings').style.display = isApi ? 'block' : 'none';
-                // 用户要求API模式也支持模板风格，因此不再隐藏模板设置
+                const mode = e.target.value;
+                const needsAi = mode === 'api' || mode === 'composite';
+                document.getElementById('aiSettings').style.display = needsAi ? 'block' : 'none';
+                // 用户要求所有模式支持模板风格，因此不再隐藏模板设置
             });
+        });
+
+        // 初始化显示状态
+        window.addEventListener('DOMContentLoaded', () => {
+            const mode = document.querySelector('input[name="imageMode"]:checked')?.value;
+            const needsAi = mode === 'api' || mode === 'composite';
+            document.getElementById('aiSettings').style.display = needsAi ? 'block' : 'none';
         });
 
         // 开始生成
@@ -988,17 +1005,18 @@
                 prompt: task.prompt,
                 title: task.title || task.scene,
                 scene: task.scene || '',
-                content: document.querySelector('.xhs-content').textContent,
+                // 使用后端预分段的文案（每张图不同），如果没有则回退到DOM正文
+                content: task.content_text || document.querySelector('.xhs-content')?.textContent || '',
                 task_id: task.id,
                 type: task.type,
                 index: task.index || 0,
                 timestamp: ts
             };
 
-            // 封面图使用主题文字作为标题
+            // 封面图使用 AI 生成的标题（而非粗暴截断用户输入）
             if (task.type === 'cover') {
-                // 修复：截取标题长度，防止超过后端100字符限制导致生成失败
-                payload.title = currentConfig.input_text.substring(0, 90);
+                // 优先使用 task.title（由后端 AI 生成），保证语义通顺
+                payload.title = task.title || currentConfig.input_text.substring(0, 50);
             }
 
             const displayTitle = task.type === 'cover'
@@ -1051,6 +1069,23 @@
                                      onclick="openLightbox('${imageB64}')" 
                                      style="cursor: zoom-in;" 
                                      title="点击放大">
+                                    <div class="radio-group">
+                                        <label class="radio-item">
+                                            <input type="radio" name="imageMode" value="composite" checked>
+                                            <span class="radio-text">复合模式 (推荐)</span>
+                                            <small class="mode-tip">AI生图背景 + 艺术字体叠加，效果最佳</small>
+                                        </label>
+                                        <label class="radio-item">
+                                            <input type="radio" name="imageMode" value="api">
+                                            <span class="radio-text">API 模式</span>
+                                            <small class="mode-tip">纯 AI 生成，艺术感强但文字不可控</small>
+                                        </label>
+                                        <label class="radio-item">
+                                            <input type="radio" name="imageMode" value="template">
+                                            <span class="radio-text">模板模式</span>
+                                            <small class="mode-tip">快速稳定，适合信息量大的配图</small>
+                                        </label>
+                                    </div>
                                 <div class="image-prompt-text" style="padding:8px 12px; background:#f9f9f9; border-top:1px solid #eee; font-size:12px; color:#666; line-height:1.6; word-break:break-all;" title="${promptText.replace(/"/g, '&quot;')}">
                                     <i class="fa-solid fa-paintbrush" style="margin-right:4px; color:#999;"></i>${shortPrompt}
                                 </div>

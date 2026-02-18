@@ -14,6 +14,7 @@ from pathlib import Path
 
 from src.image_generator import ImageGenerator
 from src.template_image_generator import TemplateImageGenerator
+from src.services.composite_service import CompositeImageService
 from src.core.config_manager import ConfigManager
 from src.core.logger import Logger
 from src.core.errors import ImageGenerationError, ValidationError
@@ -34,6 +35,7 @@ class ImageService:
         self.output_dir = output_dir
         self.image_generator = ImageGenerator(config_manager=config_manager)
         self.template_generator = TemplateImageGenerator()
+        self.composite_service = CompositeImageService(output_dir=output_dir)
 
         # 可用模型配置
         self.available_models = self._get_available_models()
@@ -108,11 +110,25 @@ class ImageService:
                 task_id=task_id,
                 timestamp=timestamp,
             )
+        elif image_mode == "composite":
+            return self._generate_with_composite(
+                prompt=prompt,
+                image_model=image_model,
+                image_size=image_size,
+                template_style=template_style,
+                title=title,
+                scene=scene,
+                content_text=content_text,
+                task_id=task_id,
+                timestamp=timestamp,
+                task_index=task_index,
+                image_type=image_type,
+            )
         else:
             raise ValidationError(
                 message=f"不支持的配图模式: {image_mode}",
-                details={"image_mode": image_mode, "allowed_modes": ["api", "template"]},
-                suggestions=["请选择 'api' 或 'template' 模式"],
+                details={"image_mode": image_mode, "allowed_modes": ["api", "template", "composite"]},
+                suggestions=["请选择 'api'、'template' 或 'composite' 模式"],
             )
 
     def _generate_with_api(
@@ -147,7 +163,7 @@ class ImageService:
 
         # 构建最终提示词
         final_prompt = self._build_final_prompt(
-            prompt, template_style, title, scene, content_text, task_index, image_type
+            prompt, template_style, title, scene, content_text, task_index, image_type, task_id
         )
 
         # 重试配置
@@ -218,6 +234,60 @@ class ImageService:
             details={"task_id": task_id, "model": image_model, "last_error": last_error, "retries": max_retries},
             suggestions=["请检查图片生成参数是否正确", "请稍后重试", "可以尝试切换到模板模式"],
         )
+
+    def _generate_with_composite(
+        self,
+        prompt: str,
+        image_model: str,
+        image_size: str,
+        template_style: str,
+        title: str,
+        scene: str,
+        content_text: str,
+        task_id: str,
+        timestamp: str,
+        task_index: int,
+        image_type: str,
+    ) -> Dict:
+        """
+        使用复合模式生成图片（AI背景 + 程序化文字）
+        """
+        # 第一步：使用 API 生成背景图
+        # 注意：这里传入 image_mode='api' 但我们会特殊处理 prompt
+        bg_result = self._generate_with_api(
+            prompt=prompt,
+            image_model=image_model,
+            image_size=image_size,
+            template_style=template_style,
+            title=title,
+            scene=scene,
+            content_text=content_text,
+            task_id=f"bg_{task_id}", # 区分背景图任务
+            timestamp=timestamp,
+            task_index=task_index,
+            image_type=image_type,
+        )
+        
+        # 第二步：使用 CompositeService 叠加文字
+        filename = f"composite_{timestamp}_{task_id}.png"
+        is_cover = image_type == "cover"
+        
+        composite_result = self.composite_service.composite_text(
+            background_path=bg_result["path"],
+            title=title if is_cover else "",
+            content_text=content_text if not is_cover else "",
+            output_filename=filename,
+            is_cover=is_cover
+        )
+        
+        # 组装最终结果
+        return {
+            "success": True,
+            "data": composite_result["data"],
+            "path": composite_result["path"],
+            "url": f"/api/download/{filename}",
+            "is_composite": True
+        }
 
     def _generate_with_template(
         self,
@@ -291,33 +361,39 @@ class ImageService:
         content_text: str,
         task_index: int,
         image_type: str,
+        task_id: str = "unknown",
     ) -> str:
-        """
-        构建最终的图片提示词
+        """构建最终的图片提示词"""
+        is_composite = task_id.startswith("bg_")
+        
+        # 复合模式下：强制去除底图中的文字生成倾向
+        if is_composite:
+            # 清理原始提示词中可能引导文字生成的词汇
+            text_keywords = ["with text", "saying", "written", "quotes", "typography", "characters", "文字", "包含文字", "书写"]
+            clean_prompt = prompt
+            for kw in text_keywords:
+                import re
+                clean_prompt = re.sub(rf"\b{kw}\b", "", clean_prompt, flags=re.IGNORECASE)
+            
+            # 注入强负面指令，确保底图纯净
+            negative_prompt = "no text, no watermark, no characters, no alphabet, no chinese characters, blurry text, messy text"
+            prompt = f"{clean_prompt}, pure background, atmospheric, (({negative_prompt})::1.5)"
 
-        Args:
-            prompt: 原始提示词
-            template_style: 模板风格
-            title: 标题
-            scene: 场景
-            content_text: 内容文本
-            task_index: 图片索引
-            image_type: 图片类型
-
-        Returns:
-            最终提示词
-        """
         if template_style == "info_chart":
-            # Info Chart 特殊处理
             chart_topic = title
             chart_desc = scene if scene else content_text[:100]
             if image_type == "cover":
                 chart_desc = content_text[:100]
+            
+            if is_composite:
+                return self._build_info_chart_prompt(
+                    topic=chart_topic, description=chart_desc, scene=scene, index=task_index, skip_text=True
+                )
+            
             return self._build_info_chart_prompt(
                 topic=chart_topic, description=chart_desc, scene=scene, index=task_index
             )
             
-        # 通用风格处理
         style_keywords = {
             "retro_chinese": "Chinese retro style, vintage poster, 80s china aesthetic, muted colors, nostalgic atmosphere, flat illustration",
             "modern_minimal": "Modern minimalist style, clean lines, high key lighting, apple design style, less is more, white background, professional photography",
@@ -332,7 +408,7 @@ class ImageService:
              
         return prompt
 
-    def _build_info_chart_prompt(self, topic: str, description: str = "", scene: str = "", index: int = 0) -> str:
+    def _build_info_chart_prompt(self, topic: str, description: str = "", scene: str = "", index: int = 0, skip_text: bool = False) -> str:
         """
         构建信息图表风格的AI绘画提示词
 
@@ -341,6 +417,7 @@ class ImageService:
             description: 描述文字
             scene: 当前图片的具体场景
             index: 图片索引（0=封面）
+            skip_text: 是否跳过文字生成指令（用于复合模式）
 
         Returns:
             信息图表提示词
@@ -358,21 +435,22 @@ class ImageService:
 
         # 尝试检测需要生成的文字内容
         text_content = ""
-        import re
-        # 匹配中文双引号或单引号内的内容
-        matches = re.findall(r'[“"「](.+?)[”"」]', scene + description)
-        if matches:
-            # 取最长的一个匹配作为主要文字
-            main_text = max(matches, key=len)
-            if len(main_text) <= 10: # 限制文字长度，太长生成效果不好
-                text_content = f"""
+        if not skip_text:
+            import re
+            # 匹配中文双引号或单引号内的内容
+            matches = re.findall(r'[“"「](.+?)[”"」]', scene + description)
+            if matches:
+                # 取最长的一个匹配作为主要文字
+                main_text = max(matches, key=len)
+                if len(main_text) <= 10: # 限制文字长度，太长生成效果不好
+                    text_content = f"""
 核心文字元素：
 画面中必须清晰包含文字"{main_text}"
 文字风格：Traditional Chinese Calligraphy (中国传统书法)
 载体建议：Plaque (牌匾) 或 Scroll (卷轴)
 Clear text, bold strokes, high contrast, legible characters
 """
-
+        
         base_prompt = f"""{visual_focus}
 
 核心视觉：

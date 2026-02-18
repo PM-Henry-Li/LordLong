@@ -285,7 +285,7 @@ class ImageGenerationRequest(BaseModel):
     @classmethod
     def validate_image_mode(cls, v: str) -> str:
         """验证图片模式"""
-        allowed_modes = ["template", "api"]
+        allowed_modes = ["template", "api", "composite"]
         if v not in allowed_modes:
             raise ValueError(f"图片模式必须是 {', '.join(allowed_modes)} 之一")
         return v
