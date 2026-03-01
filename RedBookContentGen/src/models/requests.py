@@ -310,6 +310,8 @@ class ImageGenerationRequest(BaseModel):
             "warm_memory",
             "ink_wash",
             "info_chart",
+            "comic_4panel",
+            "comic_6panel",
         ]
         if v not in allowed_styles:
             raise ValueError(f"模板风格必须是 {', '.join(allowed_styles)} 之一")

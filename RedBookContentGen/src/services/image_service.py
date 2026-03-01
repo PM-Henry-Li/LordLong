@@ -262,7 +262,7 @@ class ImageService:
             title=title,
             scene=scene,
             content_text=content_text,
-            task_id=f"bg_{task_id}", # 区分背景图任务
+            task_id=f"bg_{task_id}",  # 区分背景图任务
             timestamp=timestamp,
             task_index=task_index,
             image_type=image_type,
@@ -271,13 +271,21 @@ class ImageService:
         # 第二步：使用 CompositeService 叠加文字
         filename = f"composite_{timestamp}_{task_id}.png"
         is_cover = image_type == "cover"
+
+        # 漫画模式：生成分镜脚本并传递给 composite_service
+        comic_panels = None
+        if template_style in ("comic_4panel", "comic_6panel"):
+            panel_count = 4 if template_style == "comic_4panel" else 6
+            source_text = content_text if content_text else (scene if scene else prompt)
+            comic_panels = self._generate_comic_panels(source_text, panel_count, title)
         
         composite_result = self.composite_service.composite_text(
             background_path=bg_result["path"],
-            title=title if is_cover else "",
-            content_text=content_text if not is_cover else "",
+            title=title if (is_cover and not comic_panels) else "",
+            content_text=content_text if (not is_cover and not comic_panels) else "",
             output_filename=filename,
-            is_cover=is_cover
+            is_cover=is_cover,
+            comic_panels=comic_panels,
         )
         
         # 组装最终结果
@@ -399,7 +407,9 @@ class ImageService:
             "modern_minimal": "Modern minimalist style, clean lines, high key lighting, apple design style, less is more, white background, professional photography",
             "vintage_film": "Vintage film photography, Kodak Portra 400, grain, cinematic lighting, nostalgic, film burn, emotional atmosphere",
             "warm_memory": "Warm color palette, soft focus, golden hour, emotional, cozy atmosphere, sunlight, dreamy aesthetic",
-            "ink_wash": "Chinese traditional ink wash painting, watercolor style, artistic, black and white with subtle colors, fluid lines, zen, masterpiece"
+            "ink_wash": "Chinese traditional ink wash painting, watercolor style, artistic, black and white with subtle colors, fluid lines, zen, masterpiece",
+            "comic_4panel": "manga style panel illustration, clean inkline, expressive character, Japanese manga aesthetic, simple flat background, storyboard art, no text, no watermark",
+            "comic_6panel": "manga style panel illustration, clean inkline, expressive character, Japanese manga aesthetic, simple flat background, sequential art, no text, no watermark",
         }
         
         style_suffix = style_keywords.get(template_style, "")
@@ -504,6 +514,97 @@ Clear text, bold strokes, high contrast, legible characters
 Chinese illustration, info graphic poster, educational poster, clean graphic design, professional layout, 4K HD, high resolution, traditional colors, vintage rice paper texture, isometric view, information annotations, data labels, professional presentation --ar 3:4"""
 
         return base_prompt
+
+    def _generate_comic_panels(self, text: str, panel_count: int, title: str = "") -> list:
+        """
+        将小红书文案拆解为漫画分镜脚本
+
+        优先通过 LLM 生成专业分镜；若调用失败则退化为规则截断。
+
+        Args:
+            text: 原始内容文本（小红书正文）
+            panel_count: 分镜格数（4 或 6）
+            title: 文案标题（辅助 AI 理解主题）
+
+        Returns:
+            长度为 panel_count 的字符串列表，每项为一格的画面描述 + 对话
+        """
+        import re
+
+        panel_tag = "四格漫画" if panel_count == 4 else "六格漫画"
+        storyboard_prompt = f"""你是一名专业的漫画分镜创作者。
+根据以下小红书文案，创作一个{panel_tag}的分镜脚本。
+
+文案标题：{title}
+文案内容：{text[:800]}
+
+要求：
+1. 严格输出{panel_count}个格子的内容，每格50-100字。
+2. 每格内容包含：画面描述、角色动作、对话（若有）。
+3. 使用<{panel_tag}>和<格子X>标签包裹（X为1-{panel_count}）。
+4. 语言简洁，符合漫画叙事特点，禁止脱离文案核心内容。
+
+示例格式：
+<{panel_tag}>
+<格子1>画面描述：主角站在街头...
+角色动作：环顾四周，表情惊喜
+对话：「终于到了！」</格子1>
+<格子2>...</格子2>
+</{panel_tag}>"""
+
+        # ---- 尝试 LLM 生成 ----
+        try:
+            import openai as openai_lib
+            api_key = self.config_manager.get("openai_api_key") or ""
+            base_url = self.config_manager.get("openai_base_url") or None
+            model = self.config_manager.get("openai_model", "gpt-4")
+
+            if api_key:
+                client_kwargs = {"api_key": api_key}
+                if base_url:
+                    client_kwargs["base_url"] = base_url
+                client = openai_lib.OpenAI(**client_kwargs)
+
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": storyboard_prompt}],
+                    temperature=0.7,
+                    max_tokens=1200,
+                )
+                panels_text = response.choices[0].message.content or ""
+
+                # 解析 <格子X> 标签
+                matches = re.findall(r'<格子\d+>([\s\S]*?)</格子\d+>', panels_text)
+                if len(matches) >= panel_count:
+                    Logger.info(f"漫画分镜 LLM 生成成功，格数={panel_count}", logger_name="image_service")
+                    return [m.strip() for m in matches[:panel_count]]
+        except Exception as e:
+            Logger.warning(f"漫画分镜 LLM 生成失败，降级为规则截断: {e}", logger_name="image_service")
+
+        # ---- 规则降级：均匀截断文案 ----
+        clean_text = text.replace('\n', ' ').strip()
+        if not clean_text:
+            clean_text = title if title else "精彩内容"
+
+        # 将文案按句号/换行拆分句子
+        sentences = re.split(r'[。！？!?\n]', clean_text)
+        sentences = [s.strip() for s in sentences if s.strip()]
+
+        panels = []
+        if len(sentences) >= panel_count:
+            # 均匀分配句子到各格
+            chunk = len(sentences) // panel_count
+            for i in range(panel_count):
+                start = i * chunk
+                end = start + chunk if i < panel_count - 1 else len(sentences)
+                panels.append(''.join(sentences[start:end])[:80])
+        else:
+            # 句子不够：循环补充
+            for i in range(panel_count):
+                panels.append(sentences[i % len(sentences)][:80] if sentences else f"第{i+1}格")
+
+        return panels
+
 
     def _build_template_content(self, scene: str, prompt: str, content_text: str, title: str) -> str:
         """

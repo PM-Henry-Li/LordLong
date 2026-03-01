@@ -38,7 +38,8 @@ class CompositeImageService:
         title: str, 
         content_text: str, 
         output_filename: str,
-        is_cover: bool = True
+        is_cover: bool = True,
+        comic_panels: Optional[List[str]] = None,
     ) -> Dict:
         """
         在背景图上叠加文字
@@ -49,6 +50,7 @@ class CompositeImageService:
             content_text: 正文内容
             output_filename: 输出文件名
             is_cover: 是否为封面模式
+            comic_panels: 漫画分镜文案列表（4或6元素），有值时自动进入漫画布局模式
 
         Returns:
             包含图片数据的字典
@@ -65,7 +67,11 @@ class CompositeImageService:
             overlay = Image.new("RGBA", bg_img.size, (0, 0, 0, 0))
             draw = ImageDraw.Draw(overlay)
             
-            if is_cover and title:
+            if comic_panels:
+                # 漫画布局模式：根据格数确定列数
+                cols = 2  # 四格和六格都用2列
+                self._draw_comic_layout(draw, width, height, comic_panels, cols)
+            elif is_cover and title:
                 self._draw_cover_style(draw, width, height, title)
             elif content_text:
                 self._draw_story_style(draw, width, height, content_text)
@@ -221,3 +227,88 @@ class CompositeImageService:
         if current_line and len(lines) < max_lines:
             lines.append(current_line)
         return lines
+
+    def _draw_comic_layout(
+        self,
+        draw: ImageDraw.Draw,
+        width: int,
+        height: int,
+        panels: List[str],
+        cols: int = 2,
+    ):
+        """
+        绘制漫画格子布局
+
+        Args:
+            draw: PIL ImageDraw 绘图对象
+            width: 图片宽度
+            height: 图片高度
+            panels: 分镜文案列表（4 或 6 个元素）
+            cols: 每行列数（默认 2）
+        """
+        n = len(panels)
+        rows = (n + cols - 1) // cols  # 向上取整
+
+        border = 8          # 格子边框厚度（像素）
+        margin = 12         # 外边距
+        gap = 6             # 格子间距
+
+        # 计算每格宽高
+        cell_w = (width - 2 * margin - (cols - 1) * gap) // cols
+        cell_h = (height - 2 * margin - (rows - 1) * gap) // rows
+
+        font_size = max(18, int(cell_h * 0.055))
+        font = self._load_font(font_size)
+
+        for idx, panel_text in enumerate(panels):
+            row = idx // cols
+            col = idx % cols
+
+            # 计算格子坐标
+            x0 = margin + col * (cell_w + gap)
+            y0 = margin + row * (cell_h + gap)
+            x1 = x0 + cell_w
+            y1 = y0 + cell_h
+
+            # 绘制白色边框（漫画格子感）
+            draw.rectangle([x0, y0, x1, y1], outline=(255, 255, 255, 230), width=border)
+
+            # 底部文字区域高度（约 25% 的格子）
+            text_area_h = int(cell_h * 0.28)
+            text_y0 = y1 - text_area_h
+
+            # 半透明黑底
+            draw.rectangle(
+                [x0 + border, text_y0, x1 - border, y1 - border],
+                fill=(0, 0, 0, 160)
+            )
+
+            # 文字换行
+            max_text_w = cell_w - 2 * border - 16
+            lines = self._wrap_text(panel_text, max_text_w, font, draw, max_lines=3)
+
+            line_h = int(font_size * 1.35)
+            total_text_h = len(lines) * line_h
+            # 垂直居中于文字区域
+            txt_start_y = text_y0 + max(8, (text_area_h - total_text_h) // 2)
+
+            for i, line in enumerate(lines):
+                tx = x0 + border + 8
+                ty = txt_start_y + i * line_h
+                # 描边
+                shadow = max(1, int(font_size * 0.05))
+                for dx, dy in [(-shadow, 0), (shadow, 0), (0, -shadow), (0, shadow)]:
+                    draw.text((tx + dx, ty + dy), line, font=font, fill=(0, 0, 0, 160))
+                # 主文字
+                draw.text((tx, ty), line, font=font, fill=(255, 255, 255, 240))
+
+            # 右上角格子编号
+            num_font_size = max(14, int(cell_h * 0.04))
+            num_font = self._load_font(num_font_size, bold=True)
+            num_text = str(idx + 1)
+            draw.text(
+                (x1 - border - num_font_size - 4, y0 + border + 4),
+                num_text,
+                font=num_font,
+                fill=(255, 255, 255, 200)
+            )
