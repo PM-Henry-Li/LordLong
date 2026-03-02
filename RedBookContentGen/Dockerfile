@@ -23,7 +23,7 @@ COPY requirements.txt .
 
 # 安装 Python 依赖到用户目录（避免污染系统 Python）
 # 使用 --no-cache-dir 避免缓存 pip 包
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir --user -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 
 # ============================================
 # 阶段 2: 最终镜像 - 运行时环境
