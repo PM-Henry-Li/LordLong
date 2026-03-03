@@ -564,7 +564,7 @@ Chinese illustration, info graphic poster, educational poster, clean graphic des
         panel_image_paths = []
         for i, panel in enumerate(panels):
             panel_prompt = panel.get("scene_prompt", source_text)
-            # 漫画风格关键词补充
+            # 漫画风格关键词已在 scene_prompt 中，不再叠加 style_keywords
             full_prompt = (
                 f"{panel_prompt}, manga style illustration, clean inkline, "
                 "expressive character, Japanese manga aesthetic, simple background, "
@@ -574,8 +574,8 @@ Chinese illustration, info graphic poster, educational poster, clean graphic des
                 panel_result = self._generate_with_api(
                     prompt=full_prompt,
                     image_model=image_model,
-                    image_size="512x512",   # 单格用正方形尺寸
-                    template_style="",      # 不再叠加 style_keywords，已在 prompt 里
+                    image_size="square",        # 正方形格子，使用合法 size 名称
+                    template_style=None,        # 不叠加额外 style_keywords（已在 prompt 里）
                     title="",
                     scene="",
                     content_text="",
@@ -588,7 +588,8 @@ Chinese illustration, info graphic poster, educational poster, clean graphic des
                 Logger.info(f"漫画第 {i+1} 格生成成功", logger_name="image_service")
             except Exception as e:
                 Logger.warning(f"漫画第 {i+1} 格生成失败，使用占位图: {e}", logger_name="image_service")
-                panel_image_paths.append(None)  # 失败时用 None，composite 侧处理占位
+                panel_image_paths.append(None)
+
 
         # Step 3: 拼合成漫画网格
         captions = [p.get("caption", "") for p in panels]
