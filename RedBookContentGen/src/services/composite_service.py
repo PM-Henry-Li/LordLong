@@ -312,3 +312,116 @@ class CompositeImageService:
                 font=num_font,
                 fill=(255, 255, 255, 200)
             )
+
+    def create_comic_grid(
+        self,
+        panel_image_paths: List,
+        panel_captions: List[str],
+        output_filename: str,
+        cols: int = 2,
+    ) -> Dict:
+        """
+        将 N 张独立格子图片拼合成漫画网格布局，并在每格底部叠加说明文字。
+
+        Args:
+            panel_image_paths: N 个图片路径的列表（None 表示该格生成失败，使用占位图）
+            panel_captions: 每格的中文说明文字列表
+            output_filename: 输出文件名
+            cols: 每行列数，默认 2
+
+        Returns:
+            包含 base64 data 和 path 的字典
+        """
+        n = len(panel_image_paths)
+        rows = (n + cols - 1) // cols
+
+        # 单格尺寸（最终网格统一缩放到此）
+        cell_w = 540
+        cell_h = 540
+        gap = 8          # 格子间白色间隔
+        margin = 0       # 外边距（无）
+
+        # 最终画布尺寸
+        canvas_w = cols * cell_w + (cols - 1) * gap
+        canvas_h = rows * cell_h + (rows - 1) * gap
+
+        # 创建白色底画布
+        canvas = Image.new("RGB", (canvas_w, canvas_h), (255, 255, 255))
+
+        font_size = max(20, int(cell_h * 0.048))
+        caption_font = self._load_font(font_size)
+        num_font = self._load_font(max(16, int(cell_h * 0.04)), bold=True)
+
+        for idx in range(n):
+            row = idx // cols
+            col = idx % cols
+            x0 = col * (cell_w + gap)
+            y0 = row * (cell_h + gap)
+
+            # 加载或生成占位图
+            path = panel_image_paths[idx] if idx < len(panel_image_paths) else None
+            if path and Path(path).exists():
+                try:
+                    panel_img = Image.open(path).convert("RGB")
+                    panel_img = panel_img.resize((cell_w, cell_h), Image.LANCZOS)
+                except Exception:
+                    panel_img = Image.new("RGB", (cell_w, cell_h), (180, 180, 180))
+            else:
+                # 灰色占位图
+                panel_img = Image.new("RGB", (cell_w, cell_h), (200, 200, 200))
+
+            # 粘贴到画布
+            canvas.paste(panel_img, (x0, y0))
+
+            # 在格子内叠加文字
+            overlay = Image.new("RGBA", (cell_w, cell_h), (0, 0, 0, 0))
+            draw = ImageDraw.Draw(overlay)
+
+            caption = panel_captions[idx] if idx < len(panel_captions) else ""
+            if caption:
+                text_area_h = int(cell_h * 0.25)
+                text_y0 = cell_h - text_area_h
+
+                # 半透明黑底
+                draw.rectangle([0, text_y0, cell_w, cell_h], fill=(0, 0, 0, 170))
+
+                # 文字换行
+                lines = self._wrap_text(caption, cell_w - 24, caption_font, draw, max_lines=3)
+                line_h = int(font_size * 1.4)
+                total_h = len(lines) * line_h
+                ty_start = text_y0 + max(8, (text_area_h - total_h) // 2)
+
+                for li, line in enumerate(lines):
+                    tx = 12
+                    ty = ty_start + li * line_h
+                    # 描边
+                    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                        draw.text((tx + dx, ty + dy), line, font=caption_font, fill=(0, 0, 0, 200))
+                    draw.text((tx, ty), line, font=caption_font, fill=(255, 255, 255, 245))
+
+            # 右上角格子编号
+            num = str(idx + 1)
+            num_size = max(16, int(cell_h * 0.04))
+            draw.text(
+                (cell_w - num_size - 8, 8),
+                num,
+                font=num_font,
+                fill=(255, 255, 255, 220),
+            )
+
+            # 合并 overlay 到格子
+            cell_rgba = panel_img.convert("RGBA")
+            cell_rgba = Image.alpha_composite(cell_rgba, overlay)
+            canvas.paste(cell_rgba.convert("RGB"), (x0, y0))
+
+        # 保存结果
+        final_path = self.output_dir / output_filename
+        canvas.save(final_path, "PNG", quality=95)
+
+        with open(final_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        return {
+            "data": f"data:image/png;base64,{b64}",
+            "path": str(final_path),
+        }

@@ -111,6 +111,21 @@ class ImageService:
                 timestamp=timestamp,
             )
         elif image_mode == "composite":
+            # 漫画风格走独立的分格生成流程（每格独立 AI 生图后拼合）
+            if template_style in ("comic_4panel", "comic_6panel"):
+                return self._generate_with_comic(
+                    prompt=prompt,
+                    image_model=image_model,
+                    image_size=image_size,
+                    template_style=template_style,
+                    title=title,
+                    scene=scene,
+                    content_text=content_text,
+                    task_id=task_id,
+                    timestamp=timestamp,
+                    task_index=task_index,
+                    image_type=image_type,
+                )
             return self._generate_with_composite(
                 prompt=prompt,
                 image_model=image_model,
@@ -515,9 +530,86 @@ Chinese illustration, info graphic poster, educational poster, clean graphic des
 
         return base_prompt
 
+    def _generate_with_comic(
+        self,
+        prompt: str,
+        image_model: str,
+        image_size: str,
+        template_style: str,
+        title: str,
+        scene: str,
+        content_text: str,
+        task_id: str,
+        timestamp: str,
+        task_index: int,
+        image_type: str,
+    ) -> Dict:
+        """
+        N 格漫画生成：每格独立 AI 生图，最后拼合为网格布局。
+
+        流程:
+          1. LLM 将文案拆解成 N 个分镜（scene_prompt + caption）
+          2. 为每一格单独调用 AI 生图 API
+          3. 调用 composite_service.create_comic_grid 拼合并叠加文字
+        """
+        panel_count = 4 if template_style == "comic_4panel" else 6
+        source_text = content_text if content_text else (scene if scene else prompt)
+
+        Logger.info(f"漫画模式：生成 {panel_count} 格分镜脚本", logger_name="image_service")
+
+        # Step 1: 生成分镜脚本（每格包含 scene_prompt + caption）
+        panels = self._generate_comic_panels(source_text, panel_count, title)
+
+        # Step 2: 为每格独立生成 AI 图片
+        panel_image_paths = []
+        for i, panel in enumerate(panels):
+            panel_prompt = panel.get("scene_prompt", source_text)
+            # 漫画风格关键词补充
+            full_prompt = (
+                f"{panel_prompt}, manga style illustration, clean inkline, "
+                "expressive character, Japanese manga aesthetic, simple background, "
+                "no text overlay, no watermark, high quality"
+            )
+            try:
+                panel_result = self._generate_with_api(
+                    prompt=full_prompt,
+                    image_model=image_model,
+                    image_size="512x512",   # 单格用正方形尺寸
+                    template_style="",      # 不再叠加 style_keywords，已在 prompt 里
+                    title="",
+                    scene="",
+                    content_text="",
+                    task_id=f"comic_{task_id}_{i}",
+                    timestamp=timestamp,
+                    task_index=task_index,
+                    image_type=image_type,
+                )
+                panel_image_paths.append(panel_result["path"])
+                Logger.info(f"漫画第 {i+1} 格生成成功", logger_name="image_service")
+            except Exception as e:
+                Logger.warning(f"漫画第 {i+1} 格生成失败，使用占位图: {e}", logger_name="image_service")
+                panel_image_paths.append(None)  # 失败时用 None，composite 侧处理占位
+
+        # Step 3: 拼合成漫画网格
+        captions = [p.get("caption", "") for p in panels]
+        output_filename = f"comic_{timestamp}_{task_id}.png"
+        grid_result = self.composite_service.create_comic_grid(
+            panel_image_paths=panel_image_paths,
+            panel_captions=captions,
+            output_filename=output_filename,
+        )
+
+        return {
+            "success": True,
+            "data": grid_result["data"],
+            "path": grid_result["path"],
+            "url": f"/api/download/{output_filename}",
+            "is_composite": True,
+        }
+
     def _generate_comic_panels(self, text: str, panel_count: int, title: str = "") -> list:
         """
-        将小红书文案拆解为漫画分镜脚本
+        将小红书文案拆解为漫画分镜脚本。
 
         优先通过 LLM 生成专业分镜；若调用失败则退化为规则截断。
 
@@ -527,7 +619,9 @@ Chinese illustration, info graphic poster, educational poster, clean graphic des
             title: 文案标题（辅助 AI 理解主题）
 
         Returns:
-            长度为 panel_count 的字符串列表，每项为一格的画面描述 + 对话
+            长度为 panel_count 的字典列表，每项包含:
+              - scene_prompt: 适合 AI 生图的英文场景描述
+              - caption: 叠加在图片底部的中文文字（对白/描述）
         """
         import re
 
@@ -536,21 +630,25 @@ Chinese illustration, info graphic poster, educational poster, clean graphic des
 根据以下小红书文案，创作一个{panel_tag}的分镜脚本。
 
 文案标题：{title}
-文案内容：{text[:800]}
+文案内容：{text[:1000]}
 
-要求：
-1. 严格输出{panel_count}个格子的内容，每格50-100字。
-2. 每格内容包含：画面描述、角色动作、对话（若有）。
-3. 使用<{panel_tag}>和<格子X>标签包裹（X为1-{panel_count}）。
-4. 语言简洁，符合漫画叙事特点，禁止脱离文案核心内容。
+严格要求：
+1. 输出恰好 {panel_count} 个格子，不多不少。
+2. 每个格子包含两部分：
+   - [scene]: 适合 AI 生图的英文场景描述（50词内），描述画面构图、人物动作、环境氛围，不含文字/字幕。
+   - [caption]: 叠加在图片底部的中文说明（30字内），可以是旁白或对话（对话用「」括起来）。
+3. 使用 <格子X> ... </格子X> 标签包裹，X 为 1 到 {panel_count}。
+4. 分镜内容必须忠实反映文案核心，不可脱离主题。
 
-示例格式：
-<{panel_tag}>
-<格子1>画面描述：主角站在街头...
-角色动作：环顾四周，表情惊喜
-对话：「终于到了！」</格子1>
-<格子2>...</格子2>
-</{panel_tag}>"""
+输出格式示例（严格遵守）：
+<格子1>
+[scene]: A young woman standing at the entrance of an ancient Chinese temple, sunlight through trees, curious expression, manga art style
+[caption]: 「这就是传说中的地坛吗？」
+</格子1>
+<格子2>
+[scene]: Close-up of ancient stone steps with detailed carvings, soft lighting, traditional architecture
+[caption]: 台阶数量藏着古人的智慧
+</格子2>"""
 
         # ---- 尝试 LLM 生成 ----
         try:
@@ -569,15 +667,23 @@ Chinese illustration, info graphic poster, educational poster, clean graphic des
                     model=model,
                     messages=[{"role": "user", "content": storyboard_prompt}],
                     temperature=0.7,
-                    max_tokens=1200,
+                    max_tokens=1500,
                 )
                 panels_text = response.choices[0].message.content or ""
 
                 # 解析 <格子X> 标签
-                matches = re.findall(r'<格子\d+>([\s\S]*?)</格子\d+>', panels_text)
-                if len(matches) >= panel_count:
+                raw_panels = re.findall(r'<格子\d+>([\s\S]*?)</格子\d+>', panels_text)
+                if len(raw_panels) >= panel_count:
+                    result = []
+                    for raw in raw_panels[:panel_count]:
+                        scene_match = re.search(r'\[scene\]:\s*(.+)', raw)
+                        caption_match = re.search(r'\[caption\]:\s*(.+)', raw)
+                        result.append({
+                            "scene_prompt": scene_match.group(1).strip() if scene_match else text[:100],
+                            "caption": caption_match.group(1).strip() if caption_match else "",
+                        })
                     Logger.info(f"漫画分镜 LLM 生成成功，格数={panel_count}", logger_name="image_service")
-                    return [m.strip() for m in matches[:panel_count]]
+                    return result
         except Exception as e:
             Logger.warning(f"漫画分镜 LLM 生成失败，降级为规则截断: {e}", logger_name="image_service")
 
@@ -586,22 +692,27 @@ Chinese illustration, info graphic poster, educational poster, clean graphic des
         if not clean_text:
             clean_text = title if title else "精彩内容"
 
-        # 将文案按句号/换行拆分句子
         sentences = re.split(r'[。！？!?\n]', clean_text)
         sentences = [s.strip() for s in sentences if s.strip()]
 
         panels = []
         if len(sentences) >= panel_count:
-            # 均匀分配句子到各格
             chunk = len(sentences) // panel_count
             for i in range(panel_count):
                 start = i * chunk
                 end = start + chunk if i < panel_count - 1 else len(sentences)
-                panels.append(''.join(sentences[start:end])[:80])
+                caption = ''.join(sentences[start:end])[:60]
+                panels.append({
+                    "scene_prompt": f"manga style illustration of: {caption}",
+                    "caption": caption,
+                })
         else:
-            # 句子不够：循环补充
             for i in range(panel_count):
-                panels.append(sentences[i % len(sentences)][:80] if sentences else f"第{i+1}格")
+                caption = sentences[i % len(sentences)][:60] if sentences else f"第{i+1}格"
+                panels.append({
+                    "scene_prompt": f"manga style illustration of: {caption}",
+                    "caption": caption,
+                })
 
         return panels
 
