@@ -2,12 +2,18 @@
    词语竞速游戏逻辑
    =============================================== */
 
-const WordsGame = {
+import { Audio } from './audio.js';
+import { Keyboard } from './keyboard.js';
+import { Utils } from './utils.js';
+import { WordsData } from '../data/words-data.js';
+
+export const WordsGame = {
     currentWord: null,
     currentPinyin: '',
     inputBuffer: '',
     inputIndex: 0,
     isRunning: false,
+    pendingTimers: new Set(),
     showHint: true,  // 是否显示拼音提示
     grade: 1,        // 年级
 
@@ -35,6 +41,7 @@ const WordsGame = {
      * 开始游戏
      */
     start(options = {}) {
+        this.clearTimers();
         this.isRunning = true;
         this.inputBuffer = '';
         this.inputIndex = 0;
@@ -53,8 +60,11 @@ const WordsGame = {
      */
     stop() {
         this.isRunning = false;
+        this.clearTimers();
+        this.currentWord = null;
         Keyboard.setKeyPressCallback(null);
         Keyboard.reset();
+        Audio.stopSpeaking();
     },
 
     /**
@@ -62,6 +72,8 @@ const WordsGame = {
      */
     pause() {
         this.isRunning = false;
+        this.clearTimers();
+        Audio.stopSpeaking();
     },
 
     /**
@@ -69,17 +81,21 @@ const WordsGame = {
      */
     resume() {
         this.isRunning = true;
+        if (!this.currentWord || this.isCurrentComplete()) {
+            this.schedule(() => {
+                if (this.isRunning) this.nextWord();
+            }, 0);
+        }
     },
 
     /**
      * 获取当前年级的词库
      */
     getWordList() {
-        const wordData = window.WordsData;
-        if (!wordData || !wordData.grades) {
+        if (!WordsData || !WordsData.grades) {
             return [];
         }
-        return wordData.grades[this.grade] || wordData.grades[1] || [];
+        return WordsData.grades[this.grade] || WordsData.grades[1] || [];
     },
 
     /**
@@ -93,9 +109,10 @@ const WordsGame = {
         }
 
         const word = Utils.randomChoice(wordList);
+        if (!word) return;
         this.currentWord = word;
         // 去除声调符号并转大写，用于与键盘输入匹配
-        this.currentPinyin = Utils.removePinyinTones(word.pinyin.replace(/\s+/g, '')).toUpperCase();
+        this.currentPinyin = Utils.normalizePinyinInput(word.pinyin);
         this.inputBuffer = '';
         this.inputIndex = 0;
 
@@ -111,8 +128,8 @@ const WordsGame = {
         }
 
         // 朗读汉字
-        setTimeout(() => {
-            Audio.speakPinyin(word.hanzi);
+        this.schedule(() => {
+            if (this.isRunning) Audio.speakPinyin(word.hanzi);
         }, 300);
     },
 
@@ -172,7 +189,8 @@ const WordsGame = {
 
         // 拼读引导：先读拼音的各个部分，再读声调，最后读汉字
         // 例如：r en 的二声 人
-        setTimeout(() => {
+        this.schedule(() => {
+            if (!this.isRunning) return;
             // 解析拼音，分成声母和韵母部分
             const pinyinParts = this.parsePinyinParts(word.pinyin);
             // 获取声调
@@ -181,23 +199,23 @@ const WordsGame = {
             let delay = 0;
             // 依次朗读每个拼音部分
             pinyinParts.forEach((part, index) => {
-                setTimeout(() => {
-                    Audio.speakPinyin(part);
+                this.schedule(() => {
+                    if (this.isRunning) Audio.speakPinyin(part, { interrupt: index === 0 });
                 }, delay);
                 delay += 500;
             });
 
             // 读声调（如果有的话）
             if (tone) {
-                setTimeout(() => {
-                    Audio.speakPinyin(tone);
+                this.schedule(() => {
+                    if (this.isRunning) Audio.speakPinyin(tone, { interrupt: false });
                 }, delay);
                 delay += 600;
             }
 
             // 最后朗读汉字
-            setTimeout(() => {
-                Audio.speakPinyin(word.hanzi);
+            this.schedule(() => {
+                if (this.isRunning) Audio.speakPinyin(word.hanzi, { interrupt: false });
             }, delay + 300);
         }, 300);
 
@@ -215,7 +233,7 @@ const WordsGame = {
         );
 
         // 下一个词语（增加延迟以便完成拼读）
-        setTimeout(() => {
+        this.schedule(() => {
             if (this.isRunning) {
                 this.elements.inputDisplay.style.animation = '';
                 this.elements.hanzi.style.animation = '';
@@ -320,10 +338,25 @@ const WordsGame = {
      * 设置回调
      */
     setCallbacks({ onCorrect, onWrong }) {
-        if (onCorrect) this.onCorrect = onCorrect;
-        if (onWrong) this.onWrong = onWrong;
+        this.onCorrect = onCorrect || null;
+        this.onWrong = onWrong || null;
+    },
+
+    isCurrentComplete() {
+        return Boolean(this.currentWord) && this.inputIndex >= this.currentPinyin.length;
+    },
+
+    schedule(callback, delay) {
+        const timer = setTimeout(() => {
+            this.pendingTimers.delete(timer);
+            callback();
+        }, delay);
+        this.pendingTimers.add(timer);
+        return timer;
+    },
+
+    clearTimers() {
+        this.pendingTimers.forEach(timer => clearTimeout(timer));
+        this.pendingTimers.clear();
     }
 };
-
-// 导出到全局
-window.WordsGame = WordsGame;

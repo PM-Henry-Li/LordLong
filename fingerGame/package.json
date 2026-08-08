@@ -1,0 +1,19 @@
+{
+  "name": "pinyin-explorer",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-legacy.mjs",
+    "voice:generate": "node scripts/generate-voice-assets.mjs",
+    "serve": "python3 -m http.server 4173",
+    "api": "node backend/server.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test": "node --test",
+    "deploy:check": "npm run build && node scripts/deploy-check.mjs",
+    "check": "npm run build && node scripts/check-syntax.mjs && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

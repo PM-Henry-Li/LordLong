@@ -2,7 +2,7 @@
    工具函数
    =============================================== */
 
-const Utils = {
+export const Utils = {
     /**
      * 生成随机整数 [min, max]
      */
@@ -14,15 +14,18 @@ const Utils = {
      * 从数组中随机选择一个元素
      */
     randomChoice(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
+        return Array.isArray(arr) && arr.length > 0
+            ? arr[Math.floor(Math.random() * arr.length)]
+            : undefined;
     },
 
     /**
      * 格式化时间 (秒 -> MM:SS)
      */
     formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
+        const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+        const mins = Math.floor(safeSeconds / 60);
+        const secs = safeSeconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     },
 
@@ -167,9 +170,21 @@ const Utils = {
             'ǖ': 'v', 'ǘ': 'v', 'ǚ': 'v', 'ǜ': 'v', 'ü': 'v'
         };
 
-        return pinyin.split('').map(char => toneMap[char] || char).join('');
+        return String(pinyin ?? '')
+            .toLowerCase()
+            .split('')
+            .map(char => toneMap[char] || char)
+            .join('');
+    },
+
+    /**
+     * 将拼音转换为键盘可输入的标准形式。
+     * ü 在键盘练习中使用 V 代替，空格和声调会被移除。
+     */
+    normalizePinyinInput(pinyin) {
+        return this.removePinyinTones(pinyin)
+            .replace(/\s+/g, '')
+            .replace(/ü/g, 'v')
+            .toUpperCase();
     }
 };
-
-// 导出到全局
-window.Utils = Utils;

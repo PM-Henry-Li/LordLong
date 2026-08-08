@@ -2,7 +2,9 @@
    虚拟键盘控制
    =============================================== */
 
-const Keyboard = {
+import { Audio } from './audio.js';
+
+export const Keyboard = {
     container: null,
     keys: {},
     currentHighlight: null,
@@ -35,6 +37,7 @@ const Keyboard = {
     // 虚拟手元素
     leftHand: null,
     rightHand: null,
+    eventsBound: false,
 
     /**
      * 初始化键盘
@@ -90,8 +93,12 @@ const Keyboard = {
      * 绑定事件
      */
     bindEvents() {
+        if (!this.container || this.eventsBound) return;
+        this.eventsBound = true;
+
         // 物理键盘事件
         document.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
             const key = e.key.toUpperCase();
             if (this.keys[key]) {
                 e.preventDefault();
@@ -135,7 +142,10 @@ const Keyboard = {
      * 处理按键
      */
     handleKeyPress(key) {
-        const keyBtn = this.keys[key];
+        const normalizedKey = String(key ?? '').toUpperCase() === 'Ü'
+            ? 'V'
+            : String(key ?? '').toUpperCase();
+        const keyBtn = this.keys[normalizedKey];
         if (!keyBtn) return;
 
         // 添加按下效果
@@ -147,7 +157,7 @@ const Keyboard = {
 
         // 调用回调
         if (this.onKeyPress) {
-            this.onKeyPress(key);
+            this.onKeyPress(normalizedKey);
         }
     },
 
@@ -284,6 +294,3 @@ const Keyboard = {
         if (container) container.style.display = 'none';
     }
 };
-
-// 导出到全局
-window.Keyboard = Keyboard;

@@ -1,0 +1,21 @@
+[Unit]
+Description=Pinyin Explorer API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/fingerGame
+EnvironmentFile=-/etc/pinyin-explorer/api.env
+ExecStart=/usr/bin/node /var/www/fingerGame/backend/server.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/pinyin-explorer
+
+[Install]
+WantedBy=multi-user.target

@@ -2,11 +2,17 @@
    拼音合成室游戏逻辑
    =============================================== */
 
-const PinyinGame = {
+import { Audio } from './audio.js';
+import { Keyboard } from './keyboard.js';
+import { PinyinData } from '../data/pinyin-data.js';
+import { Utils } from './utils.js';
+
+export const PinyinGame = {
     currentPinyin: null,
     inputBuffer: '',
     inputIndex: 0,
     isRunning: false,
+    pendingTimers: new Set(),
 
     // 回调函数
     onCorrect: null,
@@ -32,16 +38,18 @@ const PinyinGame = {
      * 开始游戏
      */
     start() {
+        this.clearTimers();
         this.isRunning = true;
         this.inputBuffer = '';
         this.inputIndex = 0;
+        this.currentPinyin = null;
 
         // 设置键盘回调
         Keyboard.setKeyPressCallback((key) => this.handleKeyPress(key));
 
         // 延迟生成第一个拼音，让用户有准备时间
-        setTimeout(() => {
-            this.nextPinyin();
+        this.schedule(() => {
+            if (this.isRunning) this.nextPinyin();
         }, 1500);
     },
 
@@ -50,8 +58,11 @@ const PinyinGame = {
      */
     stop() {
         this.isRunning = false;
+        this.clearTimers();
+        this.currentPinyin = null;
         Keyboard.setKeyPressCallback(null);
         Keyboard.reset();
+        Audio.stopSpeaking();
     },
 
     /**
@@ -59,6 +70,8 @@ const PinyinGame = {
      */
     pause() {
         this.isRunning = false;
+        this.clearTimers();
+        Audio.stopSpeaking();
     },
 
     /**
@@ -66,6 +79,11 @@ const PinyinGame = {
      */
     resume() {
         this.isRunning = true;
+        if (!this.currentPinyin || this.isCurrentComplete()) {
+            this.schedule(() => {
+                if (this.isRunning) this.nextPinyin();
+            }, 0);
+        }
     },
 
     /**
@@ -73,7 +91,8 @@ const PinyinGame = {
      */
     nextPinyin() {
         // 从拼音数据中随机选择
-        const pinyin = Utils.randomChoice(window.PinyinData.combinations);
+        const pinyin = Utils.randomChoice(PinyinData.combinations);
+        if (!pinyin) return;
         this.currentPinyin = pinyin;
         this.inputBuffer = '';
         this.inputIndex = 0;
@@ -84,15 +103,16 @@ const PinyinGame = {
         this.elements.result.textContent = '?';
 
         // 高亮第一个字母
-        const fullPinyin = pinyin.shengmu + pinyin.yunmu;
+        const fullPinyin = Utils.normalizePinyinInput(pinyin.shengmu + pinyin.yunmu);
         if (fullPinyin.length > 0) {
-            Keyboard.highlight(fullPinyin[0].toUpperCase());
+            Keyboard.highlight(fullPinyin[0]);
         }
 
         // 朗读完整拼音引导（中文拼音发音）
-        setTimeout(() => {
+        this.schedule(() => {
+            if (!this.isRunning) return;
             // 朗读完整拼音组合
-            Audio.speakPinyin(fullPinyin);
+            Audio.speakPinyin(pinyin.shengmu + pinyin.yunmu);
         }, 300);
     },
 
@@ -102,7 +122,9 @@ const PinyinGame = {
     handleKeyPress(key) {
         if (!this.isRunning || !this.currentPinyin) return;
 
-        const fullPinyin = (this.currentPinyin.shengmu + this.currentPinyin.yunmu).toUpperCase();
+        const fullPinyin = Utils.normalizePinyinInput(
+            this.currentPinyin.shengmu + this.currentPinyin.yunmu
+        );
         const expectedKey = fullPinyin[this.inputIndex];
 
         if (key === expectedKey) {
@@ -137,31 +159,34 @@ const PinyinGame = {
      */
     completePinyin() {
         const pinyin = this.currentPinyin;
-        const fullPinyin = pinyin.shengmu + pinyin.yunmu;
+        const fullPinyin = Utils.normalizePinyinInput(pinyin.shengmu + pinyin.yunmu);
 
         // 显示结果
         this.elements.result.textContent = fullPinyin;
         this.elements.result.style.animation = 'scaleBounce 0.5s ease';
 
         // 朗读完整拼音（分步朗读：声母 -> 韵母 -> 完整拼音）
-        setTimeout(() => {
+        this.schedule(() => {
+            if (!this.isRunning) return;
             // 先读声母（如果有的话）
             if (pinyin.shengmu) {
-                Audio.speakPinyin(pinyin.shengmu);
+                Audio.speakPinyin(pinyin.shengmu, { interrupt: true });
             }
 
             // 再读韵母
-            setTimeout(() => {
-                Audio.speakPinyin(pinyin.yunmu);
+            this.schedule(() => {
+                if (!this.isRunning) return;
+                Audio.speakPinyin(pinyin.yunmu, { interrupt: false });
 
                 // 最后读完整拼音
-                setTimeout(() => {
-                    Audio.speakPinyin(fullPinyin);
+                this.schedule(() => {
+                    if (!this.isRunning) return;
+                    Audio.speakPinyin(pinyin.shengmu + pinyin.yunmu, { interrupt: false });
 
                     // 如果有例字，朗读例字
                     if (pinyin.example) {
-                        setTimeout(() => {
-                            Audio.speakPinyin(pinyin.example);
+                        this.schedule(() => {
+                            if (this.isRunning) Audio.speakPinyin(pinyin.example, { interrupt: false });
                         }, 800);
                     }
                 }, 600);
@@ -182,7 +207,7 @@ const PinyinGame = {
         );
 
         // 下一个拼音
-        setTimeout(() => {
+        this.schedule(() => {
             if (this.isRunning) {
                 this.elements.result.style.animation = '';
                 this.nextPinyin();
@@ -194,10 +219,29 @@ const PinyinGame = {
      * 设置回调
      */
     setCallbacks({ onCorrect, onWrong }) {
-        if (onCorrect) this.onCorrect = onCorrect;
-        if (onWrong) this.onWrong = onWrong;
+        this.onCorrect = onCorrect || null;
+        this.onWrong = onWrong || null;
+    },
+
+    isCurrentComplete() {
+        if (!this.currentPinyin) return false;
+        const fullPinyin = Utils.normalizePinyinInput(
+            this.currentPinyin.shengmu + this.currentPinyin.yunmu
+        );
+        return this.inputIndex >= fullPinyin.length;
+    },
+
+    schedule(callback, delay) {
+        const timer = setTimeout(() => {
+            this.pendingTimers.delete(timer);
+            callback();
+        }, delay);
+        this.pendingTimers.add(timer);
+        return timer;
+    },
+
+    clearTimers() {
+        this.pendingTimers.forEach(timer => clearTimeout(timer));
+        this.pendingTimers.clear();
     }
 };
-
-// 导出到全局
-window.PinyinGame = PinyinGame;

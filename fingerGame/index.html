@@ -23,12 +23,12 @@
         <div class="user-selection">
             <h2>选择你的头像</h2>
             <div class="avatar-grid">
-                <button class="avatar-btn" data-avatar="cat">🐱</button>
-                <button class="avatar-btn" data-avatar="dog">🐶</button>
-                <button class="avatar-btn" data-avatar="rabbit">🐰</button>
-                <button class="avatar-btn" data-avatar="bear">🐻</button>
-                <button class="avatar-btn" data-avatar="panda">🐼</button>
-                <button class="avatar-btn" data-avatar="fox">🦊</button>
+                <button type="button" class="avatar-btn" data-avatar="cat" aria-label="选择小猫头像" aria-pressed="false">🐱</button>
+                <button type="button" class="avatar-btn" data-avatar="dog" aria-label="选择小狗头像" aria-pressed="false">🐶</button>
+                <button type="button" class="avatar-btn" data-avatar="rabbit" aria-label="选择小兔头像" aria-pressed="false">🐰</button>
+                <button type="button" class="avatar-btn" data-avatar="bear" aria-label="选择小熊头像" aria-pressed="false">🐻</button>
+                <button type="button" class="avatar-btn" data-avatar="panda" aria-label="选择熊猫头像" aria-pressed="false">🐼</button>
+                <button type="button" class="avatar-btn" data-avatar="fox" aria-label="选择小狐狸头像" aria-pressed="false">🦊</button>
             </div>
             <div class="username-input">
                 <input type="text" id="username" placeholder="输入你的名字" maxlength="8">
@@ -114,14 +114,14 @@
                 <button class="btn-speed" id="btn-speed-down" title="减慢速度">➖</button>
                 <div class="speed-display">
                     <span class="speed-label">速度</span>
-                    <span class="speed-value" id="speed-value">1.0x</span>
+                    <span class="speed-value" id="speed-value">0.5x</span>
                 </div>
                 <button class="btn-speed" id="btn-speed-up" title="加快速度">➕</button>
             </div>
             <!-- 语言切换 -->
-            <button class="btn-lang-toggle" id="btn-lang-toggle" title="切换字母读音语言">
+            <button class="btn-lang-toggle zh-mode" id="btn-lang-toggle" title="切换字母读音语言">
                 <span class="lang-icon">🔤</span>
-                <span class="lang-text" id="lang-text">EN</span>
+                <span class="lang-text" id="lang-text">中</span>
             </button>
             <button class="btn-pause" id="btn-pause">⏸️</button>
         </div>
@@ -361,17 +361,9 @@
         </div>
     </div>
 
-    <script src="js/utils.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/audio.js"></script>
-    <script src="js/keyboard.js"></script>
-    <script src="js/letters.js"></script>
-    <script src="js/pinyin.js"></script>
-    <script src="js/words.js"></script>
-    <script src="js/game.js"></script>
-    <script src="js/main.js"></script>
-    <script src="data/pinyin-data.js"></script>
-    <script src="data/words-data.js"></script>
+    <script src="frontend/config.js"></script>
+    <!-- 使用单文件运行包，兼容 file:// 直接打开；源代码仍维护在模块文件中。 -->
+    <script src="js/app.bundle.js"></script>
 </body>
 
 </html>

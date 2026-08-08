@@ -2,7 +2,18 @@
    本地存储管理
    =============================================== */
 
-const Storage = {
+import { Utils } from './utils.js';
+
+export const Storage = {
+    MODES: ['letters', 'pinyin', 'words'],
+    MAX_SCORE: 100000,
+    DEFAULT_SETTINGS: {
+        soundEnabled: true,
+        musicEnabled: true,
+        volume: 0.7,
+        letterLanguage: 'zh'
+    },
+
     KEYS: {
         USERS: 'pinyin_explorer_users',
         CURRENT_USER: 'pinyin_explorer_current_user',
@@ -14,15 +25,15 @@ const Storage = {
      * 获取所有用户
      */
     getUsers() {
-        const data = localStorage.getItem(this.KEYS.USERS);
-        return data ? JSON.parse(data) : [];
+        const data = this.readJson(this.KEYS.USERS, []);
+        return Array.isArray(data) ? data.map(user => this.normalizeUser(user)) : [];
     },
 
     /**
      * 保存用户列表
      */
     saveUsers(users) {
-        localStorage.setItem(this.KEYS.USERS, JSON.stringify(users));
+        return this.safeSetItem(this.KEYS.USERS, JSON.stringify(users));
     },
 
     /**
@@ -31,9 +42,9 @@ const Storage = {
     createUser(name, avatar) {
         const users = this.getUsers();
         const newUser = {
-            id: Date.now().toString(),
-            name,
-            avatar,
+            id: this.createId(),
+            name: String(name ?? '').trim().slice(0, 8),
+            avatar: avatar || 'cat',
             totalScore: 0,
             highScores: {
                 letters: 0,
@@ -46,8 +57,10 @@ const Storage = {
             createdAt: new Date().toISOString()
         };
 
+        if (!newUser.name) return null;
+
         users.push(newUser);
-        this.saveUsers(users);
+        if (!this.saveUsers(users)) return null;
         this.setCurrentUser(newUser.id);
 
         return newUser;
@@ -70,8 +83,7 @@ const Storage = {
 
         if (index !== -1) {
             users[index] = { ...users[index], ...updates };
-            this.saveUsers(users);
-            return users[index];
+            return this.saveUsers(users) ? users[index] : null;
         }
         return null;
     },
@@ -81,20 +93,23 @@ const Storage = {
      */
     recordGameResult(userId, mode, score, correct, wrong, errorLetters = []) {
         const user = this.getUser(userId);
-        if (!user) return null;
+        if (!user || !this.MODES.includes(mode)) return null;
 
         // 更新总分
-        user.totalScore += score;
+        const safeScore = Math.min(this.MAX_SCORE, Math.max(0, Math.round(Number(score) || 0)));
+        user.totalScore = Math.max(0, user.totalScore + safeScore);
         user.gamesPlayed += 1;
 
         // 更新模式最高分
-        if (score > (user.highScores[mode] || 0)) {
-            user.highScores[mode] = score;
+        if (safeScore > (Number(user.highScores[mode]) || 0)) {
+            user.highScores[mode] = safeScore;
         }
 
         // 记录错误字母
-        errorLetters.forEach(letter => {
-            user.errorLetters[letter] = (user.errorLetters[letter] || 0) + 1;
+        (Array.isArray(errorLetters) ? errorLetters : []).forEach(letter => {
+            const normalizedLetter = String(letter ?? '').toUpperCase();
+            if (!/^[A-Z]$/.test(normalizedLetter)) return;
+            user.errorLetters[normalizedLetter] = (user.errorLetters[normalizedLetter] || 0) + 1;
         });
 
         // 检查新勋章
@@ -105,9 +120,9 @@ const Storage = {
             newBadge = badge;
         }
 
-        this.updateUser(userId, user);
+        const updatedUser = this.updateUser(userId, user);
 
-        return { user, newBadge };
+        return { user: updatedUser, newBadge };
     },
 
     /**
@@ -127,24 +142,37 @@ const Storage = {
      * 设置当前用户
      */
     setCurrentUser(userId) {
-        localStorage.setItem(this.KEYS.CURRENT_USER, userId);
+        if (userId) {
+            this.safeSetItem(this.KEYS.CURRENT_USER, userId);
+        } else {
+            this.safeRemoveItem(this.KEYS.CURRENT_USER);
+        }
     },
 
     /**
      * 获取当前用户
      */
     getCurrentUser() {
-        const userId = localStorage.getItem(this.KEYS.CURRENT_USER);
-        return userId ? this.getUser(userId) : null;
+        let userId = null;
+        try {
+            userId = localStorage.getItem(this.KEYS.CURRENT_USER);
+        } catch {
+            return null;
+        }
+        if (!userId) return null;
+
+        const user = this.getUser(userId);
+        if (!user) this.setCurrentUser(null);
+        return user || null;
     },
 
     /**
      * 增加游戏计数（用于防沉迷）
      */
     incrementGameCount() {
-        let count = parseInt(localStorage.getItem(this.KEYS.GAME_COUNT) || '0');
+        let count = this.getGameCount();
         count++;
-        localStorage.setItem(this.KEYS.GAME_COUNT, count.toString());
+        this.safeSetItem(this.KEYS.GAME_COUNT, count.toString());
         return count;
     },
 
@@ -152,36 +180,114 @@ const Storage = {
      * 重置游戏计数
      */
     resetGameCount() {
-        localStorage.setItem(this.KEYS.GAME_COUNT, '0');
+        this.safeSetItem(this.KEYS.GAME_COUNT, '0');
     },
 
     /**
      * 获取游戏计数
      */
     getGameCount() {
-        return parseInt(localStorage.getItem(this.KEYS.GAME_COUNT) || '0');
+        let rawCount = '0';
+        try {
+            rawCount = localStorage.getItem(this.KEYS.GAME_COUNT) || '0';
+        } catch {
+            rawCount = '0';
+        }
+        const count = Number.parseInt(rawCount, 10);
+        return Number.isFinite(count) && count >= 0 ? count : 0;
     },
 
     /**
      * 保存设置
      */
     saveSettings(settings) {
-        localStorage.setItem(this.KEYS.SETTINGS, JSON.stringify(settings));
+        const nextSettings = {
+            ...this.DEFAULT_SETTINGS,
+            ...(settings || {})
+        };
+        this.safeSetItem(this.KEYS.SETTINGS, JSON.stringify(nextSettings));
+        return nextSettings;
     },
 
     /**
      * 获取设置
      */
     getSettings() {
-        const data = localStorage.getItem(this.KEYS.SETTINGS);
-        return data ? JSON.parse(data) : {
-            soundEnabled: true,
-            musicEnabled: true,
-            volume: 0.7,
-            letterLanguage: 'en'  // 'en' = 英文读音, 'zh' = 中文读音
+        return {
+            ...this.DEFAULT_SETTINGS,
+            ...this.readJson(this.KEYS.SETTINGS, {})
         };
+    },
+
+    readJson(key, fallback) {
+        try {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : fallback;
+        } catch {
+            console.warn(`无法读取本地数据，已使用默认值: ${key}`);
+            try {
+                localStorage.removeItem(key);
+            } catch {
+                // 某些隐私模式下 localStorage 可能不可写，保持内存中的默认值即可。
+            }
+            return fallback;
+        }
+    },
+
+    createId() {
+        if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+        return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    },
+
+    normalizeUser(user = {}) {
+        const source = user && typeof user === 'object' ? user : {};
+        return {
+            id: String(source.id || this.createId()),
+            name: String(source.name || '小玩家').trim().slice(0, 8),
+            avatar: source.avatar || 'cat',
+            totalScore: Math.min(this.MAX_SCORE, Math.max(0, Number(source.totalScore) || 0)),
+            highScores: this.MODES.reduce((scores, mode) => {
+                scores[mode] = Math.min(this.MAX_SCORE,
+                    Math.max(0, Number(source.highScores?.[mode]) || 0));
+                return scores;
+            }, {}),
+            badges: Array.isArray(source.badges) ? source.badges : [],
+            errorLetters: this.normalizeErrorLetters(source.errorLetters),
+            gamesPlayed: Math.max(0, Number(source.gamesPlayed) || 0),
+            createdAt: source.createdAt || new Date().toISOString()
+        };
+    },
+
+    normalizeErrorLetters(errorLetters) {
+        if (!errorLetters || typeof errorLetters !== 'object' || Array.isArray(errorLetters)) {
+            return {};
+        }
+        return Object.entries(errorLetters).reduce((result, [letter, count]) => {
+            const normalizedLetter = String(letter).toUpperCase();
+            const safeCount = Math.max(0, Math.floor(Number(count) || 0));
+            if (/^[A-Z]$/.test(normalizedLetter) && safeCount > 0) {
+                result[normalizedLetter] = safeCount;
+            }
+            return result;
+        }, {});
+    },
+
+    safeSetItem(key, value) {
+        try {
+            localStorage.setItem(key, value);
+            return true;
+        } catch {
+            console.warn(`无法写入本地数据: ${key}`);
+            return false;
+        }
+    },
+
+    safeRemoveItem(key) {
+        try {
+            localStorage.removeItem(key);
+            return true;
+        } catch {
+            return false;
+        }
     }
 };
-
-// 导出到全局
-window.Storage = Storage;

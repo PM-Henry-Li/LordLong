@@ -2,7 +2,11 @@
    音效管理
    =============================================== */
 
-const Audio = {
+import { Storage } from './storage.js';
+import { LetterPinyinSounds, PinyinSpeechMap } from '../data/voice-map.js';
+import { VoiceAssets } from '../data/voice-manifest.js';
+
+export const Audio = {
     context: null,
     sounds: {},
     enabled: true,
@@ -12,34 +16,38 @@ const Audio = {
     voices: [],
     preferredEnglishVoice: null,
     preferredChineseVoice: null,
-    letterLanguage: 'en',  // 'en' = 英文读音, 'zh' = 中文读音
+    letterLanguage: 'zh',  // 'en' = 英文读音, 'zh' = 中文读音
     voicesLoaded: false,
+    voicePlayer: null,
+    voiceAssetBasePath: 'audio/voice/zh',
+    voiceQueue: [],
+    voiceQueuePlaying: false,
+    voicePlaybackPrimed: false,
+    voicePlaybackToken: 0,
+    speechRequestId: 0,
 
     // 字母的汉语拼音发音映射
-    letterPinyinSounds: {
-        'A': '啊', 'B': '波', 'C': '次', 'D': '的', 'E': '鹅',
-        'F': '佛', 'G': '哥', 'H': '喝', 'I': '衣', 'J': '机',
-        'K': '科', 'L': '了', 'M': '摸', 'N': '呢', 'O': '喔',
-        'P': '坡', 'Q': '期', 'R': '日', 'S': '思', 'T': '特',
-        'U': '乌', 'V': '于', 'W': '乌', 'X': '西', 'Y': '衣', 'Z': '资'
-    },
+    letterPinyinSounds: LetterPinyinSounds,
 
     /**
      * 初始化音频上下文
      */
     init() {
+        const settings = Storage.getSettings();
+        this.enabled = settings.soundEnabled !== false;
+        this.volume = Number.isFinite(Number(settings.volume))
+            ? Math.max(0, Math.min(1, Number(settings.volume)))
+            : 0.7;
+        this.letterLanguage = settings.letterLanguage === 'zh' ? 'zh' : 'en';
+
         try {
             this.context = new (window.AudioContext || window.webkitAudioContext)();
-            const settings = Storage.getSettings();
-            this.enabled = settings.soundEnabled;
-            this.volume = settings.volume;
-            this.letterLanguage = settings.letterLanguage || 'en';
-
-            // 初始化语音引擎
-            this.initVoices();
         } catch (e) {
             console.warn('Web Audio API not supported');
         }
+
+        // Web Audio 不可用时，语音播报仍然可以独立工作。
+        this.initVoices();
     },
 
     /**
@@ -75,6 +83,9 @@ const Audio = {
      * 选择首选的语音引擎
      */
     selectPreferredVoices() {
+        this.preferredEnglishVoice = null;
+        this.preferredChineseVoice = null;
+
         // 美音引擎优先级列表
         const englishPreferences = [
             'Samantha',           // iOS/macOS 美音女声
@@ -87,7 +98,11 @@ const Audio = {
         // 中文引擎优先级列表
         const chinesePreferences = [
             'Tingting',          // iOS/macOS 中文女声
+            'Ting-Ting',         // 部分系统使用连字符名称
+            'Xiaoxiao',          // Windows/Edge 自然中文女声
+            'Yunyang',           // Windows/Edge 自然中文男声
             'Google 普通话',      // Chrome 中文
+            'Meijia',            // 台湾中文女声
             'zh-CN',
             'zh_CN'
         ];
@@ -129,6 +144,163 @@ const Audio = {
                 v.lang.startsWith('zh')
             );
         }
+    },
+
+    /**
+     * 生成稳定的本地语音资源键，避免在 file:// 页面中依赖 fetch。
+     */
+    hashText(text) {
+        let hash = 2166136261;
+        const value = String(text);
+
+        for (let i = 0; i < value.length; i += 1) {
+            hash ^= value.charCodeAt(i);
+            hash = Math.imul(hash, 16777619);
+        }
+
+        return (hash >>> 0).toString(16);
+    },
+
+    /**
+     * 获取内置中文语音资源路径。
+     */
+    getVoiceAssetPath(text) {
+        return `${this.voiceAssetBasePath}/${this.hashText(text)}.wav`;
+    },
+
+    /**
+     * 获取复用的 HTMLAudioElement。
+     */
+    getVoicePlayer() {
+        if (!this.voicePlayer) {
+            this.voicePlayer = new window.Audio();
+        }
+        return this.voicePlayer;
+    },
+
+    /**
+     * 在用户点击“开始游戏”时提前解锁媒体播放，兼容 Safari 和 file:// 页面。
+     * 音量设为 0，不会让用户听到额外的提示音。
+     */
+    primeVoicePlayback() {
+        if (!this.enabled || this.voicePlaybackPrimed || !VoiceAssets.has(this.hashText('啊'))) {
+            return;
+        }
+
+        const player = this.getVoicePlayer();
+        const originalVolume = this.volume;
+        const playbackToken = this.voicePlaybackToken;
+        player.pause();
+        player.currentTime = 0;
+        player.volume = 0;
+        player.onended = null;
+        player.onerror = null;
+        player.src = this.getVoiceAssetPath('啊');
+
+        const playResult = player.play();
+        const restore = () => {
+            // 首条字母语音可能在预热音频尚未结束时生成；此时不能再暂停/重置
+            // 同一个 Audio 元素，否则会把真实字母语音截断。
+            if (playbackToken !== this.voicePlaybackToken) {
+                this.voicePlaybackPrimed = true;
+                return;
+            }
+            player.pause();
+            player.currentTime = 0;
+            player.volume = originalVolume;
+            this.voicePlaybackPrimed = true;
+        };
+
+        if (playResult && typeof playResult.then === 'function') {
+            playResult.then(restore).catch(() => {
+                if (playbackToken === this.voicePlaybackToken) {
+                    player.volume = originalVolume;
+                }
+                this.voicePlaybackPrimed = true;
+            });
+        } else {
+            restore();
+        }
+    },
+
+    /**
+     * 取消当前本地语音及排队内容。
+     */
+    cancelVoicePlayback() {
+        this.voicePlaybackToken += 1;
+        this.voiceQueue = [];
+        this.voiceQueuePlaying = false;
+
+        if (this.voicePlayer) {
+            this.voicePlayer.pause();
+            this.voicePlayer.currentTime = 0;
+            this.voicePlayer.onended = null;
+            this.voicePlayer.onerror = null;
+        }
+    },
+
+    /**
+     * 播放队列中的下一条本地语音。
+     */
+    drainVoiceQueue() {
+        if (this.voiceQueuePlaying || this.voiceQueue.length === 0) return;
+
+        const nextVoice = this.voiceQueue.shift();
+        this.voiceQueuePlaying = true;
+        const playbackToken = this.voicePlaybackToken;
+        const player = this.getVoicePlayer();
+        let settled = false;
+
+        const finish = () => {
+            if (settled || playbackToken !== this.voicePlaybackToken) return;
+            settled = true;
+            this.voiceQueuePlaying = false;
+            player.onended = null;
+            player.onerror = null;
+            this.drainVoiceQueue();
+        };
+
+        const fallback = () => {
+            if (playbackToken !== this.voicePlaybackToken) return;
+            if (typeof nextVoice.fallback === 'function') nextVoice.fallback();
+            finish();
+        };
+
+        player.pause();
+        player.currentTime = 0;
+        player.volume = this.volume;
+        player.onended = finish;
+        player.onerror = fallback;
+        player.src = this.getVoiceAssetPath(nextVoice.text);
+
+        try {
+            const playResult = player.play();
+            if (playResult && typeof playResult.catch === 'function') {
+                playResult.catch(fallback);
+            }
+        } catch {
+            // 某些浏览器会同步抛出 NotAllowedError，必须立即走系统语音兜底，
+            // 否则 voiceQueuePlaying 会一直保持 true，后续字母全部无声。
+            fallback();
+        }
+    },
+
+    /**
+     * 播放内置语音；资源不存在或浏览器拒绝播放时由调用方回退到系统语音。
+     * interrupt=false 时进入本地队列，保证拼音分步朗读不会互相截断。
+     */
+    playChineseAsset(text, fallback, { interrupt = true } = {}) {
+        if (!this.enabled || !VoiceAssets.has(this.hashText(text))) {
+            return false;
+        }
+
+        if (interrupt) {
+            this.cancelVoicePlayback();
+        }
+
+        this.voiceQueue.push({ text, fallback });
+        this.drainVoiceQueue();
+        return true;
     },
 
     /**
@@ -242,17 +414,25 @@ const Audio = {
      * @param {string} lang 语言代码
      * @param {SpeechSynthesisVoice} preferredVoice 首选语音引擎
      */
-    speak(text, lang = 'zh-CN', preferredVoice = null) {
+    speak(text, lang = 'zh-CN', preferredVoice = null, { interrupt = true } = {}) {
         if (!this.enabled) return;
 
-        if ('speechSynthesis' in window) {
-            // 取消之前的朗读
-            speechSynthesis.cancel();
+        const requestId = ++this.speechRequestId;
+        if (interrupt) this.cancelVoicePlayback();
 
-            const utterance = new SpeechSynthesisUtterance(text);
+        const speech = globalThis.window?.speechSynthesis;
+        const Utterance = globalThis.window?.SpeechSynthesisUtterance
+            || globalThis.SpeechSynthesisUtterance;
+        if (speech && typeof Utterance === 'function') {
+            if (interrupt) {
+                speech.cancel();
+                speech.resume?.();
+            }
+
+            const utterance = new Utterance(text);
             utterance.lang = lang;
-            utterance.rate = 0.9;  // 稍慢一点，适合儿童
-            utterance.pitch = 1.1; // 稍高一点，更童真
+            utterance.rate = 0.82; // 放慢语速，给儿童留出辨音时间
+            utterance.pitch = 1.0; // 使用自然音高，减少机械感
             utterance.volume = this.volume;
 
             // 使用首选语音引擎
@@ -260,7 +440,19 @@ const Audio = {
                 utterance.voice = preferredVoice;
             }
 
-            speechSynthesis.speak(utterance);
+            const speakNow = () => {
+                if (interrupt && requestId !== this.speechRequestId) return;
+                speech.resume?.();
+                speech.speak(utterance);
+            };
+
+            // cancel() 后部分 Safari/Chrome 需要一次事件循环再 speak，
+            // 否则切换到英文时会出现“按钮有反馈但没有声音”。
+            if (interrupt) {
+                setTimeout(speakNow, 30);
+            } else {
+                speakNow();
+            }
         }
     },
 
@@ -268,16 +460,31 @@ const Audio = {
      * 朗读字母（根据当前语言设置）
      */
     speakLetter(letter) {
-        const upperLetter = letter.toUpperCase();
+        const upperLetter = String(letter ?? '').toUpperCase();
+        if (!upperLetter) return;
 
         if (this.letterLanguage === 'zh') {
             // 中文模式：读字母的汉语拼音发音（如 A 读 "啊"）
             const pinyinSound = this.letterPinyinSounds[upperLetter] || upperLetter;
-            this.speak(pinyinSound, 'zh-CN', this.preferredChineseVoice);
+            const speakFallback = () => this.speak(
+                pinyinSound,
+                'zh-CN',
+                this.preferredChineseVoice
+            );
+
+            if (!this.playChineseAsset(pinyinSound, speakFallback)) {
+                speakFallback();
+            }
         } else {
-            // 英文模式：使用改进的发音方式避免 iOS "Letter" 前缀
-            // 添加一个短元音使发音更自然，避免被识别为拼写模式
-            const phoneticText = upperLetter + '.';
+            // 英文模式使用可读的单词，避免部分系统将 "A." 当作标点而不发音。
+            const englishSounds = {
+                A: 'ay', B: 'bee', C: 'see', D: 'dee', E: 'ee', F: 'ef',
+                G: 'gee', H: 'aitch', I: 'eye', J: 'jay', K: 'kay', L: 'el',
+                M: 'em', N: 'en', O: 'oh', P: 'pee', Q: 'cue', R: 'ar',
+                S: 'ess', T: 'tee', U: 'you', V: 'vee', W: 'double you',
+                X: 'ex', Y: 'why', Z: 'zee'
+            };
+            const phoneticText = englishSounds[upperLetter] || upperLetter;
             this.speak(phoneticText, 'en-US', this.preferredEnglishVoice);
         }
     },
@@ -287,63 +494,19 @@ const Audio = {
      * 为了确保语音引擎用中文读拼音而不是英文，
      * 我们使用拼音对应的汉字发音
      */
-    speakPinyin(pinyin) {
-        // 常见拼音的汉字发音映射
-        const pinyinToHanzi = {
-            // 声母（单独读时的发音）
-            'b': '波', 'p': '坡', 'm': '摸', 'f': '佛',
-            'd': '的', 't': '特', 'n': '呢', 'l': '了',
-            'g': '哥', 'k': '科', 'h': '喝',
-            'j': '机', 'q': '期', 'x': '西',
-            'zh': '知', 'ch': '吃', 'sh': '诗', 'r': '日',
-            'z': '资', 'c': '次', 's': '思',
-            'y': '衣', 'w': '乌',
-            // 单韵母
-            'a': '啊', 'o': '哦', 'e': '鹅', 'i': '衣', 'u': '乌', 'v': '于',
-            // 复韵母
-            'ai': '爱', 'ei': '诶', 'ui': '威', 'ao': '奥', 'ou': '欧',
-            'iu': '优', 'ie': '耶', 'ue': '约', 'er': '耳',
-            'an': '安', 'en': '恩', 'in': '因', 'un': '温',
-            'ang': '昂', 'eng': '鹏', 'ing': '英', 'ong': '翁',
-            // 声母 + 单韵母组合
-            'ba': '八', 'bo': '波', 'bi': '逼', 'bu': '不',
-            'pa': '趴', 'po': '坡', 'pi': '皮', 'pu': '扑',
-            'ma': '妈', 'mo': '摸', 'mi': '米', 'mu': '木',
-            'fa': '发', 'fo': '佛', 'fu': '福',
-            'da': '大', 'de': '的', 'di': '地', 'du': '读',
-            'ta': '他', 'te': '特', 'ti': '踢', 'tu': '兔',
-            'na': '那', 'ne': '呢', 'ni': '你', 'nu': '怒',
-            'la': '拉', 'le': '乐', 'li': '梨', 'lu': '路',
-            'ga': '嘎', 'ge': '哥', 'gu': '姑',
-            'ka': '卡', 'ke': '可', 'ku': '哭',
-            'ha': '哈', 'he': '喝', 'hu': '胡',
-            'ji': '鸡', 'ju': '句',
-            'qi': '七', 'qu': '去',
-            'xi': '西', 'xu': '需',
-            // 复韵母组合
-            'bai': '白', 'mai': '买', 'hao': '好',
-            'xiao': '小', 'niu': '牛', 'liu': '六',
-            'xian': '先', 'lian': '连',
-            // 鼻韵母组合
-            'shan': '山', 'tian': '天', 'yang': '羊',
-            'dong': '东', 'xing': '星',
-            // zh ch sh r 系列
-            'zhi': '知', 'chi': '吃', 'shi': '诗', 'ri': '日',
-            'zi': '资', 'ci': '次', 'si': '思',
-            // 整体认读音节
-            'yi': '衣', 'wu': '乌', 'yu': '雨',
-            'ye': '也', 'yue': '月', 'yuan': '圆',
-            'yin': '音', 'yun': '云', 'ying': '英'
-        };
+    speakPinyin(pinyin, options = {}) {
+        const sourceText = String(pinyin ?? '');
+        const lowerPinyin = sourceText.toLowerCase();
+        const speechText = PinyinSpeechMap[lowerPinyin] || sourceText;
+        const speakFallback = () => this.speak(
+            speechText,
+            'zh-CN',
+            this.preferredChineseVoice,
+            options
+        );
 
-        const lowerPinyin = pinyin.toLowerCase();
-
-        // 查找对应的汉字发音
-        if (pinyinToHanzi[lowerPinyin]) {
-            this.speak(pinyinToHanzi[lowerPinyin], 'zh-CN', this.preferredChineseVoice);
-        } else {
-            // 如果是完整的汉字或词语，直接读
-            this.speak(pinyin, 'zh-CN', this.preferredChineseVoice);
+        if (!this.playChineseAsset(speechText, speakFallback, options)) {
+            speakFallback();
         }
     },
 
@@ -351,7 +514,21 @@ const Audio = {
      * 朗读引导语
      */
     speakGuide(text) {
-        this.speak(text, 'zh-CN', this.preferredChineseVoice);
+        const speakFallback = () => this.speak(text, 'zh-CN', this.preferredChineseVoice);
+
+        if (!this.playChineseAsset(text, speakFallback)) {
+            speakFallback();
+        }
+    },
+
+    /**
+     * 停止当前语音，离开游戏或切换关卡时调用。
+     */
+    stopSpeaking() {
+        this.speechRequestId += 1;
+        this.cancelVoicePlayback();
+        const speech = globalThis.window?.speechSynthesis;
+        if (speech) speech.cancel();
     },
 
     /**
@@ -359,8 +536,8 @@ const Audio = {
      * @param {string} lang 'en' = 英文, 'zh' = 中文
      */
     setLetterLanguage(lang) {
-        this.letterLanguage = lang;
-        Storage.saveSettings({ ...Storage.getSettings(), letterLanguage: lang });
+        this.letterLanguage = lang === 'zh' ? 'zh' : 'en';
+        Storage.saveSettings({ ...Storage.getSettings(), letterLanguage: this.letterLanguage });
     },
 
     /**
@@ -404,6 +581,3 @@ const Audio = {
         }
     }
 };
-
-// 导出到全局
-window.Audio = Audio;

@@ -2,7 +2,7 @@
    拼音数据库
    =============================================== */
 
-window.PinyinData = {
+export const PinyinData = {
     // 声母表
     shengmu: [
         'b', 'p', 'm', 'f',

@@ -2,7 +2,12 @@
    主入口
    =============================================== */
 
-const Main = {
+import { Audio } from './audio.js';
+import { Api } from './api.js';
+import { Game } from './game.js';
+import { Storage } from './storage.js';
+
+export const Main = {
     currentUser: null,
     selectedAvatar: null,
     currentHelpMode: null,
@@ -11,6 +16,7 @@ const Main = {
      * 初始化应用
      */
     init() {
+        Api.init();
         // 初始化游戏模块
         Game.init();
 
@@ -26,7 +32,15 @@ const Main = {
             this.currentUser = currentUser;
             this.showScreen('mode-screen');
             this.updateUserInfo();
+            this.updateModeCards();
         }
+
+        document.addEventListener('pinyin:user-updated', (event) => {
+            this.currentUser = event.detail?.user || null;
+            this.updateUserInfo();
+            this.updateModeCards();
+            this.loadExistingUsers();
+        });
 
         console.log('🎮 拼音探险家已加载！');
     },
@@ -36,13 +50,9 @@ const Main = {
      */
     bindEvents() {
         // 头像选择
-        document.querySelectorAll('.avatar-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                this.selectedAvatar = btn.dataset.avatar;
-                Audio.playKeyPress();
-            });
+        document.querySelector('.avatar-grid').addEventListener('click', (event) => {
+            const avatarButton = event.target.closest('.avatar-btn');
+            if (avatarButton) this.selectAvatar(avatarButton.dataset.avatar);
         });
 
         // 开始冒险按钮
@@ -101,11 +111,18 @@ const Main = {
 
                 const userId = userItem.dataset.userId;
                 this.currentUser = Storage.getUser(userId);
+                if (!this.currentUser) {
+                    this.loadExistingUsers();
+                    return;
+                }
                 Storage.setCurrentUser(userId);
 
                 // 清除新用户输入
                 document.getElementById('username').value = '';
-                document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.avatar-btn').forEach(button => {
+                    button.classList.remove('selected');
+                    button.setAttribute('aria-pressed', 'false');
+                });
                 this.selectedAvatar = null;
 
                 Audio.playCorrect();
@@ -116,6 +133,23 @@ const Main = {
         document.getElementById('username').addEventListener('input', () => {
             document.querySelectorAll('.user-item').forEach(item => item.classList.remove('selected'));
         });
+    },
+
+    /**
+     * 选择头像，并清除已有玩家选择，避免两种入口同时生效。
+     */
+    selectAvatar(avatar) {
+        const avatarButton = document.querySelector(`.avatar-btn[data-avatar="${avatar}"]`);
+        if (!avatarButton) return;
+
+        document.querySelectorAll('.avatar-btn').forEach(button => {
+            const selected = button === avatarButton;
+            button.classList.toggle('selected', selected);
+            button.setAttribute('aria-pressed', String(selected));
+        });
+        document.querySelectorAll('.user-item').forEach(item => item.classList.remove('selected'));
+        this.selectedAvatar = avatar;
+        Audio.playKeyPress();
     },
 
     /**
@@ -133,11 +167,12 @@ const Main = {
         document.getElementById(`help-${mode}`).style.display = 'block';
 
         // 检查模式是否锁定
-        const isLocked = this.isMOdeLocked(mode);
+        const isLocked = this.isModeLocked(mode);
         const startBtn = document.getElementById('btn-start-game');
+        const requiredScores = { letters: 0, pinyin: 500, words: 1500 };
 
         if (isLocked) {
-            const requiredScore = mode === 'pinyin' ? 500 : 1500;
+            const requiredScore = requiredScores[mode] ?? 0;
             startBtn.textContent = `🔒 需要 ${requiredScore} 分解锁`;
             startBtn.disabled = true;
             startBtn.classList.add('btn-disabled');
@@ -154,26 +189,12 @@ const Main = {
     },
 
     /**
-     * 检查模式是否锁定
-     * TODO: 暂时注释解锁逻辑，让所有关卡都可以玩
+     * 检查模式是否锁定，卡片和帮助弹窗共用同一套规则。
      */
-    isMOdeLocked(mode) {
-        // 暂时禁用关卡解锁逻辑
-        return false;
-
-        /* 原解锁逻辑：
-        if (mode === 'letters') return false;
-
+    isModeLocked(mode) {
         const user = this.currentUser || Storage.getCurrentUser();
-        if (!user) return true;
-
-        const totalScore = user.totalScore || 0;
-
-        if (mode === 'pinyin') return totalScore < 500;
-        if (mode === 'words') return totalScore < 1500;
-
-        return false;
-        */
+        const requiredScores = { letters: 0, pinyin: 500, words: 1500 };
+        return !user || (user.totalScore || 0) < (requiredScores[mode] ?? Number.MAX_SAFE_INTEGER);
     },
 
     /**
@@ -198,18 +219,27 @@ const Main = {
         }
 
         container.style.display = 'block';
-        list.innerHTML = '';
+        list.replaceChildren();
 
         users.forEach(user => {
             const avatarEmoji = this.getAvatarEmoji(user.avatar);
             const item = document.createElement('div');
             item.className = 'user-item';
             item.dataset.userId = user.id;
-            item.innerHTML = `
-                <span class="user-item-avatar">${avatarEmoji}</span>
-                <span class="user-item-name">${user.name}</span>
-                <span class="user-item-score">🏆 ${user.totalScore}</span>
-            `;
+
+            const avatar = document.createElement('span');
+            avatar.className = 'user-item-avatar';
+            avatar.textContent = avatarEmoji;
+
+            const name = document.createElement('span');
+            name.className = 'user-item-name';
+            name.textContent = user.name;
+
+            const score = document.createElement('span');
+            score.className = 'user-item-score';
+            score.textContent = `🏆 ${user.totalScore}`;
+
+            item.append(avatar, name, score);
             list.appendChild(item);
         });
     },
@@ -240,10 +270,15 @@ const Main = {
         if (selectedExisting) {
             const userId = selectedExisting.dataset.userId;
             this.currentUser = Storage.getUser(userId);
+            if (!this.currentUser) {
+                this.loadExistingUsers();
+                return;
+            }
             Storage.setCurrentUser(userId);
         } else if (username && this.selectedAvatar) {
             // 创建新用户
             this.currentUser = Storage.createUser(username, this.selectedAvatar);
+            if (!this.currentUser) return;
         } else {
             // 提示选择
             Audio.playWrong();
@@ -278,29 +313,28 @@ const Main = {
      * 更新模式卡片锁定状态
      */
     updateModeCards() {
-        if (!this.currentUser) return;
+        const totalScore = this.currentUser?.totalScore || 0;
+        const requiredScores = { letters: 0, pinyin: 500, words: 1500 };
 
-        const totalScore = this.currentUser.totalScore;
+        document.querySelectorAll('.mode-card').forEach(card => {
+            const mode = card.dataset.mode;
+            const locked = totalScore < (requiredScores[mode] ?? Number.MAX_SAFE_INTEGER);
+            card.classList.toggle('locked', locked);
+            card.setAttribute('aria-disabled', String(locked));
 
-        // 拼音合成室：500分解锁
-        const pinyinCard = document.querySelector('.mode-card[data-mode="pinyin"]');
-        if (totalScore >= 500) {
-            pinyinCard.classList.remove('locked');
-            pinyinCard.querySelector('.lock-overlay').style.display = 'none';
-        }
-
-        // 词语竞速：1500分解锁
-        const wordsCard = document.querySelector('.mode-card[data-mode="words"]');
-        if (totalScore >= 1500) {
-            wordsCard.classList.remove('locked');
-            wordsCard.querySelector('.lock-overlay').style.display = 'none';
-        }
+            const lockOverlay = card.querySelector('.lock-overlay');
+            if (lockOverlay) lockOverlay.style.display = locked ? 'flex' : 'none';
+        });
     },
 
     /**
      * 开始游戏
      */
     startGame(mode) {
+        if (!this.currentUser || this.isModeLocked(mode)) {
+            Audio.playWrong();
+            return;
+        }
         Audio.playCorrect();
         Game.start(mode);
     },
@@ -312,14 +346,14 @@ const Main = {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
-        document.getElementById(screenId).classList.add('active');
+        const target = document.getElementById(screenId);
+        if (target) target.classList.add('active');
     }
 };
 
 // DOM 加载完成后初始化
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => Main.init(), { once: true });
+} else {
     Main.init();
-});
-
-// 导出到全局
-window.Main = Main;
+}

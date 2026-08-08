@@ -2,25 +2,32 @@
    字母森林 - 字母掉落游戏逻辑
    =============================================== */
 
-const LettersGame = {
+import { Audio } from './audio.js';
+import { Keyboard } from './keyboard.js';
+import { Storage } from './storage.js';
+import { Utils } from './utils.js';
+
+export const LettersGame = {
     canvas: null,
     ctx: null,
     fallingLetters: [],
     animationId: null,
+    spawnTimer: null,
+    spawnTimeout: null,
     isRunning: false,
 
     // 游戏配置
     config: {
         baseSpawnInterval: 2000, // 基准生成间隔
-        spawnInterval: 2000,      // 当前生成间隔
+        spawnInterval: 4000,      // 当前生成间隔（默认 0.5x）
         baseFallSpeed: 1.5,      // 基准下落速度
-        fallSpeed: 1.5,           // 当前下落速度
+        fallSpeed: 0.75,          // 当前下落速度（默认 0.5x）
         letterSize: 60,           // 字母大小
         maxLetters: 5,            // 同时存在的最大字母数
         frequentErrorBoost: 0.3   // 易错字母出现概率提升
     },
 
-    speedFactor: 1.0,
+    speedFactor: 0.5,
 
     // 回调函数
     onCorrect: null,
@@ -57,14 +64,7 @@ const LettersGame = {
         });
 
         // 如果正在运行，重启生成定时器
-        if (this.isRunning && this.spawnTimer) {
-            clearInterval(this.spawnTimer);
-            this.spawnTimer = setInterval(() => {
-                if (this.fallingLetters.length < this.config.maxLetters) {
-                    this.spawnLetter();
-                }
-            }, this.config.spawnInterval);
-        }
+        if (this.isRunning && this.spawnTimer) this.startSpawnTimer();
     },
 
     /**
@@ -82,22 +82,24 @@ const LettersGame = {
      * 开始游戏
      */
     start() {
+        this.clearTimers();
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+
         this.isRunning = true;
         this.fallingLetters = [];
 
         // 在下一帧调整大小，确保 DOM 已经渲染
         requestAnimationFrame(() => {
+            if (!this.isRunning) return;
             this.resize();
 
             // 延迟生成第一个字母，让用户有准备时间
-            setTimeout(() => {
+            this.spawnTimeout = setTimeout(() => {
+                this.spawnTimeout = null;
+                if (!this.isRunning) return;
                 // 开始生成字母
                 this.spawnLetter();
-                this.spawnTimer = setInterval(() => {
-                    if (this.fallingLetters.length < this.config.maxLetters) {
-                        this.spawnLetter();
-                    }
-                }, this.config.spawnInterval);
+                this.startSpawnTimer();
             }, 1500);
 
             // 开始动画循环
@@ -113,11 +115,7 @@ const LettersGame = {
      */
     stop() {
         this.isRunning = false;
-
-        if (this.spawnTimer) {
-            clearInterval(this.spawnTimer);
-            this.spawnTimer = null;
-        }
+        this.clearTimers();
 
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
@@ -126,18 +124,19 @@ const LettersGame = {
 
         Keyboard.setKeyPressCallback(null);
         Keyboard.reset();
+        this.fallingLetters = [];
     },
 
     /**
      * 暂停游戏
      */
     pause() {
+        if (!this.isRunning) return;
         this.isRunning = false;
-        if (this.spawnTimer) {
-            clearInterval(this.spawnTimer);
-        }
+        this.clearTimers();
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
+            this.animationId = null;
         }
     },
 
@@ -145,22 +144,19 @@ const LettersGame = {
      * 继续游戏
      */
     resume() {
-        if (!this.isRunning) {
-            this.isRunning = true;
-            this.spawnTimer = setInterval(() => {
-                if (this.fallingLetters.length < this.config.maxLetters) {
-                    this.spawnLetter();
-                }
-            }, this.config.spawnInterval);
-            this.animate();
-        }
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.startSpawnTimer();
+        this.animate();
     },
 
     /**
      * 生成一个掉落的字母
      */
     spawnLetter() {
+        if (!this.isRunning || !this.canvas) return;
         const allLetters = Keyboard.getAllLetters();
+        if (allLetters.length === 0) return;
         let letter;
 
         // 获取用户容易错的字母，提高它们的出现概率
@@ -173,7 +169,9 @@ const LettersGame = {
             letter = Utils.randomChoice(allLetters);
         }
 
-        const x = Utils.randomInt(80, this.canvas.width - 80);
+        const minX = Math.min(80, Math.max(0, this.canvas.width / 2));
+        const maxX = Math.max(minX, this.canvas.width - 80);
+        const x = Utils.randomInt(minX, maxX);
 
         this.fallingLetters.push({
             letter,
@@ -429,11 +427,30 @@ const LettersGame = {
      * 设置回调函数
      */
     setCallbacks({ onCorrect, onWrong, onMiss }) {
-        if (onCorrect) this.onCorrect = onCorrect;
-        if (onWrong) this.onWrong = onWrong;
-        if (onMiss) this.onMiss = onMiss;
+        this.onCorrect = onCorrect || null;
+        this.onWrong = onWrong || null;
+        this.onMiss = onMiss || null;
+    },
+
+    clearTimers() {
+        if (this.spawnTimer) {
+            clearInterval(this.spawnTimer);
+            this.spawnTimer = null;
+        }
+        if (this.spawnTimeout) {
+            clearTimeout(this.spawnTimeout);
+            this.spawnTimeout = null;
+        }
+    },
+
+    startSpawnTimer() {
+        this.clearTimers();
+        if (!this.isRunning) return;
+
+        this.spawnTimer = setInterval(() => {
+            if (this.fallingLetters.length < this.config.maxLetters) {
+                this.spawnLetter();
+            }
+        }, this.config.spawnInterval);
     }
 };
-
-// 导出到全局
-window.LettersGame = LettersGame;
